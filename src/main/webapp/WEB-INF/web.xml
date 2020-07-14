@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_3_1.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_1.xsd"
+	version="3.1">
+
+	<display-name>wyjt</display-name>
+
+	<!-- Context 加载 -->
+	<!-- listener begin -->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath:spring-context.xml,classpath:spring-context-shiro.xml,classpath:spring-context-jedis.xml,classpath:spring-context-redis.xml,classpath:spring-context-thirdparty.xml</param-value>
+	</context-param>
+	<context-param>
+         <param-name>isLog4jAutoInitializationDisabled</param-name>
+         <param-value>true</param-value>
+    </context-param>
+	<listener>
+    <listener-class>org.apache.logging.log4j.web.Log4jServletContextListener</listener-class>
+    </listener>
+	<listener>
+		<listener-class>com.jxf.svc.init.WebContextListener</listener-class>
+	</listener>
+	<listener>
+		<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+	</listener>
+	<!-- listener end -->
+	<filter>
+		<filter-name>encodingFilter</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+		<init-param>
+			<param-name>forceEncoding</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<!-- h5页面之间跳转添加token  start-->
+	<filter>
+		<filter-name>myHiddenHttpMethodFilter</filter-name>
+		<filter-class>com.jxf.web.app.interceptor.MyHiddenHttpMethodFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>myHiddenHttpMethodFilter</filter-name>
+		<url-pattern>/app/wyjt/member/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>myHiddenHttpMethodFilter</filter-name>
+		<url-pattern>/app/wyjt/loan/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>myHiddenHttpMethodFilter</filter-name>
+		<url-pattern>/app/wyjt/arbitration/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>myHiddenHttpMethodFilter</filter-name>
+		<url-pattern>/app/wyjt/collection/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>myHiddenHttpMethodFilter</filter-name>
+		<url-pattern>/app/wyjt/arbitrationExecution/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>myHiddenHttpMethodFilter</filter-name>
+		<url-pattern>/app/wyjt/auction/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>myHiddenHttpMethodFilter</filter-name>
+		<url-pattern>/wx/wyjt/loanee/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>myHiddenHttpMethodFilter</filter-name>
+		<url-pattern>/app/wyjt/flop/*</url-pattern>
+	</filter-mapping>
+	
+	<filter>
+		<filter-name>hiddenHttpMethodFilter</filter-name>
+		<filter-class>org.springframework.web.filter.HiddenHttpMethodFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>hiddenHttpMethodFilter</filter-name>
+		<url-pattern>/app/wyjt/member/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>hiddenHttpMethodFilter</filter-name>
+		<url-pattern>/app/wyjt/loan/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>hiddenHttpMethodFilter</filter-name>
+		<url-pattern>/app/wyjt/arbitration/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>hiddenHttpMethodFilter</filter-name>
+		<url-pattern>/app/wyjt/collection/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>hiddenHttpMethodFilter</filter-name>
+		<url-pattern>/app/wyjt/arbitrationExecution/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>hiddenHttpMethodFilter</filter-name>
+		<url-pattern>/app/wyjt/auction/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>hiddenHttpMethodFilter</filter-name>
+		<url-pattern>/app/wyjt/flop/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>myHiddenHttpMethodFilter</filter-name>
+		<url-pattern>/wx/wyjt/loanee/*</url-pattern>
+	</filter-mapping>
+	<!-- h5页面之间跳转添加token  end-->
+
+	<!-- Apache Shiro DelegatingFilterProxy的功能是通知Spring将所有的Filter交给ShiroFilter管理 -->
+	<filter>
+		<filter-name>shiroFilter</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+		<init-param>
+			<param-name>targetFilterLifecycle</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>shiroFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!-- SiteMesh -->
+	<filter>
+		<filter-name>sitemeshFilter</filter-name>
+		<filter-class>com.opensymphony.sitemesh.webapp.SiteMeshFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>sitemeshFilter</filter-name>
+		<url-pattern>/admin/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>sitemeshFilter</filter-name>
+		<url-pattern>/ufang/*</url-pattern>
+	</filter-mapping>
+	<!--SpringMVC前端控制器 -->
+	<!-- SpringMVC就是通过DispatcherServlet将一堆组件串联起来的Web框架 -->
+	<servlet>
+		<servlet-name>springServlet</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>classpath:spring-mvc.xml</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>springServlet</servlet-name>
+		<url-pattern>/</url-pattern>
+	</servlet-mapping>
+	<!-- DruidStatView -->
+	<servlet>
+		<servlet-name>DruidStatView</servlet-name>
+		<servlet-class>com.alibaba.druid.support.http.StatViewServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>DruidStatView</servlet-name>
+		<url-pattern>/druid/*</url-pattern>
+	</servlet-mapping>
+	<!-- druid数据源Web监控配置 -->
+	<filter>
+		<filter-name>druidWebStatFilter</filter-name>
+		<filter-class>com.alibaba.druid.support.http.WebStatFilter</filter-class>
+		<init-param>
+			<param-name>exclusions</param-name>
+			<param-value>/css/*,/style/*,/jslib/*,*.js,*.css,/druid*,/attached/*,*.jsp</param-value>
+		</init-param>
+		<init-param>
+			<param-name>principalSessionName</param-name>
+			<param-value>sessionInfo</param-value>
+		</init-param>
+		<init-param>
+			<param-name>profileEnable</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>druidWebStatFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<!-- CKFinder -->
+	<servlet>
+		<servlet-name>CKFinderConnectorServlet</servlet-name>
+		<servlet-class>com.jxf.svc.servlet.CKFinderConnectorServlet</servlet-class>
+		<init-param>
+			<param-name>XMLConfig</param-name>
+			<param-value>/WEB-INF/ckfinder.xml</param-value>
+		</init-param>
+		<init-param>
+			<param-name>debug</param-name>
+			<param-value>false</param-value>
+		</init-param>
+		<init-param>
+			<param-name>configuration</param-name>
+			<param-value>com.jxf.svc.servlet.CKFinderConfig</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>CKFinderConnectorServlet</servlet-name>
+		<url-pattern>/static/ckfinder/core/connector/java/connector.java</url-pattern>
+	</servlet-mapping>
+	<filter>
+		<filter-name>FileUploadFilter</filter-name>
+		<filter-class>com.ckfinder.connector.FileUploadFilter</filter-class>
+		<init-param>
+			<param-name>sessionCookieName</param-name>
+			<param-value>JSESSIONID</param-value>
+		</init-param>
+		<init-param>
+			<param-name>sessionParameterName</param-name>
+			<param-value>jsessionid</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>FileUploadFilter</filter-name>
+		<url-pattern>/static/ckfinder/core/connector/java/connector.java</url-pattern>
+	</filter-mapping>
+
+	<!-- Userfiles download -->
+	<servlet>
+		<servlet-name>UserfilesDownloadServlet</servlet-name>
+		<servlet-class>com.jxf.svc.servlet.UserfilesDownloadServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>UserfilesDownloadServlet</servlet-name>
+		<url-pattern>/userfiles/*</url-pattern>
+	</servlet-mapping>
+
+	<!-- Validate code -->
+	<servlet>
+		<servlet-name>ValidateCodeServlet</servlet-name>
+		<servlet-class>com.jxf.svc.servlet.ValidateCodeServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ValidateCodeServlet</servlet-name>
+		<url-pattern>/servlet/validateCodeServlet</url-pattern>
+	</servlet-mapping>
+	<!-- error code -->	
+	<error-page>
+		<error-code>500</error-code>
+		<location>/WEB-INF/views/error/500.jsp</location>
+	</error-page>
+	<error-page>
+		<error-code>404</error-code>
+		<location>/WEB-INF/views/error/404.jsp</location>
+	</error-page>
+
+</web-app>
