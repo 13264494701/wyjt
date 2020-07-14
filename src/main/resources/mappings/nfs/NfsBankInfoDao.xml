@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.nfs.dao.NfsBankInfoDao">
+    
+	<sql id="nfsBankInfoColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.abbr_name As "abbrName",
+		a.logo AS "logo",
+		a.limit_per_trx AS "limitPerTrx",
+		a.limit_per_day AS "limitPerDay",
+		a.limit_per_month AS "limitPerMonth",
+		a.hotline AS "hotline",
+		a.is_support AS "isSupport",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="NfsBankInfo" id="nfsBankInfoResultMap">		
+        <id column="id" property="id"/>
+        <result column="isSupport"  property="isSupport" javaType="Boolean" jdbcType="CHAR" />
+	</resultMap>
+	
+	<sql id="nfsBankInfoJoins">
+	</sql>
+
+	<select id="getByAbbrName" resultMap="nfsBankInfoResultMap">
+		SELECT
+		<include refid="nfsBankInfoColumns"/>
+		FROM NFS_BANK_INFO a
+		WHERE a.abbr_name = #{abbrName}
+		LIMIT 1
+	</select>
+    
+	<select id="get" resultMap="nfsBankInfoResultMap">
+		SELECT 
+			<include refid="nfsBankInfoColumns"/>
+		FROM NFS_BANK_INFO a
+		<include refid="nfsBankInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="nfsBankInfoResultMap">
+		SELECT 
+			<include refid="nfsBankInfoColumns"/>
+		FROM NFS_BANK_INFO a
+		<include refid="nfsBankInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="NfsBankInfo">
+		INSERT INTO NFS_BANK_INFO(
+			id,
+			name,
+			abbr_name,
+			logo,
+			limit_per_trx,
+			limit_per_day,
+			limit_per_month,
+			hotline,
+			is_support,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{abbrName},
+			#{logo},
+			#{limitPerTrx},
+			#{limitPerDay},
+			#{limitPerMonth},
+			#{hotline},
+			#{isSupport, javaType=Boolean, jdbcType=CHAR},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsBankInfo">
+		UPDATE NFS_BANK_INFO SET 	
+			name = #{name},
+			abbr_name =#{abbrName},
+			logo = #{logo},
+			limit_per_trx = #{limitPerTrx},
+			limit_per_day = #{limitPerDay},
+			limit_per_month = #{limitPerMonth},
+			hotline = #{hotline},
+			is_support = #{isSupport, javaType=Boolean, jdbcType=CHAR},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_BANK_INFO SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

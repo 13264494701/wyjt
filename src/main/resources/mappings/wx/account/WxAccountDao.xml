@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.wx.account.dao.WxAccountDao">
+    
+	<sql id="wxAccountColumns">
+		a.id AS "id",
+		a.code AS "code",
+		a.name AS "name",
+		a.type AS "type",
+		a.appid AS "appid",
+		a.secret AS "secret",
+		a.status AS "status",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="WxAccount" id="wxAccountResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	<sql id="wxAccountJoins">
+	</sql>
+    
+	<select id="get" resultMap="wxAccountResultMap">
+		SELECT 
+			<include refid="wxAccountColumns"/>
+		FROM WX_ACCOUNT a
+		<include refid="wxAccountJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findByCode" resultMap="wxAccountResultMap">
+		SELECT 
+			<include refid="wxAccountColumns"/>
+		FROM WX_ACCOUNT a
+		<include refid="wxAccountJoins"/>
+		WHERE a.code = #{code}
+	</select>
+	
+	<select id="findList" resultMap="wxAccountResultMap">
+		SELECT 
+			<include refid="wxAccountColumns"/>
+		FROM WX_ACCOUNT a
+		<include refid="wxAccountJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+			<if test="code != null and code != ''">
+				AND a.code = #{code}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="wxAccountResultMap">
+		SELECT 
+			<include refid="wxAccountColumns"/>
+		FROM WX_ACCOUNT a
+		<include refid="wxAccountJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+			<if test="code != null and code != ''">
+				AND a.code = #{code}
+			</if>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="WxAccount">
+		INSERT INTO WX_ACCOUNT(
+			id,
+			code,
+			name,
+			type,
+			appid,
+			secret,
+			status,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{code},
+			#{name},
+			#{type},
+			#{appid},
+			#{secret},
+			#{status},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="WxAccount">
+		UPDATE WX_ACCOUNT SET 	
+			code = #{code},
+			name = #{name},
+			type = #{type},
+			appid = #{appid},
+			secret = #{secret},
+			status = #{status},
+			rmk = #{rmk},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE WX_ACCOUNT SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

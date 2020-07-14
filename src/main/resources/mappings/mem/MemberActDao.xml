@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberActDao">
+
+	<sql id="memberActColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",		
+		a.sub_no AS "subNo",
+		a.curr_code AS "currCode",
+		a.name AS "name",		
+		a.cur_bal AS "curBal",
+		a.is_default AS "isDefault",
+		a.status AS "status",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.version AS "version",
+		a.del_flag AS "delFlag",
+		c.name AS "member.name"
+	</sql>
+
+	<resultMap type="MemberAct" id="memberActResultMap">
+		<id column="id" property="id" />
+		<result column="isDefault" property="isDefault" javaType="Boolean" jdbcType="CHAR" />
+		<result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+
+	<sql id="memberActJoins">
+         LEFT JOIN MEM_MEMBER c on c.id = a.member_id 
+	</sql>
+
+	<select id="get" resultMap="memberActResultMap">
+		SELECT
+		<include refid="memberActColumns" />
+		FROM MEM_MEMBER_ACT a
+		<include refid="memberActJoins" />
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getCurBal" resultType="java.math.BigDecimal">
+		SELECT sum(a.cur_bal) FROM MEM_MEMBER_ACT a where a.member_id = #{memberId} and sub_no in ('0001','0002')
+	</select>
+
+	<select id="getMemberDefaultAct" resultMap="memberActResultMap">
+		SELECT
+		<include refid="memberActColumns" />
+		FROM MEM_MEMBER_ACT a
+		<include refid="memberActJoins" />
+		WHERE a.member_id = #{member.id} 
+		AND a.is_default = '1'
+	</select>
+
+	<select id="findList" resultMap="memberActResultMap">
+		SELECT
+		<include refid="memberActColumns" />
+		FROM MEM_MEMBER_ACT a
+		<include refid="memberActJoins" />
+		<where>
+		    a.del_flag = #{delFlag}
+			AND a.member_id = #{member.id}
+			<if test="subNo != null and subNo != ''">
+				AND a.sub_no = #{subNo}
+			</if>
+			<if test="currCode != null and currCode != ''">
+				AND a.curr_code = #{currCode}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE
+				<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="sumMemberAct" resultMap="memberActResultMap">
+		SELECT
+		   a.sub_no AS "subNo",
+		   SUM(a.cur_bal) AS "curBal"
+		FROM MEM_MEMBER_ACT a
+		<include refid="memberActJoins" />
+		WHERE  a.del_flag = '0'
+		AND a.member_id != 3 
+		AND a.member_id != 4
+        GROUP BY a.sub_no        
+	</select>
+
+
+	<insert id="insert" parameterType="MemberAct">
+		INSERT INTO MEM_MEMBER_ACT(
+			id,
+			member_id,			
+			sub_no,
+			curr_code,
+			name,
+			cur_bal,
+			is_default,
+			status,
+			create_by, 
+			create_time,
+			update_by,
+			update_time,
+			version,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},			
+			#{subNo},
+			#{currCode},
+			#{name},
+			#{curBal},
+			#{isDefault, javaType=Boolean, jdbcType=CHAR},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},						
+			#{createBy.empNo}, 
+			#{createTime}, 
+			#{updateBy.empNo}, 
+			#{updateTime}, 
+			#{version},
+			#{delFlag}
+		)
+	</insert>
+
+	<update id="update" parameterType="MemberAct">
+		UPDATE MEM_MEMBER_ACT SET
+			member_id = #{member.id},			
+			sub_no = #{subNo},
+			curr_code = #{currCode},			
+			name = #{name},
+			cur_bal = #{curBal},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},			
+			is_default = #{isDefault, javaType=Boolean, jdbcType=CHAR},
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime},
+			version = version+1
+		WHERE id = #{id}
+		AND version = #{version}
+	</update>
+
+	<update id="updateActSts" parameterType="MemberAct">
+		UPDATE MEM_MEMBER_ACT SET
+		status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MEM_MEMBER_ACT SET 
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+   <update id="deleteByMemberId">
+		DELETE FROM MEM_MEMBER_ACT 
+		WHERE member_id = #{memberId}
+	</update>
+
+	<update id="updateActBal">
+		UPDATE MEM_MEMBER_ACT SET
+		cur_bal = cur_bal + #{trxAmt}
+		<where>
+			<if test="member != null and member.id != null and member.id != ''">
+				AND member_id = #{member.id}
+			</if>
+			<if test="subNo != null and subNo != ''">
+				AND sub_no = #{subNo}
+			</if>
+			<if test="currCode != null and currCode != ''">
+				AND curr_code = #{currCode}
+			</if>
+		</where>
+	</update>
+	
+	<update id="setDefault">
+		UPDATE MEM_MEMBER_ACT SET is_default =
+		CASE
+		WHEN id = #{id} THEN '1'
+		WHEN id != #{id} THEN '0'
+		END
+		WHERE member_id = #{member.id}
+	</update>
+</mapper>

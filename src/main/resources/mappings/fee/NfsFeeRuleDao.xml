@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.fee.dao.NfsFeeRuleDao">
+    
+	<sql id="nfsFeeRuleColumns">
+		a.id AS "id",
+		a.trx_code AS "trxCode",
+		a.expression AS "expression",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="NfsFeeRule" id="nfsFeeRuleResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	<sql id="nfsFeeRuleJoins">
+	</sql>
+    
+	<select id="get" resultMap="nfsFeeRuleResultMap">
+		SELECT 
+			<include refid="nfsFeeRuleColumns"/>
+		FROM NFS_FEE_RULE a
+		<include refid="nfsFeeRuleJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+    <select id="getByTrxCode" resultMap="nfsFeeRuleResultMap">
+		SELECT 
+			<include refid="nfsFeeRuleColumns"/>
+		FROM NFS_FEE_RULE a
+		<include refid="nfsFeeRuleJoins"/>
+		WHERE a.trx_code = #{trxCode}
+		AND a.del_flag = '0'
+	</select>
+	
+	<select id="findList" resultMap="nfsFeeRuleResultMap">
+		SELECT 
+			<include refid="nfsFeeRuleColumns"/>
+		FROM NFS_FEE_RULE a
+		<include refid="nfsFeeRuleJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="trxCode != null and trxCode != ''">
+				AND a.trx_code = #{trxCode}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.trx_code ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="NfsFeeRule">
+		INSERT INTO NFS_FEE_RULE(
+			id,
+			trx_code,
+			expression,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{trxCode},
+			#{expression},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsFeeRule">
+		UPDATE NFS_FEE_RULE SET 	
+			trx_code = #{trxCode},
+			expression = #{expression},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_FEE_RULE SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

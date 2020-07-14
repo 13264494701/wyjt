@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mms.tmpl.dao.MmsMsgTmplDao">
+    
+	<sql id="mmsMsgTmplColumns">
+		a.id AS "id",
+		a.code AS "code",
+		a.name AS "name",
+		a.name_value AS "nameValue",
+		a.type AS "type",
+		a.content AS "content",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="MmsMsgTmpl" id="mmsMsgTmplResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="mmsMsgTmplJoins">
+	</sql>
+    
+	<select id="get" resultMap="mmsMsgTmplResultMap">
+		SELECT 
+			<include refid="mmsMsgTmplColumns"/>
+		FROM MMS_MSG_TMPL a
+		<include refid="mmsMsgTmplJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getTmplByCode" resultMap="mmsMsgTmplResultMap">
+		SELECT 
+			<include refid="mmsMsgTmplColumns"/>
+		FROM MMS_MSG_TMPL a
+		<include refid="mmsMsgTmplJoins"/>
+		WHERE a.code = #{code}
+	</select>
+	
+	<select id="findList" resultMap="mmsMsgTmplResultMap">
+		SELECT 
+			<include refid="mmsMsgTmplColumns"/>
+		FROM MMS_MSG_TMPL a
+		<include refid="mmsMsgTmplJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="code != null and code != ''">
+				AND a.code = #{code}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="MmsMsgTmpl">
+		INSERT INTO MMS_MSG_TMPL(
+			id,
+			code,
+			name,
+			name_value,
+			type,
+			content,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{code},
+			#{name},
+			#{nameValue},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{content},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MmsMsgTmpl">
+		UPDATE MMS_MSG_TMPL SET 	
+			code = #{code},
+			name = #{name},
+			name_value = #{nameValue},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			content = #{content},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MMS_MSG_TMPL SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

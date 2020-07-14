@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.loan.dao.NfsLoanCollectionDao">
+    
+	<sql id="nfsLoanCollectionColumns">
+		a.id AS "id",
+		a.loan_id AS "loan.id",
+		a.fee AS "fee",
+		a.refund AS "refund",
+		a.refuse_reason AS "refuseReason",
+		a.status AS "status",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		b.status AS "loan.status",
+		b.amount AS "loan.amount",
+		b.loaner_id AS "loan.loaner.id",
+		b.loaner_name AS "loan.loaner.name",
+		b.loaner_phone_no AS "loan.loaner.username",
+		b.loanee_id AS "loan.loanee.id",
+		b.loanee_name AS "loan.loanee.name",
+		b.loanee_phone_no AS "loan.loanee.username",
+		b.loanee_id_no AS "loan.loanee.idNo",
+		b.repay_type AS "loan.repayType",
+		b.interest AS "loan.interest",
+		b.loan_no AS "loan.no",
+		b.int_rate AS "loan.intRate",
+		b.term AS "loan.term",
+		b.repayed_term AS "loan.repayedTerm",
+		b.due_repay_term AS "loan.dueRepayTerm",
+		b.due_repay_amount AS "loan.dueRepayAmount",
+		b.due_repay_date AS "loan.dueRepayDate",
+		b.complete_date AS "loan.completeDate",
+		b.create_time AS "loan.createTime"
+	</sql>
+	
+	<resultMap type="NfsLoanCollection" id="nfsLoanCollectionResultMap">		
+        <id column="id" property="id"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="loan.status" property="loan.status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+		<result column="loan.repayType" property="loan.repayType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+		<result column="loan.trxType" property="loan.trxType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="nfsLoanCollectionJoins">
+		LEFT JOIN NFS_LOAN_RECORD b on a.loan_id = b.id
+	</sql>
+    
+	<select id="get" resultMap="nfsLoanCollectionResultMap">
+		SELECT 
+			<include refid="nfsLoanCollectionColumns"/>
+		FROM NFS_LOAN_COLLECTION a
+		<include refid="nfsLoanCollectionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findNowCollection" resultMap="nfsLoanCollectionResultMap">
+		SELECT 
+			<include refid="nfsLoanCollectionColumns"/>
+		FROM NFS_LOAN_COLLECTION a
+		<include refid="nfsLoanCollectionJoins"/>
+		WHERE a.loan_id = #{id}
+		and a.status IN (0,1,3,4) <!--审核中/已受理/催收中/催收成功  -->
+	</select>
+	<select id="findThirdCollection" resultMap="nfsLoanCollectionResultMap">
+		SELECT 
+			<include refid="nfsLoanCollectionColumns"/>
+		FROM NFS_LOAN_COLLECTION a
+		<include refid="nfsLoanCollectionJoins"/>
+		WHERE a.loan_id = #{id}
+		order by a.id desc limit 1
+	</select>
+	
+	<select id="getCollectionByLoanId" resultMap="nfsLoanCollectionResultMap">
+		SELECT 
+			<include refid="nfsLoanCollectionColumns"/>
+		FROM NFS_LOAN_COLLECTION a
+		<include refid="nfsLoanCollectionJoins"/>
+		WHERE a.loan_id = #{loanId}
+	</select>
+	
+	<select id="findList" resultMap="nfsLoanCollectionResultMap">
+		SELECT 
+			<include refid="nfsLoanCollectionColumns"/>
+		FROM NFS_LOAN_COLLECTION a
+		<include refid="nfsLoanCollectionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="loan != null and loan.id != null and loan.id != ''">
+				AND a.loan_id = #{loan.id}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+			<if test="loan != null and loan.loaner != null and loan.loaner.username != null and loan.loaner.username != ''">
+				AND b.loaner_phone_no = #{loan.loaner.username}
+			</if>
+			<if test="loan != null and loan.loanee != null and loan.loanee.username != null and loan.loanee.username != ''">
+				AND b.loanee_phone_no = #{loan.loanee.username}
+			</if>
+			<if test="loan != null and loan.loaner != null and loan.loaner.id != null and loan.loaner.id != ''">
+				AND b.loaner_id = #{loan.loaner.id}
+			</if>
+			<if test="loan != null and loan.loanee != null and loan.loanee.id != null and loan.loanee.id != ''">
+				AND b.loanee_id = #{loan.loanee.id}
+			</if>
+			<if test="loan != null and  loan.status != null">
+				AND b.status = #{loan.status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loan != null and  loan.trxType != null">
+				AND b.trx_type = #{loan.trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loan != null and  loan.beginCompleteDate != null and loan.endCompleteDate != null">
+				 AND b.complete_date BETWEEN #{beginCompleteDate} AND #{endCompleteDate}	
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findCollections" resultMap="nfsLoanCollectionResultMap">
+		SELECT 
+			<include refid="nfsLoanCollectionColumns"/>
+		FROM NFS_LOAN_COLLECTION a
+		<include refid="nfsLoanCollectionJoins"/>
+		<where>
+			a.del_flag = '0'
+			<if test="loanId != null and loanId != ''">
+				AND a.loan_id = #{loanId}
+			</if>
+		</where>
+				ORDER BY a.id DESC
+	</select>
+	
+	<select id="findInCollection" resultMap="nfsLoanCollectionResultMap">
+		SELECT
+		<include refid="nfsLoanCollectionColumns"/>
+		FROM NFS_LOAN_COLLECTION a
+		<include refid="nfsLoanCollectionJoins"/>
+		<where>
+			a.del_flag = '0' AND (a.status = 0 OR a.status = 1 OR a.status = 3) AND b.trx_type = '0'
+			<if test="loanerId != null and loanerId != ''">
+				AND b.loaner_id = #{loanerId}
+			</if>
+		</where>
+		<choose>
+			<when test="collection.page !=null and collection.page.orderBy != null and collection.page.orderBy != ''">
+				ORDER BY ${collection.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findEndOfCollection" resultMap="nfsLoanCollectionResultMap">
+		SELECT
+		<include refid="nfsLoanCollectionColumns"/>
+		FROM NFS_LOAN_COLLECTION a
+		<include refid="nfsLoanCollectionJoins"/>
+		<where>
+			a.del_flag = '0' AND (a.status = 2 OR a.status = 4 OR a.status = 5) AND b.trx_type = '0'
+			<if test="loanerId != null and loanerId != ''">
+				AND b.loaner_id = #{loanerId}
+			</if>
+		</where>
+		<choose>
+			<when test="collection.page !=null and collection.page.orderBy != null and collection.page.orderBy != ''">
+				ORDER BY ${collection.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="NfsLoanCollection">
+		INSERT INTO NFS_LOAN_COLLECTION(
+			id,
+			loan_id,
+			fee,
+			refund,
+			refuse_reason,
+			status,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{loan.id},
+			#{fee},
+			#{refund},
+			#{refuseReason},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsLoanCollection">
+		UPDATE NFS_LOAN_COLLECTION SET 	
+			loan_id = #{loan.id},
+			fee = #{fee},
+			refund = #{refund},
+			refuse_reason = #{refuseReason},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_LOAN_COLLECTION SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

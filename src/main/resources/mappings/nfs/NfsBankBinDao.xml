@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.nfs.dao.NfsBankBinDao">
+    
+	<sql id="nfsBankBinColumns">
+		a.id AS "id",
+		a.card_bin AS "cardBin",
+		a.bank_id AS "bank.id",
+		a.card_type AS "cardType",
+		a.length AS "length",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		c.name AS "bank.name",
+		c.logo AS "bank.logo",
+		c.is_support AS "isSupport"
+	</sql>
+	
+	<resultMap type="NfsBankBin" id="nfsBankBinResultMap">		
+        <id column="id" property="id"/>
+        <result column="cardType" property="cardType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="isSupport"  property="bank.isSupport" javaType="Boolean" jdbcType="CHAR" />
+	</resultMap>
+	
+	<sql id="nfsBankBinJoins">
+	     LEFT JOIN NFS_BANK_INFO c on c.id = a.bank_id 
+	</sql>
+
+	<select id="get" resultMap="nfsBankBinResultMap">
+		SELECT 
+			<include refid="nfsBankBinColumns"/>
+		FROM NFS_BANK_BIN a
+		<include refid="nfsBankBinJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByCardBin" resultMap="nfsBankBinResultMap">
+		SELECT 
+			<include refid="nfsBankBinColumns"/>
+		FROM NFS_BANK_BIN a
+		<include refid="nfsBankBinJoins"/>
+		WHERE a.card_bin = #{cardBin} 
+		AND a.length = #{length} 
+		LIMIT 1
+	</select>
+	
+	<select id="findList" resultMap="nfsBankBinResultMap">
+		SELECT 
+			<include refid="nfsBankBinColumns"/>
+		FROM NFS_BANK_BIN a
+		<include refid="nfsBankBinJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="bank != null and bank.id != null and bank.id != ''">
+				AND a.bank_id = #{bank.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="NfsBankBin">
+		INSERT INTO NFS_BANK_BIN(
+			id,
+			card_bin,
+			bank_id,			
+			card_type,
+			length,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{cardBin},
+			#{bank.id},			
+			#{cardType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{length},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsBankBin">
+		UPDATE NFS_BANK_BIN SET 
+		    card_bin = #{cardBin},	
+			bank_id = #{bank.id},
+			card_type = #{cardType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			length = #{length},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_BANK_BIN SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

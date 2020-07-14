@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.rc.dao.RcCaDataDaoV2">
+    
+	<sql id="rcCaDataColumns">
+		a.id AS "id",
+		a.phone_no AS "phoneNo",
+		a.id_no AS "idNo",
+		a.name AS "name",
+		a.type AS "type",
+		a.provider AS "provider",
+		a.status AS "status",
+		a.report_no AS "reportNo",
+		a.content AS "content",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="RcCaDataV2" id="rcCaDataResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="provider" property="provider" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="rcCaDataJoins">
+	</sql>
+    
+	<select id="get" resultMap="rcCaDataResultMap">
+		SELECT 
+			<include refid="rcCaDataColumns"/>
+		FROM RC_CA_DATA_V2 a
+		<include refid="rcCaDataJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByPhoneNoAndType" resultMap="rcCaDataResultMap">
+		SELECT 
+			<include refid="rcCaDataColumns"/>
+		FROM RC_CA_DATA_V2 a
+		<include refid="rcCaDataJoins"/>
+		<where>
+			<if test="phoneNo !=null and phoneNo !='' ">
+				AND a.phone_no = #{phoneNo}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		ORDER BY a.id DESC
+		LIMIT 1
+	</select>
+	
+	<select id="findList" resultMap="rcCaDataResultMap">
+		SELECT 
+			<include refid="rcCaDataColumns"/>
+		FROM RC_CA_DATA_V2 a
+		<include refid="rcCaDataJoins"/>
+		<where>
+			<if test="phoneNo !=null and phoneNo !='' ">
+				AND a.phone_no = #{phoneNo}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginTime != null ">
+				<![CDATA[AND a.create_time >= #{beginTime}]]> 
+			</if>
+			<if test="endTime != null">
+				<![CDATA[AND a.create_time <= #{endTime}]]> 
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			   ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="RcCaDataV2">
+		INSERT INTO RC_CA_DATA_V2(
+			id,
+			phone_no,
+			id_no,
+			name,
+			type,
+			provider,
+			status,
+			report_no,
+			content,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{phoneNo},
+			#{idNo},
+			#{name},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{provider,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{reportNo},
+			#{content},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="RcCaDataV2">
+		UPDATE RC_CA_DATA_V2 SET 	
+			phone_no = #{phoneNo},
+			id_no = #{idNo},
+			name = #{name},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			provider = #{provider,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			report_no = #{reportNo},
+			content = #{content},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE RC_CA_DATA_V2 SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+</mapper>

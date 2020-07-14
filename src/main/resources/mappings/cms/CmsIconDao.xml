@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.cms.dao.CmsIconDao">
+    
+	<sql id="iconColumns">
+		a.id AS "id",
+		a.position_no AS "positionNo",
+		a.icon_name AS "iconName",
+		a.image_path AS "imagePath",
+		a.redirect_type AS "redirectType",
+		a.redirect_url AS "redirectUrl",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="CmsIcon" id="cmsIconResultMap">
+		<id column="id" property="id"/>
+		<result column="redirectType" property="redirectType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="iconJoins">
+	</sql>
+    
+	<select id="get" resultMap="cmsIconResultMap">
+		SELECT 
+			<include refid="iconColumns"/>
+		FROM CMS_ICON a
+		<include refid="iconJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByPositionNo" resultMap="cmsIconResultMap">
+		SELECT 
+			<include refid="iconColumns"/>
+		FROM CMS_ICON a
+		<include refid="iconJoins"/>
+		WHERE a.position_no = #{positionNo}
+	</select>
+		
+	<select id="findListByPageNo" resultMap="cmsIconResultMap">
+		SELECT 
+			<include refid="iconColumns"/>
+		FROM CMS_ICON a
+		<include refid="iconJoins"/>
+		WHERE a.position_no LIKE concat(#{pageNo},'%')
+	</select>	
+	
+	<select id="findList" resultMap="cmsIconResultMap">
+		SELECT 
+			<include refid="iconColumns"/>
+		FROM CMS_ICON a
+		<include refid="iconJoins"/>
+		<where>		
+		    a.del_flag = #{DEL_FLAG_NORMAL}		
+			<if test="positionNo != null and positionNo != ''">
+				AND a.position_no = #{positionNo}
+			</if>
+			<if test="iconName != null and iconName != ''">
+				AND a.icon_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{iconName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{iconName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{iconName},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="CmsIcon">
+		INSERT INTO CMS_ICON(
+			id,
+			position_no,
+			icon_name,
+			image_path,
+			redirect_type,
+			redirect_url,
+			url,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{positionNo},
+			#{iconName},
+			#{imagePath},
+			#{redirectType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{redirectUrl},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="CmsIcon">
+		UPDATE CMS_ICON SET 	
+			position_no = #{positionNo},
+			icon_name = #{iconName},
+			image_path = #{imagePath},
+			redirect_type = #{redirectType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			redirect_url = #{redirectUrl},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE CMS_ICON SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

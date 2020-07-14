@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.payment.dao.RefundDao">
+    
+	<sql id="refundColumns">
+		a.id AS "id",
+		a.refund_no AS "refundNo",
+		a.payment_no AS "payment.paymentNo",
+		a.member_id AS "member.id",
+		a.org_id AS "orgId",
+		a.refund_amount AS "refundAmount",
+		a.status AS "status",
+		a.payment_plugin_id AS "paymentPluginId",
+		a.payment_plugin_name AS "paymentPluginName",
+		a.mch_id AS "mchId",
+		a.refund_id AS "refundId",
+		a.refund_desc AS "refundDesc",
+		a.resp_time AS "respTime",
+		a.resp_code AS "respCode",
+		a.resp_msg AS "respMsg",
+		a.remote_addr AS "remoteAddr",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="Refund" id="refundResultMap">		
+        <id column="id" property="id"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	<sql id="refundJoins">
+	</sql>
+    
+	<select id="get" resultMap="refundResultMap">
+		SELECT 
+			<include refid="refundColumns"/>
+		FROM NFS_REFUND a
+		<include refid="refundJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="getByRefundNo" resultMap="refundResultMap">
+		SELECT 
+			<include refid="refundColumns"/>
+		FROM NFS_REFUND a
+		<include refid="refundJoins"/>
+		WHERE a.refund_no = #{refundNo}
+	</select>
+		
+	<select id="findList" resultMap="refundResultMap">
+		SELECT 
+			<include refid="refundColumns"/>
+		FROM NFS_REFUND a
+		<include refid="refundJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="refundNo != null and refundNo != ''">
+				AND a.refund_no = #{refundNo}
+			</if>
+			<if test="payment != null and payment.paymentNo != null and payment.paymentNo != ''">
+				AND a.payment_no = #{payment.paymentNo}
+			</if>
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="orgId != null and orgId != ''">
+				AND a.org_id = #{orgId}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="Refund">
+		INSERT INTO NFS_REFUND(
+			id,
+			refund_no,
+			payment_no,
+			member_id,
+			org_id,
+			refund_amount,
+			status,
+			payment_plugin_id,
+			payment_plugin_name,
+			mch_id,
+			refund_id,
+			refund_desc,
+			resp_time,
+			resp_code,
+			resp_msg,
+			remote_addr,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{refundNo},
+			#{payment.paymentNo},
+			#{member.id},
+			#{orgId},
+			#{refundAmount},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},			
+			#{paymentPluginId},
+			#{paymentPluginName},
+			#{mchId},
+			#{refundId},
+			#{refundDesc},
+			#{respTime},
+			#{respCode},
+			#{respMsg},
+			#{remoteAddr},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="Refund">
+		UPDATE NFS_REFUND SET 	
+			refund_no = #{refundNo},
+			payment_no = #{payment.paymentNo},
+			member_id = #{member.id},
+			org_id = #{orgId},
+			refund_amount = #{refundAmount},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},			
+			payment_plugin_id = #{paymentPluginId},
+			payment_plugin_name = #{paymentPluginName},
+			mch_id = #{mchId},
+			refund_id = #{refundId},
+			refund_desc = #{refundDesc},
+			resp_time = #{respTime},
+			resp_code = #{respCode},
+			resp_msg = #{respMsg},
+			remote_addr = #{remoteAddr},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_REFUND SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

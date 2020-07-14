@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.cms.dao.CmsArticleDao">
+    
+	<sql id="cmsArticleColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.channel_id AS "channel.id",
+		a.category_id AS "category.id",
+		a.images AS "images",
+		a.keywords AS "keywords",
+		a.description AS "description",
+		a.default_cover AS "defaultCover",
+		a.author AS "author",
+		a.copyfrom AS "copyfrom",
+		a.weight AS "weight",
+		a.weight_date AS "weightDate",
+		a.display_hits AS "displayHits",
+		a.real_hits AS "realHits",
+		a.likes AS "likes",
+		a.dislikes AS "dislikes",
+		a.is_top AS "isTop",
+		a.is_static AS "isStatic",
+		a.is_pub AS "isPub",
+		a.pub_time AS "pubTime",
+		a.allow_comment AS "allowComment",
+		a.module_type AS "moduleType",
+		a.data_original AS "dataOriginal",
+		a.create_by AS "createBy.id",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.id",
+		a.update_time AS "updateTime",
+		a.rmk AS "rmk",
+		a.del_flag AS "delFlag",
+		c.name AS "category.name",
+		d.name AS "channel.name"
+	</sql>
+	
+	<resultMap type="CmsArticle" id="cmsArticleResultMap">		
+        <id column="id" property="id"/>
+        <result column="isTop"  property="isTop" javaType="Boolean" jdbcType="CHAR" />	
+        <result column="isStatic"  property="isStatic" javaType="Boolean" jdbcType="CHAR" />	
+        <result column="isPub"  property="isPub" javaType="Boolean" jdbcType="CHAR" />	
+        <result column="allowComment"  property="allowComment" javaType="Boolean" jdbcType="CHAR" />	
+        <result column="moduleType" property="moduleType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="cmsArticleJoins">
+	  JOIN CMS_CATEGORY c ON c.id = a.category_id
+	  JOIN CMS_CHANNEL d ON d.id = a.channel_id
+	</sql>
+    
+	<select id="get" resultMap="cmsArticleResultMap">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		FROM CMS_ARTICLE a
+		<include refid="cmsArticleJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByOriginal" resultMap="cmsArticleResultMap">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		FROM CMS_ARTICLE a
+		    <include refid="cmsArticleJoins"/>
+		WHERE a.data_original = #{dataOriginal}
+	</select>
+	
+	<select id="findList" resultMap="cmsArticleResultMap">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		FROM CMS_ARTICLE a
+		<include refid="cmsArticleJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="channel != null and channel.id != null and channel.id != ''">
+				AND a.channel_id = #{channel.id}
+			</if>
+			<if test="category != null and category.id != null and category.id != ''">
+				AND (a.category_id = #{category.id}
+				<if test="category.parentIds != null and category.parentIds != ''">
+					or c.parent_ids like 
+						<if test="dbName == 'oracle'">'%'||#{category.id}||'%'</if>
+						<if test="dbName == 'mysql'">CONCAT('%,', #{category.id}, ',%')</if>
+				</if>)
+			</if>
+			<if test="isTop != null">
+				AND a.is_top = #{isTop,javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="isStatic != null">
+				AND a.is_static = #{isStatic,javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="isPub != null">
+				AND a.is_pub = #{isPub,javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="beginDate != null and endDate != null and beginDate != '' and endDate != ''">
+				AND a.update_time BETWEEN #{beginDate} AND #{endDate}					
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+		<if test="count != null ">
+				LIMIT #{count}
+		</if>
+	</select>
+	
+	<select id="findAllList" resultMap="cmsArticleResultMap">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		FROM CMS_ARTICLE a
+		<include refid="cmsArticleJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="channel != null and channel.id != null and channel.id != ''">
+				AND a.channel_id = #{channel.id}
+			</if>
+			<if test="category != null and category.id != null and category.id != ''">
+				AND (a.category_id = #{category.id}
+				<if test="category.parentIds != null and category.parentIds != ''">
+					or c.parent_ids like 
+						<if test="dbName == 'oracle'">'%'||#{category.id}||'%'</if>
+						<if test="dbName == 'mysql'">CONCAT('%,', #{category.id}, ',%')</if>
+				</if>)
+			</if>
+			<if test="isTop != null">
+				AND a.is_top = #{isTop,javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="isStatic != null">
+				AND a.is_static = #{isStatic,javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="isPub != null">
+				AND a.is_pub = #{isPub,javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="beginDate != null and endDate != null and beginDate != '' and endDate != ''">
+				AND a.update_time BETWEEN #{beginDate} AND #{endDate}					
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+		<if test="count != null ">
+				LIMIT #{count}
+		</if>
+	</select>
+	
+	<select id="findListByRand" resultMap="cmsArticleResultMap">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		FROM CMS_ARTICLE a
+		    <include refid="cmsArticleJoins"/>
+		<where>
+		    a.del_flag = #{DEL_FLAG_NORMAL}
+		    <if test="channel != null and channel.id != null and channel.id != ''">
+				AND a.channel_id = #{channel.id}
+			</if>
+		    <if test="isPub != null">
+				AND a.is_pub = #{isPub,javaType=Boolean, jdbcType=CHAR}
+			</if>
+		</where>
+        ORDER BY  RAND() LIMIT #{count}
+	</select>
+	
+	<select id="findListByLimit" resultMap="cmsArticleResultMap">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		FROM CMS_ARTICLE a
+		    <include refid="cmsArticleJoins"/>
+        LIMIT #{first},#{count}
+	</select>
+	
+	<select id="findMemberFavoriteGoodsList" resultMap="cmsArticleResultMap">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		FROM CMS_ARTICLE a
+		    <include refid="cmsArticleJoins"/>
+		INNER JOIN MEM_MEMBER_FAVORITE e ON e.article_id =a.id 
+        WHERE  e.member_no = #{memberNo}
+	</select>
+	
+	<insert id="insert" parameterType="CmsArticle">
+		INSERT INTO CMS_ARTICLE(
+			id,
+			title,
+			channel_id,
+			category_id,
+			images,
+			keywords,
+			description,
+			default_cover,
+			author,
+			copyfrom,
+			weight,
+			weight_date,
+			display_hits,
+			real_hits,
+			likes,
+			dislikes,
+			is_top,
+			is_static,
+			is_pub,
+			pub_time,
+			allow_comment,
+			module_type,
+			data_original,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			rmk,
+			del_flag
+		) VALUES (
+			#{id},
+			#{title},
+			#{channel.id},
+			#{category.id},
+			#{images},
+			#{keywords},
+			#{description},
+			#{defaultCover},
+			#{author},
+			#{copyfrom},
+			#{weight},
+			#{weightDate},
+			#{displayHits},
+			#{realHits},
+			#{likes},
+			#{dislikes},
+			#{isTop,javaType=Boolean, jdbcType=CHAR},
+			#{isStatic,javaType=Boolean, jdbcType=CHAR},
+			#{isPub,javaType=Boolean, jdbcType=CHAR},
+			#{pubTime},
+			#{allowComment,javaType=Boolean, jdbcType=CHAR},
+			#{moduleType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{dataOriginal},
+			#{createBy.id},
+			#{createTime},
+			#{updateBy.id},
+			#{updateTime},
+			#{rmk},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="CmsArticle">
+		UPDATE CMS_ARTICLE SET 	
+			title = #{title},
+			channel_id = #{channel.id},
+			category_id = #{category.id},
+			images = #{images},
+			keywords = #{keywords},
+			description = #{description},
+			default_cover = #{defaultCover},
+			author = #{author},
+			copyfrom = #{copyfrom},
+			weight = #{weight},
+			weight_date = #{weightDate},
+			display_hits = #{displayHits},
+			real_hits = #{realHits},
+			likes = #{likes},
+			dislikes = #{dislikes},
+			is_top = #{isTop,javaType=Boolean, jdbcType=CHAR},
+			is_static = #{isStatic,javaType=Boolean, jdbcType=CHAR},
+			is_pub = #{isPub,javaType=Boolean, jdbcType=CHAR},
+			pub_time = #{pubTime},
+			allow_comment = #{allowComment,javaType=Boolean, jdbcType=CHAR},
+			module_type = #{moduleType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			update_by = #{updateBy.id},
+			update_time = #{updateTime},
+			rmk = #{rmk}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE CMS_ARTICLE SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id="setStatic">
+		UPDATE CMS_ARTICLE SET
+			is_static = '1'
+		WHERE id = #{id}
+	</update>
+	<update id="pubArticle">
+		UPDATE CMS_ARTICLE SET
+			is_pub = '1',
+			pub_time = NOW()
+		WHERE id = #{id}
+	</update>
+	
+	<update id="unpubArticle">
+		UPDATE CMS_ARTICLE SET
+			is_pub = '0',
+			pub_time = null
+		WHERE id = #{id}
+	</update>
+	
+	<update id="topArticle">
+		UPDATE CMS_ARTICLE SET
+			is_top = #{isTop,javaType=Boolean, jdbcType=CHAR}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="addLikes">
+		UPDATE CMS_ARTICLE SET 
+			likes = likes+1
+		WHERE id = #{aid}
+	</update>
+	<update id="disLike">
+		UPDATE CMS_ARTICLE SET 
+			dislikes = dislikes+1
+		WHERE id = #{aid}
+	</update>
+</mapper>

@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberMessageDao">
+    
+	<sql id="MemberMessageColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.groups AS "groups",
+		a.title AS "title",
+		a.title_value AS "titleValue",
+		a.content AS "content",
+		a.is_read AS "isRead",
+		a.type AS "type",
+		a.org_id AS "orgId",
+		a.org_type AS "orgType",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="MemberMessage" id="MemberMessageResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="groups" property="groups" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+		<result column="isRead"  property="isRead" javaType="Boolean" jdbcType="CHAR" />
+	</resultMap>
+	<sql id="MemberMessageJoins">
+	</sql>
+    
+	<select id="get" resultMap="MemberMessageResultMap">
+		SELECT 
+			<include refid="MemberMessageColumns"/>
+		FROM MEM_MEMBER_MESSAGE a
+		<include refid="MemberMessageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getCountsUnRead" resultType="int">
+		SELECT 
+			count(*)
+		FROM MEM_MEMBER_MESSAGE a
+		<include refid="MemberMessageJoins"/>
+		WHERE member_id = #{member.id}
+		and is_read = "0"
+		and del_flag = "0"
+		and groups in ('0','4','5')
+	</select>
+	
+	<select id="findList" resultMap="MemberMessageResultMap">
+		SELECT 
+			<include refid="MemberMessageColumns"/>
+		FROM MEM_MEMBER_MESSAGE a
+		<include refid="MemberMessageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="groups != null">
+				AND a.groups = #{groups,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="isRead != null">
+				AND a.is_read = #{isRead, javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findGxtLists" resultMap="MemberMessageResultMap">
+		SELECT 
+			<include refid="MemberMessageColumns"/>
+		FROM MEM_MEMBER_MESSAGE a
+		<include refid="MemberMessageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} AND a.groups in ('1','2','3')
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="isRead != null">
+				AND a.is_read = #{isRead, javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAppLists" resultMap="MemberMessageResultMap">
+		SELECT 
+			<include refid="MemberMessageColumns"/>
+		FROM MEM_MEMBER_MESSAGE a
+		<include refid="MemberMessageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} AND a.groups in ('0','4','5')
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="isRead != null">
+				AND a.is_read = #{isRead, javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="MemberMessage">
+		INSERT INTO MEM_MEMBER_MESSAGE(
+			id,
+			member_id,
+			groups,
+			title,
+			title_value,
+			content,
+			is_read,
+			type,
+			org_id,
+			org_type,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{groups,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{title},
+			#{titleValue},
+			#{content},
+			#{isRead, javaType=Boolean, jdbcType=CHAR},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{orgId},
+			#{orgType},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MemberMessage">
+		UPDATE MEM_MEMBER_MESSAGE SET 	
+			member_id = #{member.id},
+			groups = #{groups,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			title = #{title},
+			title_value = #{titleValue},
+			content = #{content},
+			is_read = #{isRead, javaType=Boolean, jdbcType=CHAR},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			org_id = #{orgId},
+			org_type = #{orgType},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="setRead" >
+		UPDATE MEM_MEMBER_MESSAGE SET 
+			is_read = "1"
+		WHERE	del_flag = "0"	 
+		and member_id = #{member.id}
+	</update>
+	
+	<update id="setReadByGroup" >
+		UPDATE MEM_MEMBER_MESSAGE SET 
+			is_read = "1"
+		WHERE	del_flag = "0"	 
+		and member_id = #{member.id}
+		and groups = #{type}
+	</update>
+	
+	<update id="updateReadById" >
+		UPDATE MEM_MEMBER_MESSAGE SET 
+			is_read = "1"
+		WHERE	del_flag = "0"	 
+		and id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MEM_MEMBER_MESSAGE SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<update id="deleteMessages">
+		UPDATE MEM_MEMBER_MESSAGE SET 
+			del_flag = "1"
+		WHERE id in 
+		<foreach collection="list" item="id" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</update>
+	
+	<update id="UpdateNoOrgId">
+		UPDATE MEM_MEMBER_MESSAGE a
+		SET 
+			a.del_flag = 1
+		WHERE
+			a.org_id IS NULL
+			AND a.create_time <![CDATA[>=]]> '2019-02-15 11:34:00'
+			AND a.create_time <![CDATA[<=]]>'2019-02-15 13:26:59'
+	</update>
+	
+	
+</mapper>

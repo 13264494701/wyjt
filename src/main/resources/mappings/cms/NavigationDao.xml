@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.cms.dao.NavigationDao">
+    
+	<sql id="navigationColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.position AS "position",
+		a.display_order AS "displayOrder",
+		a.url AS "url",
+		a.is_blank_target AS "isBlankTarget",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime"
+	</sql>
+	
+	<sql id="navigationJoins">
+	</sql>
+    
+	<select id="get" resultType="Navigation">
+		SELECT 
+			<include refid="navigationColumns"/>
+		FROM CMS_NAVIGATION a
+		<include refid="navigationJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Navigation">
+		SELECT 
+			<include refid="navigationColumns"/>
+		FROM CMS_NAVIGATION a
+		<include refid="navigationJoins"/>
+		<where>
+			
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Navigation">
+		SELECT 
+			<include refid="navigationColumns"/>
+		FROM CMS_NAVIGATION a
+		<include refid="navigationJoins"/>
+		<where>
+			
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO CMS_NAVIGATION(
+			id,
+			name,
+			position,
+			display_order,
+			url,
+			is_blank_target,
+			create_time,
+			update_time
+		) VALUES (
+			#{id},
+			#{name},
+			#{position},
+			#{displayOrder},
+			#{url},
+			#{isBlankTarget},
+			#{createTime},
+			#{updateTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE CMS_NAVIGATION SET 	
+			name = #{name},
+			position = #{position},
+			display_order = #{displayOrder},
+			url = #{url},
+			is_blank_target = #{isBlankTarget},
+			create_time = #{createTime},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM CMS_NAVIGATION
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findListByPosition" resultType="Navigation">
+		SELECT 
+			<include refid="navigationColumns"/>
+		FROM CMS_NAVIGATION a
+		WHERE a.position = #{position}
+		ORDER BY a.display_order
+	</select>
+</mapper>

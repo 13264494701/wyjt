@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.ufang.dao.UfangFundAddReduceDao">
+    
+	<sql id="ufangFundAddReduceColumns">
+		a.id AS "id",
+		a.brn_id AS "ufangBrn.id",
+		b.brn_name AS "ufangBrn.brnName",
+		b.brn_no AS "ufangBrn.brnNo",
+		a.type AS "type",
+		a.amount AS "amount",
+		a.cur_bal AS "curBal",
+		a.curr_code AS "currCode",
+		a.status AS "status",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="UfangFundAddReduce" id="ufangFundAddReduceResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	<sql id="ufangFundAddReduceJoins">
+		LEFT JOIN UFANG_BRN b ON b.id = a.brn_id
+	</sql>
+    
+	<select id="get" resultMap="ufangFundAddReduceResultMap">
+		SELECT 
+			<include refid="ufangFundAddReduceColumns"/>
+		FROM UFANG_FUND_ADD_REDUCE a
+		<include refid="ufangFundAddReduceJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="ufangFundAddReduceResultMap">
+		SELECT 
+			<include refid="ufangFundAddReduceColumns"/>
+		FROM UFANG_FUND_ADD_REDUCE a
+		<include refid="ufangFundAddReduceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="ufangBrn != null and ufangBrn.id !=null and ufangBrn.id != ''">
+				AND a.brn_id = #{ufangBrn.id}
+			</if>
+			<if test="ufangBrn != null and ufangBrn.brnName !=null and ufangBrn.brnName != ''">
+				AND b.brn_name = #{ufangBrn.brnName}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="amount != null">
+				AND a.amount = #{amount}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginTime != null">
+				 <![CDATA[AND a.create_time >= #{beginTime}]]> 
+			</if>
+			<if test="endTime != null">
+				 <![CDATA[AND a.create_time <= #{endTime}]]> 
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="UfangFundAddReduce">
+		INSERT INTO UFANG_FUND_ADD_REDUCE(
+			id,
+			brn_id,
+			type,
+			amount,
+			cur_bal,
+			curr_code,
+			status,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{ufangBrn.id},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{amount},
+			#{curBal},
+			#{currCode},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="UfangFundAddReduce">
+		UPDATE UFANG_FUND_ADD_REDUCE SET 	
+			brn_id = #{ufangBrn.id},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			amount = #{amount},
+			cur_bal = #{curBal},
+			curr_code = #{currCode},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			rmk = #{rmk},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE UFANG_FUND_ADD_REDUCE SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="getCheckedList" resultMap="ufangFundAddReduceResultMap">
+		SELECT 
+			<include refid="ufangFundAddReduceColumns"/>
+		FROM UFANG_FUND_ADD_REDUCE a
+		<include refid="ufangFundAddReduceJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="ufangBrn != null and ufangBrn.id !=null and ufangBrn.id != ''">
+				AND a.brn_id = #{ufangBrn.id}
+			</if>
+			<if test="ufangBrn != null and ufangBrn.id !=null and ufangBrn.id != ''">
+				AND b.brn_name = #{ufangBrn.brnName}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="amount != null">
+				AND a.amount = #{amount}
+			</if>
+			AND a.status in (2,3) 
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+</mapper>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.svc.sys.app.dao.AppTouchDao">
+    
+	<sql id="appTouchColumns">
+		a.id AS "id",
+		a.idfa AS "idfa",
+		a.callback_url AS "callbackUrl",
+		a.req_ip AS "reqIp",
+		a.is_inst AS "isInst",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="AppTouch" id="appTouchResultMap">		
+        <id column="id" property="id"/>
+        <result column="isInst"  property="isInst" javaType="Boolean" jdbcType="CHAR" />
+	</resultMap>
+	<sql id="appTouchJoins">
+	</sql>
+    
+	<select id="get" resultMap="appTouchResultMap">
+		SELECT 
+			<include refid="appTouchColumns"/>
+		FROM APP_TOUCH a
+		<include refid="appTouchJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByIdfa" resultMap="appTouchResultMap">
+		SELECT 
+			<include refid="appTouchColumns"/>
+		FROM APP_TOUCH a
+		<include refid="appTouchJoins"/>
+		WHERE a.idfa = #{idfa}
+		LIMIT 1
+	</select>
+	
+	
+	<select id="findList" resultMap="appTouchResultMap">
+		SELECT 
+			<include refid="appTouchColumns"/>
+		FROM APP_TOUCH a
+		<include refid="appTouchJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="idfa != null and idfa != ''">
+				AND a.idfa = #{idfa}
+			</if>
+			<if test="isInst != null">
+				AND a.is_inst = #{isInst, javaType=Boolean, jdbcType=CHAR}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="AppTouch">
+		INSERT INTO APP_TOUCH(
+			id,
+			idfa,
+			callback_url,
+			req_ip,
+			is_inst,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		)  SELECT 			
+		    #{id},
+			#{idfa},
+			#{callbackUrl},
+			#{reqIp},
+			#{isInst, javaType=Boolean, jdbcType=CHAR},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag} FROM dual  
+			WHERE not exists (select * from APP_TOUCH where idfa = #{idfa});
+	</insert>
+	
+	<update id="update" parameterType="AppTouch">
+		UPDATE APP_TOUCH SET 	
+			idfa = #{idfa},
+			callback_url = #{callbackUrl},
+			req_ip = #{reqIp},
+			is_inst = #{isInst, javaType=Boolean, jdbcType=CHAR},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE APP_TOUCH SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.svc.sys.area.dao.AreaDao">
+    
+	<sql id="areaColumns">
+		a.id,
+		a.parent_id AS "parent.id",
+		a.parent_ids,
+		a.code,
+		a.name,
+		a.sort,
+		a.type, 
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		p.brn_name AS "parent.name"
+	</sql>
+	
+	<sql id="areaJoins">
+		LEFT JOIN SYS_BRN p ON p.id = a.parent_id
+    </sql>
+    
+	<select id="get" resultType="Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM SYS_AREA a
+		<include refid="areaJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM SYS_AREA a
+		<include refid="areaJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		OR a.id = #{currentUser.brn.area.id}
+		ORDER BY a.sort
+	</select>
+	
+	<select id="findAllList" resultType="Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM SYS_AREA a
+		<include refid="areaJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY a.sort
+	</select>
+    <select id="getRoot" resultType="Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM SYS_AREA a
+		<include refid="areaJoins"/>
+		WHERE a.parent_id = '0'
+		AND a.del_flag = '0'
+		ORDER BY a.sort
+	</select>
+	<select id="getChildren" resultType="Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM SYS_AREA a
+		<include refid="areaJoins"/>
+		WHERE a.parent_id = #{parentId}
+		AND a.del_flag = '0'
+		ORDER BY a.sort
+	</select>
+	
+	<select id="getParents" resultType="Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM SYS_AREA a
+		<include refid="areaJoins"/>
+		WHERE a.id IN
+		 <foreach item="item" index="index" collection="array" open="(" separator="," close=")">  
+            #{item}  
+         </foreach> 
+		AND a.del_flag = '0'
+		ORDER BY a.type ASC
+	</select>
+	
+	<select id="findByParentIdsLike" resultType="Area">
+		SELECT
+			a.id,
+			a.parent_id AS "parent.id",
+			a.parent_ids
+		FROM SYS_AREA a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} AND a.parent_ids LIKE #{parentIds}
+		ORDER BY a.sort
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO SYS_AREA(
+			id, 
+			parent_id, 
+			parent_ids, 
+			code, 
+			name, 
+			sort,
+			type, 
+			rmk,
+			create_by, 
+			create_time, 
+			update_by, 
+			update_time, 
+			del_flag
+		) VALUES (
+			#{id}, 
+			#{parent.id}, 
+			#{parentIds}, 
+			#{code}, 
+			#{name}, 
+			#{sort}, 
+			#{type}, 
+			#{rmk},
+			#{createBy.empNo}, 
+			#{createTime}, 
+			#{updateBy.empNo}, 
+			#{updateTime}, 
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE SYS_AREA SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}, 
+			code = #{code}, 
+			name = #{name}, 
+			sort = #{sort}, 
+			type = #{type}, 
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime}			
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE SYS_AREA SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE SYS_AREA SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id} OR parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{id}||',%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{id}, ',%')</if>
+	</update>
+	
+	<select id="getAreaByCode" parameterType="java.lang.String" resultType="Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM SYS_AREA a
+		<include refid="areaJoins"/>
+		WHERE a.code = #{code}
+		AND a.del_flag = '0'
+		ORDER BY a.id ASC
+	</select>
+	
+	<select id="getAreaByType" parameterType="java.lang.String" resultType="Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM SYS_AREA a
+		<include refid="areaJoins"/>
+		WHERE a.type = #{type}
+		AND a.del_flag = '0'
+		ORDER BY a.id ASC
+	</select>
+	
+	<select id="findAreaList" resultType="Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM SYS_AREA a
+		<include refid="areaJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="code != null and code != ''">
+			AND a.code = #{code}
+		</if>
+		<if test="type != null and type != ''">
+			AND a.type = #{type}
+		</if>
+		<if test="name != null and name != ''">
+			AND a.name LIKE concat(#{name},'%')
+		</if>
+		<if test="parentId != null and parentId != ''">
+			AND a.parent_id = #{parentId}
+		</if>
+		<if test="parentIds != null and parentIds != ''">
+			AND FIND_IN_SET(#{parentIds},a.parent_ids)
+		</if>
+		ORDER BY a.sort
+	</select>
+	
+	
+	
+</mapper>

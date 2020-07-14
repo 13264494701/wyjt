@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.ufang.dao.UfangFundDistCollDao">
+    
+	<sql id="ufangFundDistCollColumns">
+		a.id AS "id",
+		a.brn_act_id AS "brnAct.id",
+		a.user_id AS "user.id",
+		a.type AS "type",
+		a.amount AS "amount",
+		a.curr_code AS "currCode",
+		a.status AS "status",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		c.emp_no AS "user.empNo",
+		c.emp_nam AS "user.empNam"
+	</sql>
+	
+	<resultMap type="UfangFundDistColl" id="ufangFundDistCollResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="ufangFundDistCollJoins">
+	   LEFT JOIN UFANG_USER c ON c.id = a.user_id
+	</sql>
+    
+	<select id="get" resultMap="ufangFundDistCollResultMap">
+		SELECT 
+			<include refid="ufangFundDistCollColumns"/>
+		FROM UFANG_FUND_DIST_COLL a
+		<include refid="ufangFundDistCollJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="ufangFundDistCollResultMap">
+		SELECT 
+			<include refid="ufangFundDistCollColumns"/>
+		FROM UFANG_FUND_DIST_COLL a
+		<include refid="ufangFundDistCollJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="brnAct != null and brnAct.id != null and brnAct.id != ''">
+				AND a.brn_act_id = #{brnAct.id}
+			</if>
+			<if test="user != null and user.id != null and user.id != ''">
+				AND a.user_id = #{user.id}
+			</if>
+			<if test="user != null and user.empNam != null and user.empNam != ''">
+				AND c.emp_nam LIKE 
+					<if test="dbName == 'oracle'">'%'||#{user.empNam}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{user.empNam}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{user.empNam},'%')</if>
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="UfangFundDistColl">
+		INSERT INTO UFANG_FUND_DIST_COLL(
+			id,
+			brn_act_id,
+			user_id,
+			type,
+			amount,
+			curr_code,
+			status,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{brnAct.id},
+			#{user.id},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{amount},
+			#{currCode},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="UfangFundDistColl">
+		UPDATE UFANG_FUND_DIST_COLL SET 	
+			brn_act_id = #{brnAct.id},
+			user_id = #{user.id},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			amount = #{amount},
+			curr_code = #{currCode},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE UFANG_FUND_DIST_COLL SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

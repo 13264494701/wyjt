@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.api.dao.ApiLoaneeDataDao">
+    
+	<sql id="apiLoaneeDataColumns">
+		a.id AS "id",
+		a.merchant_number AS "merchantNumber",
+		a.order_id AS "orderId",
+		a.count AS "count",
+		a.sign AS "sign",
+		a.ip AS "ip",
+		a.start_time AS "startTime",
+		a.end_time AS "endTime",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="ApiLoaneeData" id="apiLoaneeDataResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	<sql id="apiLoaneeDataJoins">
+	</sql>
+    
+	<select id="get" resultMap="apiLoaneeDataResultMap">
+		SELECT 
+			<include refid="apiLoaneeDataColumns"/>
+		FROM API_LOANEE_DATA a
+		<include refid="apiLoaneeDataJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getNearest" resultMap="apiLoaneeDataResultMap">
+		SELECT 
+			<include refid="apiLoaneeDataColumns"/>
+		FROM API_LOANEE_DATA a
+		<include refid="apiLoaneeDataJoins"/>
+		WHERE a.merchant_number = #{merchantNumber} 
+		order by a.create_time desc 
+		limit 1
+	</select>
+	
+	<select id="findList" resultMap="apiLoaneeDataResultMap">
+		SELECT 
+			<include refid="apiLoaneeDataColumns"/>
+		FROM API_LOANEE_DATA a
+		<include refid="apiLoaneeDataJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="merchantNumber != null and merchantNumber != ''">
+				AND a.merchant_number = #{merchantNumber}
+			</if>
+			<if test="orderId != null and orderId != ''">
+				AND a.order_id = #{orderId}
+			</if>
+			<if test="ip != null and ip != ''">
+				AND a.ip = #{ip}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="ApiLoaneeData">
+		INSERT INTO API_LOANEE_DATA(
+			id,
+			merchant_number,
+			order_id,
+			count,
+			sign,
+			ip,
+			start_time,
+			end_time,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{merchantNumber},
+			#{orderId},
+			#{count},
+			#{sign},
+			#{ip},
+			#{startTime},
+			#{endTime},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="ApiLoaneeData">
+		UPDATE API_LOANEE_DATA SET 	
+			merchant_number = #{merchantNumber},
+			order_id = #{orderId},
+			count = #{count},
+			sign = #{sign},
+			ip = #{ip},
+			start_time = #{startTime},
+			end_time = #{endTime},
+			rmk = #{rmk},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE API_LOANEE_DATA SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

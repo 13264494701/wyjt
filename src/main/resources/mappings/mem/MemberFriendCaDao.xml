@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberFriendCaDao">
+    
+	<sql id="memberFriendCaColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.friend_id AS "friend.id",
+		a.drc AS "drc",
+		a.type AS "type",
+		a.status AS "status",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="MemberFriendCa" id="memberFriendCaResultMap">		
+        <id column="id" property="id"/>
+        <result column="drc" property="drc" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="memberFriendCaJoins">
+	</sql>
+    
+	<select id="get" resultMap="memberFriendCaResultMap">
+		SELECT 
+			<include refid="memberFriendCaColumns"/>
+		FROM MEM_MEMBER_FRIEND_CA a
+		<include refid="memberFriendCaJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="memberFriendCaResultMap">
+		SELECT 
+			<include refid="memberFriendCaColumns"/>
+		FROM MEM_MEMBER_FRIEND_CA a
+		<include refid="memberFriendCaJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member!= null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="friend != null and friend.id != null and friend.id != ''">
+				AND a.friend_id = #{friend.id}
+			</if>
+			<if test="drc != null">
+				AND a.drc = #{drc,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="MemberFriendCa">
+		INSERT INTO MEM_MEMBER_FRIEND_CA(
+			id,
+			member_id,
+			friend_id,
+			drc,
+			type,
+			status,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{friend.id},
+			#{drc,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MemberFriendCa">
+		UPDATE MEM_MEMBER_FRIEND_CA SET 	
+			member_id = #{member.id},
+			friend_id = #{friend.id},
+			drc = #{drc,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			rmk = #{rmk},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MEM_MEMBER_FRIEND_CA SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findCredictBaoGaoRecode" resultMap="memberFriendCaResultMap">
+		SELECT 
+			<include refid="memberFriendCaColumns"/>
+		FROM MEM_MEMBER_FRIEND_CA a
+		<include refid="memberFriendCaJoins"/>
+		<where>
+			<if test="member!= null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="friend != null and memberFriendCa.friend.id != null and memberFriendCa.friend.id != ''">
+				AND a.friend_id = #{friend.id}
+			</if>
+				AND a.drc =0 
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+				AND a.status =1
+			
+		</where>
+	 	<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>

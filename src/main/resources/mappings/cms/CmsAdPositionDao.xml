@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.cms.dao.CmsAdPositionDao">
+    
+	<sql id="adPositionColumns">
+		a.id AS "id",
+		a.position_no AS "positionNo",
+		a.position_name AS "positionName",
+		a.height AS "height",
+		a.width AS "width",
+		a.template AS "template",
+		a.description AS "description",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="CmsAdPosition" id="AdPositionResultMap">
+		<id column="id" property="id"/>
+		<collection property="ads" column="position_no" select="com.jxf.cms.dao.AdDao.findAdsByPositionNo"/>	
+	</resultMap>
+	
+	<sql id="adPositionJoins">
+	</sql>
+    
+	<select id="get" resultMap="AdPositionResultMap">
+		SELECT 
+			<include refid="adPositionColumns"/>
+		FROM CMS_AD_POSITION a
+		<include refid="adPositionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByPositionNo" resultMap="AdPositionResultMap">
+		SELECT 
+			*
+		FROM CMS_AD_POSITION a
+		<include refid="adPositionJoins"/>
+		WHERE a.position_no = #{positionNo}
+	</select>
+	
+	<select id="findList" resultMap="AdPositionResultMap">
+		SELECT 
+			<include refid="adPositionColumns"/>
+		FROM CMS_AD_POSITION a
+		<include refid="adPositionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="positionName != null and positionName != ''">
+				AND a.position_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{positionName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{positionName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{positionName},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="CmsAdPosition">
+		INSERT INTO CMS_AD_POSITION(
+			id,
+			position_no,
+			position_name,
+			height,
+			width,
+			template,
+			description,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{positionNo},
+			#{positionName},
+			#{height},
+			#{width},
+			#{template},
+			#{description},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="CmsAdPosition">
+		UPDATE CMS_AD_POSITION SET 
+		    position_no = #{positionNo},	
+			position_name = #{positionName},
+			height = #{height},
+			width = #{width},
+			<![CDATA[template = #{template}]]>,
+			description = #{description},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE CMS_AD_POSITION SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<!-- 查询最大的编号 -->
+	<select id="getMaxPositionNo" resultType="String" >
+		SELECT
+			max(a.position_no) as positionNo
+		FROM CMS_AD_POSITION a WHERE 1 = 1
+	</select>
+	<!-- 根据编号查询名称 -->
+	<select id="getNameByNo" resultType="String" >
+		SELECT
+			a.position_name as positionName
+		FROM CMS_AD_POSITION a 
+		WHERE position_no = #{positionNo}
+	</select>
+</mapper>

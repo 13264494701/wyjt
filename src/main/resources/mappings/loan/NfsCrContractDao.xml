@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.loan.dao.NfsCrContractDao">
+    
+	<sql id="nfsCrContractColumns">
+		a.id AS "id",
+		a.cr_id AS "crId",
+		a.contract_url AS "contractUrl",
+		a.signature_type AS "signatureType",
+		a.signature_no AS "signatureNo",
+		a.signature_url AS "signatureUrl",
+		a.status AS "status",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="NfsCrContract" id="nfsCrContractResultMap">		
+        <id column="id" property="id"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="signatureType" property="signatureType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	<sql id="nfsCrContractJoins">
+	</sql>
+    
+	<select id="get" resultMap="nfsCrContractResultMap">
+		SELECT 
+			<include refid="nfsCrContractColumns"/>
+		FROM NFS_CR_CONTRACT a
+		<include refid="nfsCrContractJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getCrContractByCrId" parameterType="java.lang.Long" resultMap="nfsCrContractResultMap">
+		SELECT 
+			<include refid="nfsCrContractColumns"/>
+		FROM NFS_CR_CONTRACT a
+		<include refid="nfsCrContractJoins"/>
+		WHERE a.del_flag = '0'
+			AND a.cr_id = #{crId}
+	</select>
+	
+	<select id="findList" resultMap="nfsCrContractResultMap">
+		SELECT 
+			<include refid="nfsCrContractColumns"/>
+		FROM NFS_CR_CONTRACT a
+		<include refid="nfsCrContractJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="crId != null and crId != ''">
+				AND a.cr_id = #{crId}
+			</if>
+			<if test="signatureType != null">
+				AND a.signature_type = #{signatureType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<if test="count != null ">
+		    LIMIT #{count}
+		</if>
+	</select>
+	
+	
+	<insert id="insert" parameterType="NfsCrContract">
+		INSERT INTO NFS_CR_CONTRACT(
+			id,
+			cr_id,
+			contract_url,
+			signature_type,
+			signature_no,
+			signature_url,
+			status,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{crId},
+			#{contractUrl},
+			#{signatureType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{signatureNo},
+			#{signatureUrl},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsCrContract">
+		UPDATE NFS_CR_CONTRACT SET 	
+			cr_id = #{crId},
+			contract_url = #{contractUrl},
+			signature_type = #{signatureType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			signature_no = #{signatureNo},
+			signature_url = #{signatureUrl},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_CR_CONTRACT SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

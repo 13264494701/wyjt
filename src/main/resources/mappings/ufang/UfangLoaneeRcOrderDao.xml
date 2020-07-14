@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.ufang.dao.UfangLoaneeRcOrderDao">
+    
+	<sql id="rcDataOrderColumns">
+		a.id AS "id",
+		a.ufang_emp_no AS "user.empNo",
+		a.type AS "type",
+		a.q_name AS "qName",
+		a.q_phone_no AS "qPhoneNo",
+		a.q_id_no AS "qIdNo",
+		a.data AS "data",
+		a.price AS "price",
+		a.pay_status AS "payStatus",
+		a.status AS "status",
+		a.pay_id AS "payId",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		c.emp_nam AS "user.empNam"
+	</sql>
+	
+	<resultMap type="UfangLoaneeRcOrder" id="rcDataOrderResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="payStatus" property="payStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+		<result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="rcDataOrderJoins">
+	LEFT JOIN UFANG_USER c ON c.emp_no = a.ufang_emp_no
+	LEFT JOIN UFANG_BRN e ON e.id = c.brn_id
+	</sql>
+    
+	<select id="get" resultMap="rcDataOrderResultMap">
+		SELECT 
+			<include refid="rcDataOrderColumns"/>
+		FROM UFANG_LOANEE_RC_ORDER a
+		<include refid="rcDataOrderJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="rcDataOrderResultMap">
+		SELECT 
+			<include refid="rcDataOrderColumns"/>
+		FROM UFANG_LOANEE_RC_ORDER a
+		<include refid="rcDataOrderJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="user != null and user.empNo != null and user.empNo != ''">
+				AND a.ufang_emp_no = #{user.empNo}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="qName != null and qName != ''">
+				AND a.q_name = #{qName}
+			</if>
+			<if test="qPhoneNo != null and qPhoneNo != ''">
+				AND a.q_phone_no = #{qPhoneNo}
+			</if>
+			<if test="qIdNo != null and qIdNo != ''">
+				AND a.q_id_no = #{qIdNo}
+			</if>
+			<if test="payStatus != null">
+				AND a.pay_status = #{payStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="payId != null and payId != ''">
+				AND a.pay_id = #{payId}
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="UfangLoaneeRcOrder">
+		INSERT INTO UFANG_LOANEE_RC_ORDER(
+			id,
+			ufang_emp_no,
+			type,
+			q_name,
+			q_phone_no,
+			q_id_no,
+			data,
+			price,
+			pay_status,
+			status,
+			pay_id,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{user.empNo},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{qName},
+			#{qPhoneNo},
+			#{qIdNo},
+			#{data},
+			#{price},
+			#{payStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{payId},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="UfangLoaneeRcOrder">
+		UPDATE UFANG_LOANEE_RC_ORDER SET 	
+			ufang_emp_no = #{user.empNo},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			q_name = #{qName},
+			q_phone_no = #{qPhoneNo},
+			q_id_no = #{qIdNo},
+			data = #{data},
+			price = #{price},
+			pay_status = #{payStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			pay_id = #{payId},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE UFANG_LOANEE_RC_ORDER SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

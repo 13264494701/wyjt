@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberFriendRelationDao">
+    
+	<sql id="memberFriendRelationColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.friend_id AS "friend.id",
+		a.unread AS "unread",
+		a.free_ca_auth_status AS "freeCaAuthStatus",
+		a.free_ca_auth_time AS "freeCaAuthTime",
+		a.charge_ca_status AS "chargeCaStatus",
+		a.charge_ca_time AS "chargeCaTime",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		c.name AS "friend.name",
+		c.username AS "friend.username",
+		c.head_image AS "friend.headImage",
+		c.nickname AS "friend.nickname"
+	</sql>
+	
+	<sql id="memberFriendRelationColumnsSelf">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.friend_id AS "friend.id",
+		a.unread AS "unread",
+		a.free_ca_auth_status AS "freeCaAuthStatus",
+		a.free_ca_auth_time AS "freeCaAuthTime",
+		a.charge_ca_status AS "chargeCaStatus",
+		a.charge_ca_time AS "chargeCaTime",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="MemberFriendRelation" id="memberFriendRelationResultMap">		
+        <id column="id" property="id"/>
+        <result column="freeCaAuthStatus" property="freeCaAuthStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="chargeCaStatus" property="chargeCaStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="memberFriendRelationJoins">
+	    LEFT JOIN MEM_MEMBER c on a.friend_id = c.id
+	</sql>
+    
+	<select id="get" resultMap="memberFriendRelationResultMap">
+		SELECT 
+			<include refid="memberFriendRelationColumns"/>
+		FROM MEM_MEMBER_FRIEND_RELATION a
+		<include refid="memberFriendRelationJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByMemberIdAndFriendId" resultMap="memberFriendRelationResultMap">
+		SELECT 
+			<include refid="memberFriendRelationColumns"/>
+		FROM MEM_MEMBER_FRIEND_RELATION a
+		<include refid="memberFriendRelationJoins"/>
+		WHERE  a.member_id = #{memberId} 
+		AND a.friend_id = #{friendId} 
+		AND a.del_flag = '0' 
+		LIMIT 1
+	</select>
+	
+	<select id="checkFriendRelation" resultType="java.lang.Boolean">
+		SELECT
+			1
+		FROM
+			MEM_MEMBER_FRIEND_RELATION a
+		WHERE a.member_id = #{memberId} 
+		AND a.friend_id = #{friendId} 
+		AND EXISTS (
+			SELECT
+				1
+			FROM
+				MEM_MEMBER_FRIEND_RELATION b
+			WHERE
+				b.del_flag = '0'
+			AND b.member_id = #{friendId} 
+			AND b.friend_id = #{memberId} 
+			LIMIT 1
+		)
+		AND a.del_flag = '0'
+		LIMIT 1
+	</select>
+	
+	<select id="getFriendCount" resultType="int">
+		SELECT count(*)
+		FROM MEM_MEMBER_FRIEND_RELATION a
+		WHERE a.member_id = #{memberId}
+		AND  a.del_flag = '0' 		
+	</select>
+	
+	<select id="findList" resultMap="memberFriendRelationResultMap">
+		SELECT 
+			<include refid="memberFriendRelationColumns"/>
+		FROM MEM_MEMBER_FRIEND_RELATION a
+		<include refid="memberFriendRelationJoins"/>
+		<where>
+			a.del_flag = '0'
+			<if test="member !=null and  member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="friend !=null and  friend.id != null and friend.id != ''">
+				AND a.friend_id = #{friend.id}
+			</if>
+			<if test="friend !=null and  friend.name != null and friend.name != ''">
+				AND c.name LIKE concat('%',#{friend.name},'%')
+			</if>
+			<if test="friend !=null and  friend.username != null and friend.username != ''">
+				AND c.username LIKE concat('%',#{friend.username},'%')
+			</if>
+			<if test="updateTime != null">
+				<![CDATA[AND ( a.update_time >= #{updateTime} or c.update_time >= #{updateTime} )]]> 
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY c.nickname
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByVagueSearch" resultMap="memberFriendRelationResultMap">
+		SELECT 
+			<include refid="memberFriendRelationColumns"/>
+		FROM MEM_MEMBER_FRIEND_RELATION a
+		<include refid="memberFriendRelationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="friend != null and friend.username != null and friend.username != '' ">
+				AND c.username like concat('%',#{friend.username},'%') 
+			</if>
+			<if test="friend != null and friend.name != null and friend.name != ''">
+				AND c.name like concat('%',#{friend.name},'%')
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY c.nickname
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="MemberFriendRelation">
+		INSERT INTO MEM_MEMBER_FRIEND_RELATION(
+			id,
+			member_id,
+			friend_id,
+			unread,
+			free_ca_auth_status,
+			free_ca_auth_time,
+			charge_ca_status,
+			charge_ca_time,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{friend.id},
+			#{unread},
+			#{freeCaAuthStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{freeCaAuthTime},		
+			#{chargeCaStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{chargeCaTime},	
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+
+	<update id="update" parameterType="MemberFriendRelation">
+		UPDATE MEM_MEMBER_FRIEND_RELATION SET 	
+			member_id = #{member.id},
+			friend_id = #{friend.id},
+			unread = #{unread},	
+			free_ca_auth_status = #{freeCaAuthStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			free_ca_auth_time = #{freeCaAuthTime},
+			charge_ca_status = #{chargeCaStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},				
+			charge_ca_time = #{chargeCaTime},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MEM_MEMBER_FRIEND_RELATION SET 
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="deleteByFriendId">
+		UPDATE MEM_MEMBER_FRIEND_RELATION SET 
+			del_flag = "1"
+		WHERE member_id = #{memberId} 
+		and friend_id = #{friendId}
+	</update>
+	
+</mapper>

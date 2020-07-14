@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.rc.dao.RcShandieDao">
+    
+	<sql id="rcShandieColumns">
+		a.id AS "id",
+		a.ufang_user_id AS "ufangUser.id",
+		a.name AS "name",
+		a.id_no AS "idNo",
+		a.phone_no AS "phoneNo",
+		a.type AS "type",
+		a.status AS "status",
+		a.content AS "content",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="rcShandieBaseColumns">
+		a.id AS "id",
+		a.ufang_user_id AS "ufangUser.id",
+		a.name AS "name",
+		a.id_no AS "idNo",
+		a.phone_no AS "phoneNo",
+		a.type AS "type",
+		a.status AS "status",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="RcShandie" id="rcShandieResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	<sql id="rcShandieJoins">
+	</sql>
+    
+	<select id="get" resultMap="rcShandieResultMap">
+		SELECT 
+			<include refid="rcShandieColumns"/>
+		FROM RC_SHANDIE a
+		<include refid="rcShandieJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="rcShandieResultMap">
+		SELECT 
+			<include refid="rcShandieBaseColumns"/>
+		FROM RC_SHANDIE a
+		<include refid="rcShandieJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="ufangUser != null and ufangUser.id != null and ufangUser.id != ''">
+				AND a.ufang_user_id = #{ufangUser.id}
+			</if>
+			<if test="phoneNo != null and phoneNo != ''">
+				AND a.phone_no LIKE 
+					<if test="dbName == 'oracle'">#{phoneNo}||'%'</if>
+					<if test="dbName == 'mssql'">#{phoneNo}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{phoneNo},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="RcShandie">
+		INSERT INTO RC_SHANDIE(
+			id,
+			ufang_user_id,
+			name,
+			id_no,
+			phone_no,
+			type,
+			status,
+			content,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{ufangUser.id},
+			#{name},
+			#{idNo},
+			#{phoneNo},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{status},
+			#{content},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="RcShandie">
+		UPDATE RC_SHANDIE SET 	
+			ufang_user_id = #{ufangUser.id},
+			name = #{name},
+			id_no = #{idNo},
+			phone_no = #{phoneNo},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			status = #{status},
+			content = #{content},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE RC_SHANDIE SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

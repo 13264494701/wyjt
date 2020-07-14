@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.cms.dao.SeoDao">
+    
+	<sql id="seoColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.type AS "type",
+		a.title AS "title",
+		a.keywords AS "keywords",
+		a.description AS "description",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime"
+	</sql>
+	
+	<resultMap type="Seo" id="seoResultMap">
+		<result column="id" property="id"/>
+		<result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="seoJoins">
+	</sql>
+    
+	<select id="get" resultMap="seoResultMap">
+		SELECT 
+			*
+		FROM CMS_SEO a
+		<include refid="seoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 入参必须是Seo,且枚举类型参数type只能存在于动态SQL中-->
+	<select id="findBySeoType" resultMap="seoResultMap">
+		SELECT 
+			*
+		FROM CMS_SEO a
+		<where>	
+			<if test="type != null and type != ''">
+					AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+	    </where>
+	</select>
+	
+	<select id="findList" resultMap="seoResultMap">
+		SELECT 
+			*
+		FROM CMS_SEO a
+		<include refid="seoJoins"/>
+		<where>			
+			<if test="type != null and type != ''">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title = #{title}
+			</if>
+			<if test="keywords != null and keywords != ''">
+				AND a.keywords = #{keywords}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="seoResultMap">
+		SELECT 
+			*
+		FROM CMS_SEO a
+		<include refid="seoJoins"/>
+		<where>		
+			<if test="type != null and type != ''">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title = #{title}
+			</if>
+			<if test="keywords != null and keywords != ''">
+				AND a.keywords = #{keywords}
+			</if>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="Seo">
+		INSERT INTO CMS_SEO(
+			id,
+			name,
+			type,
+			title,
+			keywords,
+			description,
+			create_time,
+			update_time
+		) VALUES (
+			#{id},
+			#{name},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{title},
+			#{keywords},
+			#{description},
+			#{createTime},
+			#{updateTime}
+		)
+	</insert>
+	
+	<update id="update" parameterType="Seo">
+		UPDATE CMS_SEO SET 	
+		    name = #{name},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			title = #{title},
+			keywords = #{keywords},
+			description = #{description},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM CMS_SEO
+		WHERE id = #{id}
+	</update>
+
+	
+</mapper>

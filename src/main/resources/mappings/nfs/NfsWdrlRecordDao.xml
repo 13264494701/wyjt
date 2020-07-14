@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.nfs.dao.NfsWdrlRecordDao">
+    
+	<sql id="nfsWdrlRecordColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.member_name AS "member.name",
+		a.member_username AS "member.username",
+		a.member_name AS "memberName",
+		a.type AS "type",
+		a.third_order_no AS "thirdOrderNo",
+		a.amount AS "amount",
+		a.pay_amount AS "payAmount",
+		a.fee AS "fee",
+		a.bank_id AS "bankId",
+		a.bank_name AS "bankName",
+		a.card_no AS "cardNo",
+		a.check_time AS "checkTime",
+		a.submit_time AS "submitTime",
+		a.pay_time AS "payTime",
+		a.status AS "status",
+		a.failed_order_status AS "failedOrderStatus",
+		a.source AS "source",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		a.version AS "version"
+	</sql>
+	
+	<resultMap type="NfsWdrlRecord" id="nfsWdrlRecordResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="failedOrderStatus" property="failedOrderStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="source" property="source" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="nfsWdrlRecordJoins">
+	</sql>
+    
+	<select id="get" resultMap="nfsWdrlRecordResultMap">
+		SELECT 
+			<include refid="nfsWdrlRecordColumns"/>
+		FROM NFS_WDRL_RECORD a
+		<include refid="nfsWdrlRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getWdrlRecordByMemberId" resultMap="nfsWdrlRecordResultMap">
+		SELECT 
+			<include refid="nfsWdrlRecordColumns"/>
+		FROM NFS_WDRL_RECORD a
+		<include refid="nfsWdrlRecordJoins"/>
+		<where>
+		a.member_id = #{memberId} and a.status = 6
+			<if test="loanTime != null">
+			<![CDATA[AND a.create_time >= #{loanTime}]]>
+				ORDER BY a.id asc
+			</if>
+		</where>
+		LIMIT 1
+	</select>
+	
+	<select id="getWdrlAmount" resultType="java.math.BigDecimal">
+		SELECT 
+			ifnull(sum(a.amount),0)
+		FROM NFS_WDRL_RECORD a
+		<include refid="nfsWdrlRecordJoins"/>
+		WHERE a.member_id = #{member.id} 
+		and a.create_time &lt; #{endTime}
+		and a.create_time &gt; #{startTime}
+	</select>
+	
+	<select id="findList" resultMap="nfsWdrlRecordResultMap">
+		SELECT 
+			<include refid="nfsWdrlRecordColumns"/>
+		FROM NFS_WDRL_RECORD a
+		<include refid="nfsWdrlRecordJoins"/>
+		<where>
+			<if test="id != null">
+				AND a.id = #{id}
+			</if>
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="member != null and member.name != null and member.name != ''">
+				AND a.member_name = #{member.name}
+			</if>
+			<if test="member != null and member.username != null and member.username != ''">
+				AND a.member_username = #{member.username}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="cardNo != null and cardNo != ''">
+				AND a.card_no = #{cardNo}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="failedOrderStatus != null">
+				AND a.failed_order_status = #{failedOrderStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.pay_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+			<if test="minAmount != null and maxAmount != null">
+				AND a.amount BETWEEN #{minAmount} AND #{maxAmount}					
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="NfsWdrlRecord">
+		INSERT INTO NFS_WDRL_RECORD(
+			id,
+			member_id,
+			member_name,
+			member_username,
+			type,
+			third_order_no,
+			amount,
+			pay_amount,
+			fee,
+			bank_id,
+			bank_name,
+			card_no,
+			check_time,
+			submit_time,
+			pay_time,
+			status,
+			failed_order_status,
+			source,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag,
+			version
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{member.name},
+			#{member.username},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{thirdOrderNo},
+			#{amount},
+			#{payAmount},
+			#{fee},
+			#{bankId},
+			#{bankName},
+			#{cardNo},
+			#{checkTime},
+			#{submitTime},
+			#{payTime},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{failedOrderStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{source,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag},
+			#{version}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsWdrlRecord">
+		UPDATE NFS_WDRL_RECORD SET 	
+			member_id = #{member.id},
+			member_name = #{member.name},
+			member_username = #{member.username},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			third_order_no = #{thirdOrderNo},
+			amount = #{amount},
+			pay_amount = #{payAmount},
+			fee = #{fee},
+			bank_id = #{bankId},
+			bank_name = #{bankName},
+			card_no = #{cardNo},
+			check_time = #{checkTime},
+			submit_time = #{submitTime},
+			pay_time = #{payTime},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			failed_order_status = #{failedOrderStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			source = #{source,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			version = version+1
+		WHERE id = #{id}
+			and version = #{version}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_WDRL_RECORD SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- APP客户端显示页面：审核中 -->
+	<select id="findAuditingRecord" resultMap="nfsWdrlRecordResultMap">
+		SELECT 
+			<include refid="nfsWdrlRecordColumns"/>
+		FROM NFS_WDRL_RECORD a
+		<include refid="nfsWdrlRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="member != null and member.username != null and member.username != ''">
+				AND a.member_username = #{member.username}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="cardNo != null and cardNo != ''">
+				AND a.card_no = #{cardNo}
+			</if>
+				AND a.status in (0,1,2,3,4,5,10)
+		</where>
+		ORDER BY a.id DESC
+	</select>
+	
+	<select id="findFailedRecord" resultMap="nfsWdrlRecordResultMap">
+		SELECT 
+			<include refid="nfsWdrlRecordColumns"/>
+		FROM NFS_WDRL_RECORD a
+		<include refid="nfsWdrlRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="member != null and member.username != null and member.username != ''">
+				AND a.member_username = #{member.username}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="cardNo != null and cardNo != ''">
+				AND a.card_no = #{cardNo}
+			</if>
+				AND a.status in (7,8,9)
+		</where>
+		
+		ORDER BY a.id DESC
+		
+	</select>
+	
+	<select id="findListByStatus" resultMap="nfsWdrlRecordResultMap">
+		SELECT 
+			<include refid="nfsWdrlRecordColumns"/>
+		FROM NFS_WDRL_RECORD a
+		<include refid="nfsWdrlRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="member != null and member.username != null and member.username != ''">
+				AND a.member_username = #{member.username}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="cardNo != null and cardNo != ''">
+				AND a.card_no = #{cardNo}
+			</if>
+			<if test="createTime != null">
+				AND a.create_time <![CDATA[ >= ]]> #{createTime}
+			</if>
+		</where>
+		ORDER BY a.id ASC
+		LIMIT 0,500
+	</select>
+	
+	<select id="findFailedSendOrder" resultMap="nfsWdrlRecordResultMap">
+		SELECT 
+			<include refid="nfsWdrlRecordColumns"/>
+		FROM NFS_WDRL_RECORD a
+		<include refid="nfsWdrlRecordJoins"/>
+		<where>
+			a.del_flag = '0'
+			AND a.type = #{type}
+			AND a.create_time <![CDATA[ >= ]]> #{startTime}
+			AND a.create_time <![CDATA[ <= ]]> #{endTime}
+			AND a.status = '2'
+		</where>
+		ORDER BY a.id ASC
+		LIMIT 0,500
+	</select>
+	<select id="findSubmitedNoRespCodeOrder" resultMap="nfsWdrlRecordResultMap">
+		SELECT 
+			<include refid="nfsWdrlRecordColumns"/>
+		FROM NFS_WDRL_RECORD a
+		<include refid="nfsWdrlRecordJoins"/>
+		<where>
+			a.del_flag = '0'
+			AND a.type = #{type}
+			AND a.create_time <![CDATA[ >= ]]> #{startTime}
+			AND a.create_time <![CDATA[ <= ]]> #{endTime}
+			AND a.status = '3'
+		</where>
+		ORDER BY a.id ASC
+		LIMIT 0,500
+	</select>
+	
+	<select id="findSubmitedNoThirdOrderNoRecord" resultMap="nfsWdrlRecordResultMap">
+		SELECT 
+			<include refid="nfsWdrlRecordColumns"/>
+		FROM NFS_WDRL_RECORD a
+		<include refid="nfsWdrlRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.status in (3,4,5,6,7)
+			<if test="beginTime != null">
+				 <![CDATA[AND a.create_time >= #{beginTime}]]> 
+			</if>
+			<if test="endTime != null">
+				 <![CDATA[AND a.create_time <= #{endTime}]]> 
+			</if>
+		</where>
+		ORDER BY a.id DESC
+	</select>
+	
+	<!-- 待审核：后台管理系统待审核页面显示 -->
+	<select id="findPendingAuditRecord" resultMap="nfsWdrlRecordResultMap">
+		SELECT 
+			<include refid="nfsWdrlRecordColumns"/>
+		FROM NFS_WDRL_RECORD a
+		<include refid="nfsWdrlRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.status in (0,1,4)
+			<if test="id != null">
+				AND a.id = #{id}
+			</if>
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="member != null and member.username != null and member.username != ''">
+				AND a.member_username = #{member.username}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="cardNo != null and cardNo != ''">
+				AND a.card_no = #{cardNo}
+			</if>
+			<if test="beginTime != null">
+				 <![CDATA[AND a.create_time >= #{beginTime}]]> 
+			</if>
+			<if test="endTime != null">
+				 <![CDATA[AND a.create_time <= #{endTime}]]> 
+			</if>
+			<if test="minAmount != null">
+				 <![CDATA[AND a.amount >= #{minAmount}]]> 
+			</if>
+			<if test="maxAmount != null">
+				 <![CDATA[AND a.amount <= #{maxAmount}]]> 
+			</if>
+		</where>
+		ORDER BY a.id DESC
+	</select>
+	
+	<!-- 已审核：管理系统已审核页面显示 -->
+	<select id="findAuditedRecord" resultMap="nfsWdrlRecordResultMap">
+		SELECT 
+			<include refid="nfsWdrlRecordColumns"/>
+		FROM NFS_WDRL_RECORD a
+		<include refid="nfsWdrlRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="id != null">
+				AND a.id = #{id}
+			</if>
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="member != null and member.username != null and member.username != ''">
+				AND a.member_username = #{member.username}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="cardNo != null and cardNo != ''">
+				AND a.card_no = #{cardNo}
+			</if>
+			<if test="beginTime != null">
+				 <![CDATA[AND a.create_time >= #{beginTime}]]> 
+			</if>
+			<if test="endTime != null">
+				 <![CDATA[AND a.create_time <= #{endTime}]]> 
+			</if>
+			<if test="minAmount != null">
+				 <![CDATA[AND a.amount >= #{minAmount}]]> 
+			</if>
+			<if test="maxAmount != null">
+				 <![CDATA[AND a.amount <= #{maxAmount}]]> 
+			</if>
+				AND a.status != 0 and a.status != 1 and a.status != 4
+		</where>
+		
+		ORDER BY a.id DESC
+		
+	</select>
+</mapper>

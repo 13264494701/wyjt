@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberDistributionDao">
+    
+	<sql id="memberDistributionColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		c.member_name AS "member.nickname",
+		a.level_first AS "levelFirst",
+		a.level_second AS "levelSecond",
+		a.level_third AS "levelThird",
+		a.reward AS "reward",
+		a.is_open AS "isOpen",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="MemberDistribution" id="memberDistributionResultMap">
+		<id column="id" property="id" />
+		<result column="isOpen" property="isOpen" javaType="Boolean" jdbcType="CHAR" />
+	</resultMap>
+	
+	<sql id="memberDistributionJoins">
+	    LEFT JOIN MEM_MEMBER c on c.id = a.member_id
+	</sql>
+    
+	<select id="get" resultMap="memberDistributionResultMap">
+		SELECT 
+			<include refid="memberDistributionColumns"/>
+		FROM MEM_MEMBER_DISTRIBUTION a
+		<include refid="memberDistributionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByMember" resultMap="memberDistributionResultMap">
+		SELECT 
+			<include refid="memberDistributionColumns"/>
+		FROM MEM_MEMBER_DISTRIBUTION a
+		<include refid="memberDistributionJoins"/>
+		WHERE a.member_id = #{member.id}
+	</select>
+	
+	<select id="findList" resultMap="memberDistributionResultMap">
+		SELECT 
+			<include refid="memberDistributionColumns"/>
+		FROM MEM_MEMBER_DISTRIBUTION a
+		<include refid="memberDistributionJoins"/>
+		<where>
+			a.del_flag = #{delFlag}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="MemberDistribution">
+		INSERT INTO MEM_MEMBER_DISTRIBUTION(
+			id,
+			member_id,
+			level_first,
+			level_second,
+			level_third,
+			reward,
+			is_open,
+			rmk,
+			create_by, 
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{levelFirst},
+			#{levelSecond},
+			#{levelThird},
+			#{reward},
+			#{isOpen,javaType=Boolean, jdbcType=CHAR},
+			#{rmk},
+			#{createBy.empNo}, 
+			#{createTime}, 
+			#{updateBy.empNo}, 
+			#{updateTime}, 
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MemberDistribution">
+		UPDATE MEM_MEMBER_DISTRIBUTION SET 	
+			member_id = #{member.id},
+			level_first = #{levelFirst},
+			level_second = #{levelSecond},
+			level_third = #{levelThird},
+			reward = #{reward},
+			is_open = #{isOpen,javaType=Boolean, jdbcType=CHAR},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateLevelNum" parameterType="MemberDistribution">
+		UPDATE MEM_MEMBER_DISTRIBUTION SET
+		<choose>
+			<when test="level == 1">
+				level_first = level_first + #{addNum}
+			</when>
+			<when test="level == 2">
+				level_second = level_second + #{addNum}
+			</when>
+			<when test="level == 3">
+				level_third = level_third + #{addNum}
+			</when>
+		</choose>
+		WHERE  member_id = #{memberId}
+	</update>
+	
+	<update id="delete">
+		UPDATE MEM_MEMBER_DISTRIBUTION SET 
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id="open">
+		UPDATE MEM_MEMBER_DISTRIBUTION SET
+		       is_open  = 1
+		WHERE member_id = #{memberId}
+	</update>
+	<update id="close">
+		UPDATE MEM_MEMBER_DISTRIBUTION SET
+		       is_open  = 0
+		WHERE member_id = #{memberId}
+	</update>
+</mapper>

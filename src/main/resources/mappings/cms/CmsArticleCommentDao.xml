@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.cms.dao.CmsArticleCommentDao">
+    
+	<sql id="cmsCommentDaoColumns">
+		a.id AS "id",		
+		a.article_id AS "article.id",
+		a.member_no AS "member.memberNo",
+		a.type AS "type",
+		a.content AS "content",
+		a.likes AS "likes",
+		a.ip AS "ip",
+		a.audit_user_id AS "auditUser.id",
+		a.audit_date AS "auditDate",
+		a.create_time AS "createTime",
+		a.del_flag AS "delFlag",
+		c.nickname AS "member.nickname",
+		c.head_image AS "member.headImage"
+	</sql>
+	
+	<resultMap type="CmsArticleComment" id="commentResultMap">
+		<id column="id" property="id"/>
+		<result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+		<result column="member.headImage" property="member.headImage" typeHandler="com.jxf.svc.persistence.typehandler.ImageTypeHandler"/>
+		<collection column="id" property="commentReplys" select="com.jxf.cms.dao.CmsArticleCommentReplyDao.findByCommentId"/>			
+	</resultMap>
+	
+	<sql id="cmsCommentDaoJoins">
+	   JOIN MEM_MEMBER c ON c.member_no = a.member_no
+	</sql>
+    
+	<select id="get" resultMap="commentResultMap">
+		SELECT 
+			<include refid="cmsCommentDaoColumns"/>
+		FROM CMS_ARTICLE_COMMENT a
+		<include refid="cmsCommentDaoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="commentResultMap">
+		SELECT 
+			<include refid="cmsCommentDaoColumns"/>
+		FROM CMS_ARTICLE_COMMENT a
+		<include refid="cmsCommentDaoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="article != null and article.id != null and article.id != ''">
+				AND a.article_id = #{article.id}
+			</if>
+			<if test="member != null and member.memberNo != null and member.memberNo != ''">
+				AND a.member_no = #{member.memberNo}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+		<if test="count != null ">
+				LIMIT #{count}
+		</if>
+	</select>
+	
+	<select id="findAllList" resultMap="commentResultMap">
+		SELECT 
+			<include refid="cmsCommentDaoColumns"/>
+		FROM CMS_ARTICLE_COMMENT a
+		<include refid="cmsCommentDaoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="article != null and article.id != null and article.id != ''">
+				AND a.article_id = #{article.id}
+			</if>
+			<if test="member != null and member.memberNo != null and member.memberNo != ''">
+				AND a.member_no = #{member.memberNo}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+		<if test="count != null ">
+				LIMIT #{count}
+		</if>
+	</select>
+	
+	<insert id="insert" parameterType="CmsArticleComment">
+		INSERT INTO CMS_ARTICLE_COMMENT(
+			id,
+			article_id,
+			member_no,
+			type,
+			content,
+			likes,
+			ip,
+			audit_user_id,
+			audit_date,
+			create_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{article.id},
+			#{member.memberNo},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{content},
+			#{likes},
+			#{ip},
+			#{auditUser.id},
+			#{auditDate},
+			#{createTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="CmsArticleComment">
+		UPDATE CMS_ARTICLE_COMMENT SET 	
+			article_id = #{article.id},			
+			member_no = #{member.memberNo},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			content = #{content},
+			likes = #{likes},
+			ip = #{ip},
+			audit_user_id = #{auditUser.id},
+			audit_date = #{auditDate},
+			create_time = #{createTime},
+			del_flag = #{delFlag}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE CMS_ARTICLE_COMMENT SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="addLikes">
+		UPDATE CMS_ARTICLE_COMMENT SET 
+			likes = likes+1
+		WHERE id = #{cid}
+	</update>
+	
+</mapper>

@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.ufang.dao.UfangBrnDao">
+
+	<sql id="brnColumns">
+		a.id AS "id",
+		a.parent_id AS "parent.id",
+		a.parent_ids AS "parentIds",
+		a.area_id AS "area.id",
+		a.brn_no AS "brnNo",
+		a.brn_name AS "brnName",
+		a.free_data AS "freeData",
+		a.type AS "type",
+		a.grade AS "grade",
+		a.address AS "address", 
+		a.phone_no AS "phoneNo", 
+		a.email AS "email", 
+		a.primary_person AS "primaryPerson", 
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		p.brn_name AS "parent.brnName",
+		ar.name AS "area.name",
+		ar.parent_ids AS "area.parentIds"
+	</sql>
+	
+	<resultMap type="UfangBrn" id="ufangBrnResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="brnJoins">
+		LEFT JOIN UFANG_BRN p ON p.id = a.parent_id
+		LEFT JOIN SYS_AREA ar ON ar.id = a.area_id
+    </sql>
+
+	<update id="updateFreeData">
+		update UFANG_BRN set free_data=free_data+#{freeData} where brn_no=#{brnNo}
+	</update>
+	
+	<select id="get" resultMap="ufangBrnResultMap">
+		SELECT
+			<include refid="brnColumns"/>
+		FROM UFANG_BRN a
+		<include refid="brnJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="ufangBrnResultMap">
+		SELECT
+			<include refid="brnColumns"/>
+		FROM UFANG_BRN a
+		<include refid="brnJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="grade != null">
+				AND a.grade = #{grade}
+			</if>
+			<if test="brnNo != null">
+				AND a.brn_no = #{brnNo}
+			</if>
+		    <if test="brnName != null and brnName != ''">
+			    AND a.brn_name like 
+					<if test="dbName == 'oracle'">'%'||#{brnName}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{brnName}, '%')</if>
+		    </if>
+		</where>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.brn_no DESC
+			</otherwise>
+		</choose>	
+	</select>
+			
+	<select id="findAllList" resultMap="ufangBrnResultMap">
+		SELECT
+			<include refid="brnColumns"/>
+		FROM UFANG_BRN a
+		<include refid="brnJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY a.brn_no
+	</select>
+	
+	<select id="findByParentIdsLike" resultMap="ufangBrnResultMap">
+		SELECT
+			<include refid="brnColumns"/>
+		FROM UFANG_BRN a
+		<include refid="brnJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} 
+		AND a.parent_ids LIKE #{parentIds}
+		ORDER BY a.brn_no
+	</select>
+	
+	<insert id="insert" parameterType="UfangBrn">
+		INSERT INTO UFANG_BRN(
+			id, 
+			parent_id, 
+			parent_ids, 
+			area_id, 
+			brn_no, 
+			brn_name,
+			free_data,
+			type, 
+			grade, 
+			address, 
+			phone_no, 
+			email, 
+			primary_person,
+			rmk,
+			create_by, 
+			create_time, 
+			update_by, 
+			update_time,
+			is_locked,
+			del_flag
+		) VALUES (
+			#{id}, 
+			#{parent.id}, 
+			#{parentIds}, 
+			#{area.id}, 
+			#{brnNo}, 
+			#{brnName},
+			#{freeData},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{grade}, 
+			#{address}, 
+			#{phoneNo}, 
+			#{email}, 
+			#{primaryPerson},
+			#{rmk}, 
+			#{createBy.empNo}, 
+			#{createTime}, 
+			#{updateBy.empNo}, 
+			#{updateTime},
+			#{isLocked, javaType=Boolean, jdbcType=CHAR},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="UfangBrn">
+		UPDATE UFANG_BRN SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}, 
+			area_id = #{area.id}, 
+			brn_no = #{brnNo}, 
+			brn_name = #{brnName},
+			free_data = #{freeData},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			grade = #{grade}, 
+			address = #{address}, 
+			phone_no = #{phoneNo}, 
+			email = #{email}, 
+			primary_person=#{primaryPerson},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime}			
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE UFANG_BRN SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE UFANG_BRN SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id} OR parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{id}||',%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{id}, ',%')</if>
+	</update>
+	
+	<select id="getChildrenByParentId" resultMap="ufangBrnResultMap">
+		SELECT
+			<include refid="brnColumns"/>
+		FROM UFANG_BRN a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		and a.parent_id = #{parentId}
+	</select>
+	
+	<select id="getChildMaxNo" resultType="String" parameterType="Long">
+		SELECT
+			max(a.brn_no) as brnNo
+		FROM UFANG_BRN a
+		WHERE a.del_flag = '0' 
+		AND a.parent_id = #{parentId}
+	</select>
+		
+	<select id="getbrnNamByNo" resultType="String" parameterType="String">
+		SELECT
+			a.brn_name as brnName
+		FROM UFANG_BRN a
+		WHERE a.del_flag = '0' 
+		AND a.brn_no = #{brnNo}
+	</select>
+</mapper>

@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.loan.dao.NfsCrAuctionDao">
+    
+	<sql id="nfsCrAuctionColumns">
+		a.id AS "id",
+		a.cr_id AS "loanRecord.id",
+		a.cr_seller_id AS "crSeller.id",
+		a.cr_sell_price AS "crSellPrice",
+		a.cr_buyer_id AS "crBuyer.id",
+		a.buyer_phone_no AS "crBuyer.username",
+		a.buyer_name AS "crBuyer.name",
+		a.cr_buy_price AS "crBuyPrice",
+		a.area_id AS "area.id",
+		a.status AS "status",
+		a.is_pub AS "isPub",
+		a.audit_opinion AS "auditOpinion",
+		a.zip_path AS "zipPath",
+		a.proof_status AS "proofStatus",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.version AS "version",
+		a.del_flag AS "delFlag",
+		a7.name AS "area.name",
+		b.loaner_id AS "loanRecord.loaner.id",
+		b.loaner_name AS "loanRecord.loaner.name",
+		b.loaner_phone_no AS "loanRecord.loaner.username",
+		b.due_repay_date AS "loanRecord.dueRepayDate",
+		b.complete_date AS "loanRecord.completeDate",
+		b.amount AS "loanRecord.amount",
+		b.int_rate AS "loanRecord.intRate",
+		b.interest AS "loanRecord.interest",
+		b.due_repay_amount AS "loanRecord.dueRepayAmount",
+		b.status AS "loanRecord.status",
+		b.loanee_id AS "loanRecord.loanee.id",
+		b.loanee_name AS "loanRecord.loanee.name",
+		b.loanee_id_no AS "loanRecord.loanee.idNo",
+		b.loanee_phone_no AS "loanRecord.loanee.username",
+		b.loanee_email AS "loanRecord.loanee.email",
+		b.loanee_headimage AS "loanRecord.loanee.headImage",
+		b.create_time AS "loanRecord.createTime",
+		b.repay_type AS "loanRecord.repayType"
+	</sql>
+	
+	<sql id="nfsAuditAuctionColumns">
+		a.id AS "id",
+		a.cr_id AS "loanRecord.id",
+		a.cr_seller_id AS "crSeller.id",
+		a.cr_sell_price AS "crSellPrice",
+		a.cr_buyer_id AS "crBuyer.id",
+	    a.buyer_phone_no AS "crBuyer.username",
+		a.buyer_name AS "crBuyer.name",
+		a.cr_buy_price AS "crBuyPrice",
+		a.area_id AS "area.id",
+		a.status AS "status",
+		a.is_pub AS "isPub",
+		a.audit_opinion AS "auditOpinion",
+		a.proof_status AS "proofStatus",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.version AS "version",
+		a.del_flag AS "delFlag",
+		b.loaner_id AS "loanRecord.loaner.id",
+		b.loaner_name AS "loanRecord.loaner.name",
+		b.loaner_phone_no AS "loanRecord.loaner.username",
+		b.due_repay_date AS "loanRecord.dueRepayDate",
+		b.complete_date AS "loanRecord.completeDate",
+		b.amount AS "loanRecord.amount",
+		b.int_rate AS "loanRecord.intRate",
+		b.interest AS "loanRecord.interest",
+		b.due_repay_amount AS "loanRecord.dueRepayAmount",
+		b.status AS "loanRecord.status",
+		b.loanee_id AS "loanRecord.loanee.id",
+		b.loanee_name AS "loanRecord.loanee.name",
+		b.loanee_id_no AS "loanRecord.loanee.idNo",
+		b.loanee_phone_no AS "loanRecord.loanee.username",
+		b.loanee_email AS "loanRecord.loanee.email",
+		b.loanee_headimage AS "loanRecord.loanee.headImage",
+		b.create_time AS "loanRecord.createTime",
+		b.repay_type AS "loanRecord.repayType",
+		c.name AS "crBuyer.name",
+		c.username AS "crBuyer.username"
+	</sql>
+	
+	<resultMap type="NfsCrAuction" id="nfsCrAuctionResultMap">		
+        <id column="id" property="id"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="proofStatus" property="proofStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="loanRecord.status" property="loanRecord.status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="loanRecord.repayType" property="loanRecord.repayType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="isPub"  property="isPub" javaType="Boolean" jdbcType="CHAR" />	
+	</resultMap>
+	
+	<sql id="nfsCrAuctionJoins">
+		LEFT JOIN SYS_AREA a7 ON a7.id = a.area_id
+		LEFT JOIN NFS_LOAN_RECORD b ON b.id = a.cr_id
+	</sql>
+	
+	<sql id="nfsAuditAuctionJoins">
+		LEFT JOIN NFS_LOAN_RECORD b ON b.id = a.cr_id
+		lEFT JOIN MEM_MEMBER c on c.id = a.cr_buyer_id
+	</sql>
+    
+	<select id="get" resultMap="nfsCrAuctionResultMap">
+		SELECT 
+			<include refid="nfsCrAuctionColumns"/>
+		FROM NFS_CR_AUCTION a
+		<include refid="nfsCrAuctionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getCrBuyTimes" resultType="int">
+		SELECT 
+			count(*)
+		FROM NFS_CR_AUCTION a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="crBuyer != null and crBuyer.id != null and crBuyer.id != ''">
+				AND a.cr_buyer_id = #{crBuyer.id}
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.update_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+		</where>
+	</select>
+	
+	<select id="findOvertimeAuctionList" resultMap="nfsCrAuctionResultMap">
+		SELECT 
+			<include refid="nfsCrAuctionColumns"/>
+		FROM NFS_CR_AUCTION a
+		<include refid="nfsCrAuctionJoins"/>
+		WHERE a.del_flag = '0'
+		and a.status = '0'
+		<![CDATA[and TIMESTAMPDIFF(HOUR,a.create_time,now()) >= 72]]> 	
+	</select>
+	
+	<select id="findOverOneDayList" resultMap="nfsCrAuctionResultMap">
+		SELECT 
+			<include refid="nfsCrAuctionColumns"/>
+		FROM NFS_CR_AUCTION a
+		<include refid="nfsCrAuctionJoins"/>
+		WHERE a.del_flag = '0'
+		and a.status = '1'
+		<![CDATA[and TIMESTAMPDIFF(HOUR,a.create_time,now()) >= 24]]> 	
+	</select>
+	
+	<select id="findList" resultMap="nfsCrAuctionResultMap">
+		SELECT 
+			<include refid="nfsCrAuctionColumns"/>
+		FROM NFS_CR_AUCTION a
+		<include refid="nfsCrAuctionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="loanRecord != null and loanRecord.id != null and loanRecord.id != ''">
+				AND a.cr_id = #{loanRecord.id}
+			</if>
+			<if test="crSeller != null and crSeller.id != null and crSeller.id != ''">
+				AND a.cr_seller_id = #{crSeller.id}
+			</if>
+			<if test="crBuyer != null and crBuyer.id != null and crBuyer.id != ''">
+				AND a.cr_buyer_id = #{crBuyer.id}
+			</if>
+			<if test="crBuyer != null and crBuyer.username != null and crBuyer.username != ''">
+				AND a.buyer_phone_no = #{crBuyer.username}
+			</if>
+			<if test="crBuyer != null and crBuyer.name != null and crBuyer.name != ''">
+				AND a.buyer_name = #{crBuyer.name}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="proofStatus != null">
+				AND a.proof_status = #{proofStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="isPub != null">
+				AND a.is_pub = #{isPub,javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="unPayTab != null and unPayTab != 0">
+				AND b.status = '2'
+			</if>
+			<if test="payedTab != null and payedTab != 0">
+				AND b.status = '1'
+			</if>
+			<if test="auctionTab != null and auctionTab != 0">
+				AND a.status = '0'
+			</if>
+			<if test="auctionedTab != null and auctionedTab != 0">
+				AND a.status = '3'
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<when test="unPayTab == 1">
+				ORDER BY a.update_time
+			</when>
+			<when test="unPayTab == 2">
+				ORDER BY a.update_time DESC
+			</when>
+			<when test="payedTab == 1">
+				ORDER BY a.update_time
+			</when>
+			<when test="payedTab == 2">
+				ORDER BY a.update_time DESC
+			</when>
+			<when test="auctionTab == 1">
+				ORDER BY a.update_time
+			</when>
+			<when test="auctionTab == 2">
+				ORDER BY a.update_time DESC
+			</when>
+			<when test="auctionedTab == 1">
+				ORDER BY a.update_time
+			</when>
+			<when test="auctionedTab == 2">
+				ORDER BY a.update_time DESC
+			</when>
+			<otherwise>
+			    ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findCrAuctionList" resultMap="nfsCrAuctionResultMap">
+		SELECT 
+			<include refid="nfsCrAuctionColumns"/>
+		FROM NFS_CR_AUCTION a
+		<include refid="nfsCrAuctionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="crSeller != null and crSeller.id != null and crSeller.id != ''">
+				AND a.cr_seller_id != #{crSeller.id}
+			</if>
+			<if test="loanRecord != null and loanRecord.loanee.id != null and loanRecord.loanee.id != ''">
+				AND b.loanee_id != #{loanRecord.loanee.id}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="isPub != null">
+				AND a.is_pub = #{isPub,javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="area != null and area.id != null and area.id != ''">
+				AND a.area_id = #{area.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<when test="overdueTab == 1">
+				ORDER BY b.due_repay_date DESC
+			</when>
+			<when test="overdueTab == 2">
+				ORDER BY b.due_repay_date 
+			</when>
+			<when test="priceTab == 1">
+				ORDER BY a.cr_sell_price
+			</when>
+			<when test="priceTab == 2">
+				ORDER BY a.cr_sell_price DESC
+			</when>
+			<otherwise>
+			    ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAuditList" resultMap="nfsCrAuctionResultMap">
+		SELECT 
+			<include refid="nfsAuditAuctionColumns"/>
+		FROM NFS_CR_AUCTION a
+		<include refid="nfsAuditAuctionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="loanRecord != null and loanRecord.id != null and loanRecord.id != ''">
+				AND a.cr_id = #{loanRecord.id}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loanRecord != null ">
+				<if test="loanRecord.loanee != null and loanRecord.loanee.name != null and loanRecord.loanee.name != ''">
+					AND b.loanee_name = #{loanRecord.loanee.name}
+				</if>
+				<if test="loanRecord.loanee != null and loanRecord.loanee.username != null and loanRecord.loanee.username != ''">
+					AND b.loanee_phone_no = #{loanRecord.loanee.username}
+				</if>
+				<if test="loanRecord.loaner != null and loanRecord.loaner.name != null and loanRecord.loaner.name != ''">
+					AND b.loaner_name = #{loanRecord.loaner.name}
+				</if>
+				<if test="loanRecord.loaner != null and loanRecord.loaner.username != null and loanRecord.loaner.username != ''">
+					AND b.loaner_phone_no = #{loanRecord.loaner.username}
+				</if>
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+			<if test="minInRate != null and maxInRate != null">
+				AND b.int_rate BETWEEN #{minInRate} AND #{maxInRate}					
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAuditedList" resultMap="nfsCrAuctionResultMap">
+		SELECT 
+			<include refid="nfsAuditAuctionColumns"/>
+		FROM NFS_CR_AUCTION a
+		<include refid="nfsAuditAuctionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="loanRecord != null and loanRecord.id != null and loanRecord.id != ''">
+				AND a.cr_id = #{loanRecord.id}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status == null">
+				AND a.status != '1'
+			</if>
+			<if test="loanRecord != null ">
+				<if test="loanRecord.loanee != null and loanRecord.loanee.name != null and loanRecord.loanee.name != ''">
+					AND b.loanee_name = #{loanRecord.loanee.name}
+				</if>
+				<if test="loanRecord.loanee != null and loanRecord.loanee.username != null and loanRecord.loanee.username != ''">
+					AND b.loanee_phone_no = #{loanRecord.loanee.username}
+				</if>
+				<if test="loanRecord.loaner != null and loanRecord.loaner.name != null and loanRecord.loaner.name != ''">
+					AND b.loaner_name = #{loanRecord.loaner.name}
+				</if>
+				<if test="loanRecord.loaner != null and loanRecord.loaner.username != null and loanRecord.loaner.username != ''">
+					AND b.loaner_phone_no = #{loanRecord.loaner.username}
+				</if>
+			</if>
+			<if test="crBuyer != null and crBuyer.name != null and crBuyer.name != ''">
+				AND c.name = #{crBuyer.name}
+			</if>
+			<if test="crBuyer != null and crBuyer.username != null and crBuyer.username != ''">
+				AND c.username = #{crBuyer.username}
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.update_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+			<if test="minInRate != null and maxInRate != null">
+				AND b.int_rate BETWEEN #{minInRate} AND #{maxInRate}					
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="NfsCrAuction">
+		INSERT INTO NFS_CR_AUCTION(
+			id,
+			cr_id,
+			cr_seller_id,
+			cr_sell_price,
+			cr_buyer_id,
+			buyer_phone_no,
+			buyer_name,
+			cr_buy_price,
+			area_id,
+			status,
+			is_pub,
+			audit_opinion,
+			zip_path,
+			proof_status,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			version,
+			del_flag
+		) VALUES (
+			#{id},
+			#{loanRecord.id},
+			#{crSeller.id},
+			#{crSellPrice},
+			#{crBuyer.id},
+			#{crBuyer.username},
+			#{crBuyer.name},
+			#{crBuyPrice},
+			#{area.id},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{isPub,javaType=Boolean, jdbcType=CHAR},
+			#{auditOpinion},
+			#{zipPath},
+			#{proofStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{version},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsCrAuction">
+		UPDATE NFS_CR_AUCTION SET 	
+			cr_id = #{loanRecord.id},
+			cr_seller_id = #{crSeller.id},
+			cr_sell_price = #{crSellPrice},
+			cr_buyer_id = #{crBuyer.id},
+			buyer_phone_no = #{crBuyer.username},
+			buyer_name = #{crBuyer.name},
+			cr_buy_price = #{crBuyPrice},
+			area_id = #{area.id},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			is_pub = #{isPub,javaType=Boolean, jdbcType=CHAR},
+			audit_opinion = #{auditOpinion},
+			zip_path = #{zipPath},
+			proof_status = #{proofStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			rmk = #{rmk},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			version = version+1
+		WHERE id = #{id}
+			AND version = #{version}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_CR_AUCTION SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="getCrBuyerByLoan" resultMap="nfsCrAuctionResultMap">
+		SELECT 
+			<include refid="nfsAuditAuctionColumns"/>
+		FROM NFS_CR_AUCTION a
+		<include refid="nfsAuditAuctionJoins"/>
+		WHERE a.cr_id = #{loanRecord.id}
+		AND a.status = 3
+	</select>
+</mapper>

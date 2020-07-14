@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.report.dao.ReportLoanApplyDailyDao">
+    
+	<sql id="reportLoanApplyDailyColumns">
+		a.id AS "id",
+		a.date AS "date",
+		a.borrow_count AS "borrowCount",
+		a.borrow_amount AS "borrowAmount",
+		a.loan_count AS "loanCount",
+		a.loan_amount AS "loanAmount",
+		a.borrow_success_count AS "borrowSuccessCount",
+		a.borrow_success_amount AS "borrowSuccessAmount",
+		a.loan_success_count AS "loanSuccessCount",
+		a.loan_success_amount AS "loanSuccessAmount",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="ReportLoanApplyDaily" id="reportLoanApplyDailyResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	<sql id="reportLoanApplyDailyJoins">
+	</sql>
+    
+	<select id="get" resultMap="reportLoanApplyDailyResultMap">
+		SELECT 
+			<include refid="reportLoanApplyDailyColumns"/>
+		FROM REPORT_LOAN_APPLY_DAILY a
+		<include refid="reportLoanApplyDailyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="reportLoanApplyDailyResultMap">
+		SELECT 
+		    a.id AS "id",
+			left(a.date,#{type}) AS "date",
+			sum(a.borrow_count) AS "borrowCount",
+		    sum(a.borrow_amount) AS "borrowAmount",
+		    sum(a.loan_count) AS "loanCount",
+		    sum(a.loan_amount) AS "loanAmount",
+		    sum(a.borrow_success_count) AS "borrowSuccessCount",
+		    sum(a.borrow_success_amount) AS "borrowSuccessAmount",
+		    sum(a.loan_success_count) AS "loanSuccessCount",
+		    sum(a.loan_success_amount) AS "loanSuccessAmount",
+			a.create_by AS "createBy.empNo",
+		    a.create_time AS "createTime",
+		    a.update_by AS "updateBy.empNo",
+		    a.update_time AS "updateTime",
+		    a.del_flag AS "delFlag"
+		FROM REPORT_LOAN_APPLY_DAILY a
+		<include refid="reportLoanApplyDailyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="date != null and date != ''">
+				AND a.date = #{date}
+			</if>
+		</where>
+		GROUP BY left(a.date,#{type})
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="applyCount" resultType="ReportLoanApplyDaily">
+		SELECT
+	date_sub(curdate(), INTERVAL #{daysAgo} DAY) AS date,
+	(
+		SELECT
+			count(id)
+		FROM
+			NFS_LOAN_APPLY_DETAIL
+		WHERE
+			loan_role = 1 
+		AND to_days(now()) - to_days(create_time) = #{daysAgo}
+	) AS borrowCount,
+	(
+		SELECT
+			ifnull(sum(amount), 0)
+		FROM
+			NFS_LOAN_APPLY_DETAIL
+		WHERE loan_role = 1 
+		AND to_days(now()) - to_days(create_time) = #{daysAgo}
+	) AS borrowAmount,	
+	(
+		SELECT
+			count(id)
+		FROM
+			NFS_LOAN_APPLY_DETAIL
+		WHERE
+			loan_role = 0 
+		AND to_days(now()) - to_days(create_time) = #{daysAgo}
+	) AS loanCount,
+	(
+		SELECT
+			ifnull(sum(amount), 0)
+		FROM
+			NFS_LOAN_APPLY_DETAIL
+		WHERE loan_role = 0 
+		AND to_days(now()) - to_days(create_time) = #{daysAgo}
+	) AS loanAmount,
+	(
+		SELECT
+			count(id)
+		FROM
+			NFS_LOAN_APPLY_DETAIL
+		WHERE
+			loan_role = 1 
+		AND `status` = 1 
+		AND to_days(now()) - to_days(update_time) = #{daysAgo}
+	) AS borrowSuccessCount,
+	(
+		SELECT
+			ifnull(sum(amount), 0)
+		FROM
+			NFS_LOAN_APPLY_DETAIL
+		WHERE loan_role = 1 
+		AND `status` = 1 
+		AND to_days(now()) - to_days(update_time) = #{daysAgo}
+	) AS borrowSuccessAmount,
+	(
+		SELECT
+			count(id)
+		FROM
+			NFS_LOAN_APPLY_DETAIL
+		WHERE
+			loan_role = 0 
+    AND `status` = 1 
+		AND to_days(now()) - to_days(update_time) = #{daysAgo}
+	) AS loanSuccessCount,
+	(
+		SELECT
+			ifnull(sum(amount), 0)
+		FROM
+			NFS_LOAN_APPLY_DETAIL
+		WHERE loan_role = 0 
+		AND `status` = 1 
+		AND to_days(now()) - to_days(update_time) = #{daysAgo}
+	) AS loanSuccessAmount
+FROM
+	NFS_LOAN_APPLY_DETAIL
+LIMIT 1
+	</select>
+	
+	<update id="deleteByDate">
+		UPDATE REPORT_LOAN_APPLY_DAILY SET
+			del_flag = 1
+		WHERE date = #{date}
+	</update>
+	
+	<insert id="insert" parameterType="ReportLoanApplyDaily">
+		INSERT INTO REPORT_LOAN_APPLY_DAILY(
+			id,
+			date,
+			borrow_count,
+			borrow_amount,
+			loan_count,
+			loan_amount,
+			borrow_success_count,
+			borrow_success_amount,
+			loan_success_count,
+			loan_success_amount,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{date},
+			#{borrowCount},
+			#{borrowAmount},
+			#{loanCount},
+			#{loanAmount},
+			#{borrowSuccessCount},
+			#{borrowSuccessAmount},
+			#{loanSuccessCount},
+			#{loanSuccessAmount},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="ReportLoanApplyDaily">
+		UPDATE REPORT_LOAN_APPLY_DAILY SET 	
+			date = #{date},
+			borrow_count = #{borrowCount},
+			borrow_amount = #{borrowAmount},
+			loan_count = #{loanCount},
+			loan_amount = #{loanAmount},
+			borrow_success_count = #{borrowSuccessCount},
+			borrow_success_amount = #{borrowSuccessAmount},
+			loan_success_count = #{loanSuccessCount},
+			loan_success_amount = #{loanSuccessAmount},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE REPORT_LOAN_APPLY_DAILY SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

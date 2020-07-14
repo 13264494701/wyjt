@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mms.queue.dao.MmsMsgQueueDao">
+    
+	<sql id="mmsMsgQueueColumns">
+		a.id AS "id",
+		a.tmpl_code AS "tmplCode",
+		a.send_chl AS "sendChl",
+		a.sender AS "sender",
+		a.receiver AS "receiver",
+		a.subject AS "subject",
+		a.content AS "content",
+		a.msg_sts AS "msgSts",
+		a.create_date AS "createDate",
+		a.send_time AS "sendTime"
+	</sql>
+	
+	<resultMap type="MmsMsgQueue" id="msgQueueResultMap">
+		<id column="id" property="id"/>
+	</resultMap>
+	
+	<sql id="mmsMsgQueueJoins">
+	</sql>
+    
+	<select id="get" resultMap="msgQueueResultMap">
+		SELECT 
+			<include refid="mmsMsgQueueColumns"/>
+		FROM MMS_MSG_QUEUE a
+		<include refid="mmsMsgQueueJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="msgQueueResultMap">
+		SELECT 
+			<include refid="mmsMsgQueueColumns"/>
+		FROM MMS_MSG_QUEUE a
+		<include refid="mmsMsgQueueJoins"/>
+		<where>
+			
+			<if test="tmplCode != null">
+				AND a.tmpl_code = #{tmplCode}
+			</if>
+			<if test="sendChl != null and sendChl != ''">
+				AND a.send_chl = #{sendChl}
+			</if>
+			<if test="sender != null and sender != ''">
+				AND a.sender = #{sender}
+			</if>
+			<if test="receiver != null and receiver != ''">
+				AND a.receiver = #{receiver}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="MmsMsgQueue">
+		INSERT INTO MMS_MSG_QUEUE(
+			id,
+			tmpl_code,
+			send_chl,
+			sender,
+			receiver,
+			subject,
+			content,
+			msg_sts,
+			create_date,
+			send_time
+		) VALUES (
+			#{id},
+			#{tmplCode},
+			#{sendChl},
+			#{sender},
+			#{receiver},
+			#{subject},
+			#{content},
+			#{msgSts},
+			#{createDate},
+			#{sendTime}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MmsMsgQueue">
+		UPDATE MMS_MSG_QUEUE SET 	
+			tmpl_code = #{tmplCode},
+			send_chl = #{sendChl},
+			sender = #{sender},
+			receiver = #{receiver},
+			subject = #{subject},
+			content = #{content},
+			msg_sts = #{msgSts},
+			send_time = #{sendTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM MMS_MSG_QUEUE
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mms.sender.dao.MmsSenderDao">
+    
+	<sql id="mmsSenderColumns">
+		a.id AS "id",
+		a.sender_name AS "senderName",
+		a.send_chl AS "sendChl",
+		a.display_name AS "displayName",
+		a.account_name AS "accountName",
+		a.password AS "password",
+		a.server_addr AS "serverAddr"
+	</sql>
+	
+	<sql id="mmsSenderJoins">
+	</sql>
+    
+	<select id="get" resultType="MmsSender">
+		SELECT 
+			<include refid="mmsSenderColumns"/>
+		FROM MMS_SENDER_LIST a
+		<include refid="mmsSenderJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<select id="getBySenderName" resultType="MmsSender">
+		SELECT 
+			<include refid="mmsSenderColumns"/>
+		FROM MMS_SENDER_LIST a
+		WHERE a.sender_name = #{senderName}
+	</select>
+	<select id="findList" resultType="MmsSender">
+		SELECT 
+			<include refid="mmsSenderColumns"/>
+		FROM MMS_SENDER_LIST a
+		<include refid="mmsSenderJoins"/>
+		<where>
+			
+			<if test="senderName != null and senderName != ''">
+				AND a.sender_name = #{senderName}
+			</if>
+			<if test="sendChl != null and sendChl != ''">
+				AND a.send_chl = #{sendChl}
+			</if>
+			<if test="displayName != null and displayName != ''">
+				AND a.display_name = #{displayName}
+			</if>
+			<if test="accountName != null and accountName != ''">
+				AND a.account_name = #{accountName}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO MMS_SENDER_LIST(
+			id,
+			sender_name,
+			send_chl,
+			display_name,
+			account_name,
+			password,
+			server_addr
+		) VALUES (
+			#{id},
+			#{senderName},
+			#{sendChl},
+			#{displayName},
+			#{accountName},
+			#{password},
+			#{serverAddr}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE MMS_SENDER_LIST SET 	
+			sender_name = #{senderName},
+			send_chl = #{sendChl},
+			display_name = #{displayName},
+			account_name = #{accountName},
+			password = #{password},
+			server_addr = #{serverAddr}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM MMS_SENDER_LIST
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

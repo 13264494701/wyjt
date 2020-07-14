@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberVideoVerifyDao">
+    
+	<sql id="memberVideoVerifyColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.trx_id AS "trxId",
+		a.type AS "type",
+		a.status AS "status",
+		a.fail_reason AS "failReason",
+		a.real_name AS "realName",
+		a.id_no AS "idNo",
+		a.idcard_front_photo AS "idcardFrontPhoto",
+		a.idcard_portrait_photo AS "idcardPortraitPhoto",
+		a.idcard_back_photo AS "idcardBackPhoto",
+		a.living_photo AS "livingPhoto",
+		a.video_url AS "videoUrl",
+		a.nation AS "nation",
+		a.address AS "address",
+		a.channel AS "channel",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="MemberVideoVerify" id="memberVideoVerifyResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="channel" property="channel" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="memberVideoVerifyJoins">
+	</sql>
+    
+	<select id="get" resultMap="memberVideoVerifyResultMap">
+		SELECT 
+			<include refid="memberVideoVerifyColumns"/>
+		FROM MEM_MEMBER_VIDEO_VERIFY a
+		<include refid="memberVideoVerifyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<select id="getByTrxId" resultMap="memberVideoVerifyResultMap">
+		SELECT 
+			<include refid="memberVideoVerifyColumns"/>
+		FROM MEM_MEMBER_VIDEO_VERIFY a
+		<include refid="memberVideoVerifyJoins"/>
+		WHERE a.trx_id = #{id}
+	</select>
+	
+	<select id="getMemberVideoVerifyByMemberId" resultMap="memberVideoVerifyResultMap">
+		SELECT 
+			<include refid="memberVideoVerifyColumns"/>
+		FROM MEM_MEMBER_VIDEO_VERIFY a
+		<include refid="memberVideoVerifyJoins"/>
+		WHERE a.member_id = #{id} and a.status = '1' and a.type = '0'
+	</select>
+	
+	<select id="countFailure" parameterType="MemberVideoVerify" resultType="int">
+		SELECT 
+			count(1) 
+		FROM MEM_MEMBER_VIDEO_VERIFY a
+		WHERE a.member_id = #{memberId}
+		and a.status = '3'
+	</select>
+	
+	<select id="getChangePhoneNoCounts" parameterType="MemberVideoVerify" resultType="int">
+		SELECT 
+			count(1) 
+		FROM MEM_MEMBER_VIDEO_VERIFY a
+		WHERE a.member_id = #{member.id} and a.type = '3'
+		and a.status = '1' and a.create_time between #{beginDate} and #{endDate}
+	</select>
+	
+	<select id="getMemberIdByIdcard" resultType="java.lang.Long">
+		SELECT 
+			a.member_id
+		FROM MEM_MEMBER_VIDEO_VERIFY a
+		WHERE a.del_flag = '0'
+		AND a.id_no = #{idNo}
+		LIMIT 1;
+	</select>
+	
+	<select id="checkIdcardNo" resultType="java.lang.Integer">
+		SELECT 
+			count(*)
+		FROM MEM_MEMBER_VIDEO_VERIFY a
+		WHERE a.id_no = #{idNo} 
+	    AND a.status=1
+	</select>
+	
+	<select id="getLast5hRealIdentityRecords" resultMap="memberVideoVerifyResultMap">
+		SELECT 
+			<include refid="memberVideoVerifyColumns"/>
+		FROM MEM_MEMBER_VIDEO_VERIFY a
+		<include refid="memberVideoVerifyJoins"/>
+		WHERE 
+			a.status = '1' 
+			AND (a.type = '0' or a.type = '3')
+			AND a.create_time <![CDATA[>=]]>'${createTime}'
+	</select>
+	
+	<select id="findList" resultMap="memberVideoVerifyResultMap">
+		SELECT 
+			<include refid="memberVideoVerifyColumns"/>
+		FROM MEM_MEMBER_VIDEO_VERIFY a
+		<include refid="memberVideoVerifyJoins"/>
+		<where>
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="realName != null and realName != ''">
+				AND a.real_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{realName}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{realName}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{realName},'%')</if>
+			</if>
+			<if test="idNo != null and idNo != ''">
+				AND a.id_no = #{idNo}
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="MemberVideoVerify">
+		INSERT INTO MEM_MEMBER_VIDEO_VERIFY(
+			id,
+			member_id,
+			trx_id,
+			type,
+			status,
+			fail_reason,
+			real_name,
+			id_no,
+			idcard_front_photo,
+			idcard_portrait_photo,
+			idcard_back_photo,
+			living_photo,
+			video_url,
+			nation,
+			address,
+			channel,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{trxId},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{failReason},
+			#{realName},
+			#{idNo},
+			#{idcardFrontPhoto},
+			#{idcardPortraitPhoto},
+			#{idcardBackPhoto},
+			#{livingPhoto},
+			#{videoUrl},
+			#{nation},
+			#{address},
+			#{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MemberVideoVerify">
+		UPDATE MEM_MEMBER_VIDEO_VERIFY SET 	
+			member_id = #{member.id},
+			trx_id = #{trxId},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			fail_reason = #{failReason},
+			real_name = #{realName},
+			id_no = #{idNo},
+			idcard_front_photo = #{idcardFrontPhoto},
+			idcard_portrait_photo = #{idcardPortraitPhoto},
+			idcard_back_photo = #{idcardBackPhoto},
+			living_photo = #{livingPhoto},
+			video_url = #{videoUrl},
+			nation = #{nation},
+			address = #{address},
+			channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},	
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	 
+	<update id="delete">
+		UPDATE MEM_MEMBER_VIDEO_VERIFY SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

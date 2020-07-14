@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.report.dao.ReportPayRefundDailyDao">
+    
+	<sql id="reportPayRefundDailyColumns">
+		a.id AS "id",
+		a.date AS "date",
+		a.trx_type AS "trxType",
+		a.total_amount AS "totalAmount",
+		a.cl_amount AS "clAmount",
+		a.ar_amount AS "arAmount",
+		a.ex_amount AS "exAmount",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="ReportPayRefundDaily" id="reportPayRefundDailyResultMap">		
+        <id column="id" property="id"/>
+        <result column="trxType" property="trxType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="reportPayRefundDailyJoins">
+	</sql>
+    
+	<select id="get" resultMap="reportPayRefundDailyResultMap">
+		SELECT 
+			<include refid="reportPayRefundDailyColumns"/>
+		FROM REPORT_PAY_REFUND_DAILY a
+		<include refid="reportPayRefundDailyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="reportPayRefundDailyResultMap">
+		SELECT 
+		    a.id AS "id",
+			left(a.date,#{type}) AS "date",
+			a.trx_type AS "trxType",
+			sum(a.total_amount) AS "totalAmount",
+		    sum(a.cl_amount) AS "clAmount",
+		    sum(a.ar_amount) AS "arAmount",
+		    sum(a.ex_amount) AS "exAmount",
+			a.create_by AS "createBy.empNo",
+		    a.create_time AS "createTime",
+		    a.update_by AS "updateBy.empNo",
+		    a.update_time AS "updateTime",
+		    a.del_flag AS "delFlag"
+		FROM REPORT_PAY_REFUND_DAILY a
+		<include refid="reportPayRefundDailyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="date != null and date != ''">
+				AND a.date = #{date}
+			</if>
+		</where>
+		GROUP BY left(a.date,#{type}),a.trx_type
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="ReportPayRefundDaily">
+		INSERT INTO REPORT_PAY_REFUND_DAILY(
+			id,
+			date,
+			trx_type,
+			total_amount,
+			cl_amount,
+			ar_amount,
+			ex_amount,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{date},
+			#{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{totalAmount},
+			#{clAmount},
+			#{arAmount},
+			#{exAmount},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="ReportPayRefundDaily">
+		UPDATE REPORT_PAY_REFUND_DAILY SET 	
+			date = #{date},
+			trx_type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			total_amount = #{totalAmount},
+			cl_amount = #{clAmount},
+			ar_amount = #{arAmount},
+			ex_amount = #{exAmount},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE REPORT_PAY_REFUND_DAILY SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="deleteByDate">
+		UPDATE REPORT_PAY_REFUND_DAILY SET
+			del_flag = 1
+		WHERE date = #{date}
+	</update>
+	
+	<select id="payCount" resultMap="reportPayRefundDailyResultMap">
+		SELECT
+			date_sub( curdate( ), INTERVAL #{daysAgo} DAY ) AS date,
+			0 AS trxType,
+			(SELECT ifnull(sum( trx_amt ),0) FROM MEM_MEMBER_ACT_TRX WHERE trx_code in ('CL010','CL020','AR010','AR020','AR030','AR040') AND drc='C' AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS totalAmount,
+			(SELECT ifnull(sum( trx_amt ),0) FROM MEM_MEMBER_ACT_TRX WHERE trx_code in ('CL010','CL020') AND drc='C' AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS clAmount,
+			(SELECT ifnull(sum( trx_amt ),0) FROM MEM_MEMBER_ACT_TRX WHERE trx_code in ('AR010','AR020') AND drc='C' AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS arAmount,
+			(SELECT ifnull(sum( trx_amt ),0) FROM MEM_MEMBER_ACT_TRX WHERE trx_code in ('AR030','AR040') AND drc='C' AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS exAmount	
+		FROM
+			MEM_MEMBER_ACT_TRX
+		LIMIT 1 
+	</select>
+	
+	<select id="refundCount" resultMap="reportPayRefundDailyResultMap">
+		SELECT
+			date_sub( curdate( ), INTERVAL #{daysAgo} DAY ) AS date,
+			1 AS trxType,
+			(SELECT ifnull(sum( trx_amt ),0) FROM MEM_MEMBER_ACT_TRX WHERE trx_code in ('CL010','CL020','AR010','AR020','AR030','AR040') AND drc='D' AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS totalAmount,
+			(SELECT ifnull(sum( trx_amt ),0) FROM MEM_MEMBER_ACT_TRX WHERE trx_code in ('CL010','CL020') AND drc='D' AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS clAmount,
+			(SELECT ifnull(sum( trx_amt ),0) FROM MEM_MEMBER_ACT_TRX WHERE trx_code in ('AR010','AR020') AND drc='D' AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS arAmount,
+			(SELECT ifnull(sum( trx_amt ),0) FROM MEM_MEMBER_ACT_TRX WHERE trx_code in ('AR030','AR040') AND drc='D' AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS exAmount	
+		FROM
+			MEM_MEMBER_ACT_TRX
+		LIMIT 1 
+	</select>
+	
+</mapper>

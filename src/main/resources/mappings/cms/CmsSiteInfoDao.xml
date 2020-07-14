@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.cms.dao.CmsSiteInfoDao">
+    
+	<sql id="cmsSiteInfoColumns">
+		a.id AS "id",
+		a.key AS "key",
+		a.type AS "type",
+		a.value AS "value",
+		a.create_by AS "createBy.id",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.id",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="CmsSiteInfo" id="cmsSiteInfoResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="cmsSiteInfoJoins">
+	</sql>
+    
+	<select id="get" resultMap="cmsSiteInfoResultMap">
+		SELECT 
+			<include refid="cmsSiteInfoColumns"/>
+		FROM CMS_SITE_INFO a
+		<include refid="cmsSiteInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="cmsSiteInfoResultMap">
+		SELECT 
+			<include refid="cmsSiteInfoColumns"/>
+		FROM CMS_SITE_INFO a
+		<include refid="cmsSiteInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="key != null and key != ''">
+				AND a.key LIKE 
+					<if test="dbName == 'oracle'">'%'||#{key}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{key}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{key},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="cmsSiteInfoResultMap">
+		SELECT 
+			<include refid="cmsSiteInfoColumns"/>
+		FROM CMS_SITE_INFO a
+		<include refid="cmsSiteInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="key != null and key != ''">
+				AND a.key LIKE 
+					<if test="dbName == 'oracle'">'%'||#{key}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{key}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{key},'%')</if>
+			</if>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	<!-- key是mysql保留字端，需要加转义符转义 -->
+	<insert id="insert" parameterType="CmsSiteInfo">
+		INSERT INTO CMS_SITE_INFO(
+			id,
+			`key`,
+			type,
+			value,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{key},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{value},
+			#{createBy.id},
+			#{createTime},
+			#{updateBy.id},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="CmsSiteInfo">
+		UPDATE CMS_SITE_INFO SET 	
+			`key` = #{key},
+			type  = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			value = #{value},
+			update_by = #{updateBy.id},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE CMS_SITE_INFO SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

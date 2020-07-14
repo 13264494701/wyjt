@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.rc.dao.RcSjmhDao">
+    
+	<sql id="rcSjmhColumns">
+		a.id AS "id",
+		a.prod_type AS "prodType",
+		a.org_id AS "orgId",
+		a.ufang_emp_no AS "user.empNo",
+		a.task_id AS "taskId",
+		a.phone_no AS "phoneNo",
+		a.id_no AS "idNo",
+		a.user_name AS "userName",
+		a.real_name AS "realName",
+		a.channel_type AS "channelType",
+		a.channel_code AS "channelCode",
+		a.channel_src AS "channelSrc",
+		a.channel_attr AS "channelAttr",
+		a.data_path AS "dataPath",
+		a.report_path AS "reportPath",
+		a.data_status AS "dataStatus",
+		a.report_status AS "reportStatus",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+
+	
+	<resultMap type="RcSjmh" id="rcSjmhResultMap">		
+        <id column="id" property="id"/>
+        <result column="prodType" property="prodType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+		<result column="channelType" property="channelType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+		<result column="dataStatus" property="dataStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+		<result column="reportStatus" property="reportStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	<sql id="rcSjmhJoins">
+	</sql>
+    
+	<select id="get" resultMap="rcSjmhResultMap">
+		SELECT 
+			<include refid="rcSjmhColumns"/>
+		FROM RC_SJMH a
+		<include refid="rcSjmhJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findByOrgId" resultMap="rcSjmhResultMap">
+		SELECT
+		<include refid="rcSjmhColumns"/>
+		FROM RC_SJMH a
+		<include refid="rcSjmhJoins"/>
+		WHERE a.org_id = #{orgId} 
+		ORDER BY a.id DESC
+		LIMIT 1
+	</select>
+	
+	<select id="findByTaskId" resultMap="rcSjmhResultMap">
+		SELECT
+		<include refid="rcSjmhColumns"/>
+		FROM RC_SJMH a
+		<include refid="rcSjmhJoins"/>
+		WHERE a.task_id = #{taskId} 
+		ORDER BY a.id DESC
+		LIMIT 1
+	</select>
+	
+    <select id="findByPhoneNoChannelTypeDataStatus" resultMap="rcSjmhResultMap">
+		SELECT
+		<include refid="rcSjmhColumns"/>
+		FROM RC_SJMH a
+		<include refid="rcSjmhJoins"/>
+		WHERE a.phone_no = #{phoneNo}
+		<if test="channelType != null">
+			AND a.channel_type = #{channelType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+		</if>
+		<if test="dataStatus != null">
+				AND a.data_status = #{dataStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+		</if>
+		ORDER BY  a.id DESC
+		LIMIT 1
+	</select>
+	
+	<select id="findByPhoneNoChannelTypeReportStatus" resultMap="rcSjmhResultMap">
+		SELECT
+		<include refid="rcSjmhColumns"/>
+		FROM RC_SJMH a
+		<include refid="rcSjmhJoins"/>
+		WHERE a.phone_no = #{phoneNo}
+		<if test="channelType != null">
+			AND a.channel_type = #{channelType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+		</if>
+		<if test="reportStatus != null">
+			AND a.report_status = #{reportStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+		</if>
+		ORDER BY  a.id DESC
+		LIMIT 1
+	</select>
+	
+	<select id="findList" resultMap="rcSjmhResultMap">
+		SELECT 
+			<include refid="rcSjmhColumns"/>
+		FROM RC_SJMH a
+		<include refid="rcSjmhJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="phoneNo != null and phoneNo != ''">
+				AND a.phone_no = #{phoneNo}
+			</if>
+			<if test="idNo != null and idNo != ''">
+				AND a.id_no = #{idNo}
+			</if>
+			<if test="prodType != null">
+				AND a.prod_type = #{prodType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="channelType != null">
+				AND a.channel_type = #{channelType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="dataStatus != null">
+				AND a.data_status = #{dataStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="reportStatus != null">
+				AND a.report_status = #{reportStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByEmpNo" resultMap="rcSjmhResultMap">
+		SELECT 
+			<include refid="rcSjmhColumns"/>
+		FROM RC_SJMH a
+		<include refid="rcSjmhJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="phoneNo != null and phoneNo != ''">
+				AND a.phone_no = #{phoneNo}
+			</if>
+			<if test="idNo != null and idNo != ''">
+				AND a.id_no = #{idNo}
+			</if>
+			<if test="prodType != null">
+				AND a.prod_type = #{prodType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="channelType != null">
+				AND a.channel_type = #{channelType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="dataStatus != null">
+				AND a.data_status = #{dataStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="reportStatus != null">
+				AND a.report_status = #{reportStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			AND a.ufang_emp_no = #{user.empNo}
+			AND a.task_id != ""
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	
+	<insert id="insert" parameterType="RcSjmh">
+		INSERT INTO RC_SJMH(
+			id,
+			prod_type,
+			org_id,
+			ufang_emp_no,
+			task_id,
+			phone_no,
+			id_no,
+			user_name,
+			real_name,
+			channel_type,
+			channel_code,
+			channel_src,
+			channel_attr,
+			data_path,
+			report_path,
+			data_status,
+			report_status,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{prodType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{orgId},
+			#{user.empNo},
+			#{taskId},
+			#{phoneNo},
+			#{idNo},
+			#{userName},
+			#{realName},
+			#{channelType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{channelCode},
+			#{channelSrc},
+			#{channelAttr},
+			#{dataPath},
+			#{reportPath},
+			#{dataStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{reportStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="RcSjmh">
+		UPDATE RC_SJMH SET
+		    prod_type = #{prodType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+		    org_id = #{orgId},
+			ufang_emp_no = #{user.empNo},
+			task_id = #{taskId},
+			phone_no = #{phoneNo},
+			id_no = #{idNo},
+			user_name = #{userName},
+			real_name = #{realName},
+			channel_type = #{channelType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			channel_code = #{channelCode},
+			channel_src = #{channelSrc},
+			channel_attr = #{channelAttr},
+			data_path = #{dataPath},
+			report_path = #{reportPath},
+			data_status = #{dataStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			report_status = #{reportStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE RC_SJMH SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

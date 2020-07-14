@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.svc.sys.data.dao.SysDataImportDao">
+    
+	<sql id="sysDataImportColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.min_id AS "minId",
+		a.max_id AS "maxId",
+		a.total_quantity AS "totalQuantity",
+		a.import_quantity AS "importQuantity",
+		a.p_quantity AS "pQuantity",
+		a.handler AS "handler",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.version AS "version",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="SysDataImport" id="sysDataImportResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	
+	<sql id="sysDataImportJoins">
+	</sql>
+    
+	<select id="get" resultMap="sysDataImportResultMap">
+		SELECT 
+			<include refid="sysDataImportColumns"/>
+		FROM SYS_DATA_IMPORT a
+		<include refid="sysDataImportJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByHandler" resultMap="sysDataImportResultMap">
+		SELECT 
+			<include refid="sysDataImportColumns"/>
+		FROM SYS_DATA_IMPORT a
+		<include refid="sysDataImportJoins"/>
+		WHERE a.handler = #{handler}
+		AND a.del_flag = '0'
+	</select>
+	
+	<select id="findList" resultMap="sysDataImportResultMap">
+		SELECT 
+			<include refid="sysDataImportColumns"/>
+		FROM SYS_DATA_IMPORT a
+		<include refid="sysDataImportJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="SysDataImport">
+		INSERT INTO SYS_DATA_IMPORT(
+			id,
+			name,
+			min_id,
+			max_id,
+			total_quantity,
+			import_quantity,
+			p_quantity,
+			handler,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			version,
+			del_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{minId},
+			#{maxId},
+			#{totalQuantity},
+			#{importQuantity},
+			#{pQuantity},
+			#{handler},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{version},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="SysDataImport">
+		UPDATE SYS_DATA_IMPORT SET 	
+			name = #{name},
+			min_id = #{minId},
+			max_id = #{maxId},
+			total_quantity = #{totalQuantity},
+			import_quantity = #{importQuantity},
+			p_quantity = #{pQuantity},
+			handler = #{handler},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			version = #{version}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE SYS_DATA_IMPORT SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

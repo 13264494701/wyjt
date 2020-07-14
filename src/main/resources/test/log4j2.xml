@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration status="ERROR">
+    <Properties>
+        <!--定义变量-->
+        <Property name="baseDir">/root/logs</Property>
+    </Properties>
+
+    <Appenders>
+        <!--控制台输出-->
+        <Console name="Console">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %l - %msg%n"/>
+        </Console>
+        <!--入文件-->
+        <RollingFile name="RollingFile" fileName="${baseDir}/wyjt.log" 
+                     filePattern="${baseDir}/$${date:yyyy-MM}/wyjt-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="%d %-5level [%t]%l - %msg%n"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+            <!--自动删除超过120天的日志压缩文件-->
+            <DefaultRolloverStrategy>
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/wyjt-*.log"/>
+                    <IfLastModified age="120d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+        <!--错误日志入文件-->
+         <RollingFile name="RollingFileError" fileName="${baseDir}/error.log"
+                      filePattern="${baseDir}/$${date:yyyy-MM}/error-%d{yyyy-MM-dd}-%i.log">
+             <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"/>
+             <PatternLayout pattern="[%d{HH:mm:ss:SSS}] [%p] - %l - %m%n"/>
+             <Policies>
+                 <TimeBasedTriggeringPolicy/>
+                 <SizeBasedTriggeringPolicy size="20 MB"/>
+             </Policies>
+         </RollingFile>
+
+        <!--批量任务日志入文件-->
+        <RollingFile name="RollingFileQuartz" fileName="${baseDir}/quartz.log"
+                     filePattern="${baseDir}/$${date:yyyy-MM}/quartz-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="%d %-5level [%t]%l - %msg%n"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="20 MB"/>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+            <!--自动删除超过120天的日志压缩文件-->
+            <DefaultRolloverStrategy>
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/quartz-*.log"/>
+                    <IfLastModified age="120d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <logger name="org.springframework" level="warn"></logger>
+        <logger name="org.apache" level="warn"></logger>
+        <logger name="org.mybatis.spring" level="warn"></logger>
+        <logger name="net.sf.ehcache" level="warn"></logger>
+        <logger name="org.quartz" level="info" additivity="false">
+            <!--写入debug级别-->
+            <AppenderRef ref="RollingFileQuartz"/>
+            <AppenderRef ref="Console"/>
+        </logger>
+        <logger name="com.alibaba.druid" level="warn"></logger>
+        <!--采用异步输出日志-->
+        <AsyncLogger name="com.jxf" level="debug">
+            <!--写入debug级别-->
+            <AppenderRef ref="RollingFile"/>
+        </AsyncLogger>
+        <Root level="all">
+            <AppenderRef ref="Console"/>
+            <!--写入error级别-->
+            <AppenderRef ref="RollingFileError"/>
+        </Root>
+    </Loggers>
+</Configuration>

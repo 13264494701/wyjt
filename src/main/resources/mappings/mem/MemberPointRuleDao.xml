@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberPointRuleDao">
+    
+	<sql id="memberPointRuleColumns">
+		a.id AS "id",
+		a.type AS "type",
+		a.drc AS "drc",
+		a.name AS "name",
+		a.point_expression AS "pointExpression",
+		a.sort AS "sort",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.is_on AS "isOn",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="MemberPointRule" id="memberPointRuleResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="drc" property="drc" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	<sql id="memberPointRuleJoins">
+	</sql>
+    
+	<select id="get" resultMap="memberPointRuleResultMap">
+		SELECT 
+			<include refid="memberPointRuleColumns"/>
+		FROM MEM_MEMBER_POINT_RULE a
+		<include refid="memberPointRuleJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="memberPointRuleResultMap">
+		SELECT 
+			<include refid="memberPointRuleColumns"/>
+		FROM MEM_MEMBER_POINT_RULE a
+		<include refid="memberPointRuleJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="drc != null">
+				AND a.drc = #{drc,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="isOn != null ">
+				AND a.is_on = #{isOn, javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="MemberPointRule">
+		INSERT INTO MEM_MEMBER_POINT_RULE(
+			id,
+			type,
+			drc,
+			name,
+			point_expression,
+			sort,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			is_on,
+			del_flag
+		) VALUES (
+			#{id},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{drc,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{name},
+			#{pointExpression},
+			#{sort},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{isOn},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MemberPointRule">
+		UPDATE MEM_MEMBER_POINT_RULE SET 	
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			drc = #{drc,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			name = #{name},
+			point_expression = #{pointExpression},
+			sort = #{sort},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MEM_MEMBER_POINT_RULE SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id = "enableRule">
+		UPDATE MEM_MEMBER_POINT_RULE SET 
+			is_on = #{sts}
+		WHERE id = #{id}
+	</update>
+</mapper>

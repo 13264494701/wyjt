@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.cms.dao.CmsArticleCommentReplyDao">
+    
+	<sql id="cmsArticleCommentReplyColumns">
+		a.id AS "id",
+		a.comment_id AS "comment.id",
+		a.from_member_no AS "fromMember.memberNo",
+		a.from_nickname AS "fromMember.nickname",
+		a.to_member_no AS "toMember.memberNo",
+		a.to_nickname AS "toMember.nickname",
+		a.type AS "type",
+		a.target AS "target",
+		a.content AS "content",
+		a.ip AS "ip",
+		a.create_time AS "createTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="CmsArticleCommentReply" id="cmsArticleCommentReplyResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="target" property="target" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="cmsArticleCommentReplyJoins">
+	</sql>
+    
+	<select id="get" resultMap="cmsArticleCommentReplyResultMap">
+		SELECT 
+			<include refid="cmsArticleCommentReplyColumns"/>
+		FROM CMS_ARTICLE_COMMENT_REPLY a
+		<include refid="cmsArticleCommentReplyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findByCommentId" resultMap="cmsArticleCommentReplyResultMap">
+		SELECT 
+			<include refid="cmsArticleCommentReplyColumns"/>
+		FROM CMS_ARTICLE_COMMENT_REPLY a
+		<include refid="cmsArticleCommentReplyJoins"/>
+		WHERE a.comment_id = #{commentId} AND 
+			  a.del_flag = 0
+		ORDER BY a.id
+	</select>
+	
+	<select id="findList" resultMap="cmsArticleCommentReplyResultMap">
+		SELECT 
+			<include refid="cmsArticleCommentReplyColumns"/>
+		FROM CMS_ARTICLE_COMMENT_REPLY a
+		<include refid="cmsArticleCommentReplyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="comment != null and  comment.id != null and comment.id != ''">
+				AND a.comment_id = #{comment.id}
+			</if>
+			<if test="fromMember != null and fromMember.memberNo != null and fromMember.memberNo != ''">
+				AND a.from_member = #{fromMember.memberNo}
+			</if>
+			<if test="toMember != null and toMember.memberNo != null and toMember.memberNo != ''">
+				AND a.to_member = #{toMember.memberNo}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="target != null">
+				AND a.target = #{target,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="cmsArticleCommentReplyResultMap">
+		SELECT 
+			<include refid="cmsArticleCommentReplyColumns"/>
+		FROM CMS_ARTICLE_COMMENT_REPLY a
+		<include refid="cmsArticleCommentReplyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="comment != null and  comment.id != null and comment.id != ''">
+				AND a.comment_id = #{comment.id}
+			</if>
+			<if test="fromMember != null and fromMember.memberNo != null and fromMember.memberNo != ''">
+				AND a.from_member = #{fromMember.memberNo}
+			</if>
+			<if test="toMember != null and toMember.memberNo != null and toMember.memberNo != ''">
+				AND a.to_member = #{toMember.memberNo}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="target != null">
+				AND a.target = #{target,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="CmsArticleCommentReply">
+		INSERT INTO CMS_ARTICLE_COMMENT_REPLY(
+			id,
+			comment_id,
+			from_member_no,
+			from_nickname,
+			to_member_no,
+			to_nickname,
+			type,
+			target,
+			content,
+			ip,
+			create_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{comment.id},
+			#{fromMember.memberNo},
+			#{fromMember.nickname},
+			#{toMember.memberNo},
+			#{toMember.nickname},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{target,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{content},
+			#{ip},
+			#{createTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="CmsArticleCommentReply">
+		UPDATE CMS_ARTICLE_COMMENT_REPLY SET 	
+			comment_id = #{comment.id},
+			from_member_no = #{fromMember.memberNo},
+			from_nickname = #{fromMember.nickname},
+			to_member_no = #{toMember.memberNo},
+			to_nickname = #{toMember.nickname},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			target = #{target,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			content = #{content},
+			ip = #{ip}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE CMS_ARTICLE_COMMENT_REPLY SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

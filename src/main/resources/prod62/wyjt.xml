@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wyjt>
+	<setting name="isSiteEnabled" value="true" />
+	<setting name="siteCloseMessage" value="&lt;dl&gt;&lt;dt&gt;网站维护中，暂时无法访问！&lt;/dt&gt;&lt;dd&gt;本网站正在进行系统维护和技术升级，网站暂时无法访问，敬请谅解！&lt;/dd&gt;&lt;/dl&gt;" />
+	<setting name="defaultPcHeadImage" value="/static/front/pc/images/head_image.png" />
+	<setting name="watermarkAlpha" value="50" />
+	<setting name="watermarkImage" value="/static/jhxx/images/watermark.png" />
+	<setting name="watermarkPosition" value="bottomRight" />
+	<setting name="isRegisterEnabled" value="true" />
+	<setting name="isDuplicateEmail" value="false" />
+	<setting name="disabledUsername" value="admin,管理员" />
+	<setting name="usernameMinLength" value="2" />
+	<setting name="usernameMaxLength" value="20" />
+	<setting name="passwordMinLength" value="4" />
+	<setting name="passwordMaxLength" value="20" />
+	<setting name="registerPoint" value="0" />
+	<setting name="isEmailLogin" value="true" />
+	<setting name="captchaTypes" value="memberLogin,memberRegister,adminLogin,review,consultation,findPassword,resetPassword,other" />
+	<setting name="accountLockTypes" value="member,admin" />
+	<setting name="accountLockCount" value="20" />
+	<setting name="accountLockTime" value="10" />
+	<setting name="safeKeyExpiryTime" value="1440" />
+	<setting name="uploadMaxSize" value="10" />
+	<setting name="uploadImageExtension" value="jpg,jpeg,bmp,gif,png" />
+	<setting name="uploadVideoExtension" value="swf,flv,mp3,wav,avi,rm,rmvb" />
+	<setting name="uploadFileExtension" value="zip,rar,7z,doc,docx,xls,xlsx,ppt,pptx" />
+	<setting name="imageUploadPath" value="/web_upload/image/${dir}/${.now?string('yyyyMM')}/" />
+	<setting name="videoUploadPath" value="/web_upload/video/${dir}/${.now?string('yyyyMM')}/" />
+	<setting name="fileUploadPath" value="/web_upload/file/${dir}/${.now?string('yyyyMM')}/" />
+	<setting name="currencySign" value="￥" />
+	<setting name="currencyUnit" value="元" />
+	<setting name="defaultPointScale" value="1" />
+	<setting name="isDevelopmentEnabled" value="true" />
+	<setting name="isReviewEnabled" value="true" />
+	<setting name="isReviewCheck" value="true" />
+	<setting name="reviewAuthority" value="purchased" />
+	<setting name="isConsultationEnabled" value="true" />
+	<setting name="isConsultationCheck" value="true" />
+	<setting name="consultationAuthority" value="member" />
+	<setting name="cookiePath" value="/" />
+	<setting name="cookieDomain" value="" />
+	<setting name="isCnzzEnabled" value="false" />
+	<setting name="cnzzSiteId" value="" />
+	<setting name="cnzzPassword" value="" />
+	<setting name="locale" value="zh_CN" />
+	<setting name="theme" value="default" />
+	<templateConfig id="mbContractContent" type="page" name="MB协议内容" templatePath="/cont/cont.ftl" staticPath="/mb/cont/${contTmpl.type}.html" />
+</wyjt>

@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.svc.sys.user.dao.UserDao">
+
+    <sql id="userColumns">
+    	a.id,
+    	a.brn_id AS "brn.id",
+    	a.login_name AS "loginName",
+    	a.password AS "password",
+    	a.emp_no AS "empNo",
+		a.emp_nam AS "empNam",
+		a.email AS "email",
+		a.phone AS "phone",
+		a.mobile AS "mobile",
+		a.login_ip AS "loginIp",
+		a.login_date AS "loginDate",
+		a.photo AS "photo",
+		a.is_enabled AS "isEnabled",
+		a.allow_ips AS "allowIps",
+		a.is_locked AS "isLocked",
+		a.mask AS "mask",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time,
+		a.update_by AS "updateBy.empNo",
+		a.update_time,
+		a.del_flag ,
+		c1.brn_no AS "brn.brnNo",
+    	c1.brn_name AS "brn.brnName",
+    	c1.parent_id AS "brn.parent.id",
+    	c1.parent_ids AS "brn.parentIds",
+    	c2.brn_name AS "brn.parent.brnName",
+    	d.id AS "brn.area.id",
+    	d.name AS "brn.area.name",
+    	d.parent_id AS "brn.area.parent.id",
+    	d.parent_ids AS "brn.area.parentIds"
+
+    </sql>
+    
+    <resultMap type="User" id="userResultMap">
+		<id column="id" property="id"/>
+		<result column="isEnabled"  property="isEnabled" javaType="Boolean" jdbcType="CHAR" />		
+		<result column="isLocked"  property="isLocked" javaType="Boolean" jdbcType="CHAR" />
+	</resultMap>
+	
+    <resultMap id="roleResult" type="Role">
+		<id property="id" column="id" />
+		<result property="roleName" column="roleName" />
+		<result property="dataScope" column="dataScope" />
+		<result property="rmk" column="rmk" />
+	</resultMap>
+	
+    <sql id="userJoins">
+		LEFT JOIN SYS_BRN c1 ON c1.id = a.brn_id
+		LEFT JOIN SYS_BRN c2 ON c2.id = c1.parent_id
+		LEFT JOIN SYS_AREA d ON d.id = c1.area_id 
+    </sql>
+	
+	<!-- 根据系统编号获得用户 -->
+	<select id="get" resultMap="userResultMap">
+		SELECT
+			<include refid="userColumns"/>
+		FROM SYS_USER a
+		<include refid="userJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<!-- 根据登录名查询用户 -->
+	<select id="getByLoginName" resultMap="userResultMap" parameterType="User">
+		SELECT
+			<include refid="userColumns"/>
+		FROM SYS_USER a
+		<include refid="userJoins"/>
+		WHERE a.login_name = #{loginName} AND a.del_flag = #{DEL_FLAG_NORMAL}
+	</select>
+	
+
+	<!-- 分页查询用户信息 -->
+	<select id="findList" resultMap="userResultMap">
+		SELECT
+			<include refid="userColumns"/>
+		FROM SYS_USER a
+		<include refid="userJoins"/>
+		<if test="role != null and role.id != null and role.id != ''">
+			JOIN SYS_USER_ROLE ur ON ur.user_id = a.id AND ur.role_id = #{role.id}
+		</if>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="brn != null and brn.id != null and brn.id != ''">
+			AND (c1.id = #{brn.id} OR c1.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{brn.id}||',%')</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{brn.id}, ',%'))</if>
+		</if> 
+		<if test="loginName != null and loginName != ''">
+			AND a.login_name like 
+					<if test="dbName == 'oracle'">'%'||#{loginName}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{loginName}, '%')</if>
+		</if>
+		<if test="empNam != null and empNam != ''">
+			AND a.emp_nam like 
+					<if test="dbName == 'oracle'">'%'||#{empNam}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{empNam}, '%')</if>
+		</if>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.emp_nam
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 根据BrnId获取用户（树查询用户时用） -->
+	<select id="findUserByBrnId" resultMap="userResultMap" useCache="true">
+		SELECT
+			a.id, a.emp_nam, a.login_name
+		FROM SYS_USER a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.brn_id = #{brn.id}
+		ORDER BY a.emp_nam
+	</select>
+	
+	<!-- 查询全部用户 -->
+	<select id="findAllList" resultMap="userResultMap">
+		SELECT
+			<include refid="userColumns"/>
+		FROM SYS_USER a
+		<include refid="userJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY a.emp_nam
+	</select>
+	
+	<!-- 查询全部用户数目 -->
+	<select id="findAllCount" resultType="long">
+		SELECT
+			COUNT(1)
+		FROM SYS_USER a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+	</select>
+	
+	<!-- 插入用户 -->
+	<insert id="insert">
+		INSERT INTO SYS_USER(
+			id, 
+			brn_id,  
+			login_name, 
+			password, 
+			emp_no, 
+			emp_nam, 
+			email, 
+			phone, 
+			mobile, 
+			photo,
+			is_enabled,
+			is_locked,
+			allow_ips,
+			mask,
+			rmk, 
+			create_by, 
+			create_time, 
+			update_by, 
+			update_time, 			 
+			del_flag
+		) VALUES (
+			#{id}, 
+			#{brn.id},  
+			#{loginName}, 
+			#{password}, 
+			#{empNo}, 
+			#{empNam}, 
+			#{email}, 
+			#{phone}, 
+			#{mobile}, 
+			#{photo}, 
+			#{isEnabled, javaType=Boolean, jdbcType=CHAR},
+			#{isLocked, javaType=Boolean, jdbcType=CHAR},
+			#{allowIps},
+			#{mask},
+			#{rmk}, 
+			#{createBy.empNo}, 
+			#{createTime}, 
+			#{updateBy.empNo}, 
+			#{updateTime}, 			
+			#{delFlag}
+		)
+	</insert>
+	
+	<!-- 更新用户 -->
+	<update id="update">
+		UPDATE SYS_USER SET 
+			brn_id = #{brn.id},
+			login_name = #{loginName}, 
+			password = #{password}, 
+			emp_no = #{empNo}, 
+			emp_nam = #{empNam}, 
+			email = #{email}, 
+			phone = #{phone}, 
+			mobile = #{mobile}, 						
+			photo = #{photo},
+			is_enabled = #{isEnabled, javaType=Boolean, jdbcType=CHAR},
+			is_locked = #{isLocked, javaType=Boolean, jdbcType=CHAR},	
+			allow_ips = #{allowIps},
+			mask = #{mask},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findUserRoleList" resultMap="roleResult">
+		SELECT 
+			a.*
+		FROM SYS_ROLE a
+		LEFT JOIN SYS_USER_ROLE ur ON ur.role_id = a.id
+		LEFT JOIN SYS_USER u ON u.id = ur.user_id
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} 
+		AND u.id = #{id}
+	</select>
+	
+	<!-- 删除用户和角色关联表数据 -->
+	<delete id="deleteUserRole">
+		DELETE FROM SYS_USER_ROLE WHERE user_id = #{id}
+	</delete>
+	
+	<!-- 插入用户和角色关联表数据 -->
+	<insert id="insertUserRole">
+		INSERT INTO SYS_USER_ROLE(user_id, role_id)
+		<foreach collection="roleList" item="role" separator=" union all ">
+			SELECT #{id}, #{role.id} FROM dual
+		</foreach>
+	</insert>
+	
+	<!-- 更新用户信息  -->
+	<update id="updateUserInfo">
+		UPDATE SYS_USER SET 
+			email = #{email}, 
+			phone = #{phone}, 
+			mobile = #{mobile}, 
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime}, 
+			rmk = #{rmk},
+			photo = #{photo}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 更新用户密码 -->
+	<update id="updatePasswordById">
+		UPDATE SYS_USER SET 
+			password = #{password} 
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 更新登录信息，如登录IP、登录时间 -->
+	<update id="updateLoginInfo">
+		UPDATE SYS_USER SET 
+			login_ip = #{loginIp}, 
+			login_Date = #{loginDate} 
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 逻辑删除用户 -->
+	<update id="delete">
+		UPDATE SYS_USER SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<!-- 根据机构ID查询机构下面最大的用户号 -->
+	
+	<select id="getChildMaxUserNo" resultType="String" parameterType="String">
+		SELECT
+			max(a.login_name) as no
+		FROM SYS_USER a
+		WHERE a.brn_id = #{brn}
+	</select>
+	
+	<!-- 查询某机构下的用户数 -->
+	<select id="getCountBrnUser" resultType="int">
+		SELECT
+			COUNT(*) as sumcount
+		FROM SYS_USER a
+		WHERE a.del_flag = #{delFlag} and a.brn_id = #{brnId}
+	</select>
+	<!-- 查询最大的用户号 -->
+	<select id="getMaxEmpNo" resultType="String" >
+		SELECT
+			max(a.emp_no) as no
+		FROM SYS_USER a WHERE  a.brn_id = #{brnId} AND a.emp_no != '999999'
+	</select>
+	<!-- 根据用户号查找用户名 -->
+	<select id="getEmpNamByEmpNo" resultType="String" >
+		SELECT
+			a.emp_nam as empNam
+		FROM SYS_USER a where a.emp_no = #{empNo}
+	</select>
+</mapper>

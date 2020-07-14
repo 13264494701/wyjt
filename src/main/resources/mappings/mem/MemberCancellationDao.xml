@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberCancellationDao">
+    
+	<sql id="memberCancellationColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.name AS "member.name",
+		a.username AS "member.username",
+		a.status AS "status",
+		a.reason AS "reason",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="MemberCancellation" id="memberCancellationResultMap">		
+        <id column="id" property="id"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	<sql id="memberCancellationJoins">
+	</sql>
+    
+	<select id="get" resultMap="memberCancellationResultMap">
+		SELECT 
+			<include refid="memberCancellationColumns"/>
+		FROM MEM_MEMBER_CANCELLATION a
+		<include refid="memberCancellationJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="memberCancellationResultMap">
+		SELECT 
+			<include refid="memberCancellationColumns"/>
+		FROM MEM_MEMBER_CANCELLATION a
+		<include refid="memberCancellationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="member != null and member.username != null and member.username != ''">
+				AND a.username = #{member.username}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="MemberCancellation">
+		INSERT INTO MEM_MEMBER_CANCELLATION(
+			id,
+			member_id,
+			name,
+			username,
+			status,
+			reason,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{member.name},
+			#{member.username},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{reason},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MemberCancellation">
+		UPDATE MEM_MEMBER_CANCELLATION SET 	
+			member_id = #{member.id},
+			username = #{member.username},
+			name = #{member.name},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			reason = #{reason},
+			rmk = #{rmk},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MEM_MEMBER_CANCELLATION SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

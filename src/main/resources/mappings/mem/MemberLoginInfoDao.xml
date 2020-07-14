@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberLoginInfoDao">
+    
+	<sql id="memberLoginInfoColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.os_type AS "osType",
+		a.os_version AS "osVersion",
+		a.app_version AS "appVersion",
+		a.ak AS "ak",
+		a.device_model AS "deviceModel",
+		a.device_token AS "deviceToken",
+		a.channe_id AS "channeId",
+		a.push_token AS "pushToken",
+		a.login_ip AS "loginIp",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="MemberLoginInfo" id="memberLoginInfoResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	<sql id="memberLoginInfoJoins">
+	</sql>
+    
+	<select id="get" resultMap="memberLoginInfoResultMap">
+		SELECT 
+			<include refid="memberLoginInfoColumns"/>
+		FROM MEM_MEMBER_LOGIN_INFO a
+		<include refid="memberLoginInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getLoginInfoByMemberId" resultMap="memberLoginInfoResultMap">
+		SELECT 
+			<include refid="memberLoginInfoColumns"/>
+		FROM MEM_MEMBER_LOGIN_INFO a
+		<include refid="memberLoginInfoJoins"/>
+		WHERE a.member_id = #{memberId}
+	</select>
+	
+	
+	<select id="findList" resultMap="memberLoginInfoResultMap">
+		SELECT 
+			<include refid="memberLoginInfoColumns"/>
+		FROM MEM_MEMBER_LOGIN_INFO a
+		<include refid="memberLoginInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="osType != null and osType != ''">
+				AND a.os_type = #{osType}
+			</if>
+			<if test="osVersion != null and osVersion != ''">
+				AND a.os_version = #{osVersion}
+			</if>
+			<if test="appVersion != null and appVersion != ''">
+				AND a.app_version = #{appVersion}
+			</if>
+			<if test="deviceToken != null and deviceToken != ''">
+				AND a.device_token = #{deviceToken}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="MemberLoginInfo">
+		INSERT INTO MEM_MEMBER_LOGIN_INFO(
+			id,
+			member_id,
+			os_type,
+			os_version,
+			app_version,
+			ak,
+			device_model,
+			device_token,
+			channe_id,
+			push_token,
+			login_ip,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{osType},
+			#{osVersion},
+			#{appVersion},
+			#{ak},
+			#{deviceModel},
+			#{deviceToken},
+			#{channeId},
+			#{pushToken},
+			#{loginIp},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MemberLoginInfo">
+		UPDATE MEM_MEMBER_LOGIN_INFO SET 	
+			member_id = #{member.id},
+			os_type = #{osType},
+			os_version = #{osVersion},
+			app_version = #{appVersion},
+			ak = #{ak},
+			device_model = #{deviceModel},
+			device_token = #{deviceToken},
+			channe_id = #{channeId},
+			push_token = #{pushToken},
+			login_ip = #{loginIp},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MEM_MEMBER_LOGIN_INFO SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.ufang.dao.UfangLoaneeDataOrderDao">
+    
+	<sql id="ufangLoaneeDataOrderColumns">
+		a.id AS "id",
+		a.ufang_emp_no AS "user.empNo",
+		a.prod_code AS "prodCode",
+		a.data_id AS "data.id",
+		a.amount AS "amount",
+		a.data_group AS "dataGroup",
+		a.status AS "status",
+		a.pay_id AS "payId",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		c.emp_nam AS "user.empNam",
+		d.name AS "data.name",
+		d.phone_no AS "data.phoneNo",
+		d.id_no AS "data.idNo",
+		d.age AS "data.age",
+		d.zhimafen AS "data.zhimafen",
+		d.qq_no AS "data.qqNo",
+		d.weixin_no AS "data.weixinNo",
+		d.yunyingshang_status AS "data.yunyingshangStatus",
+		d.apply_amount AS "data.applyAmount",
+		d.report_task_id AS "data.reportTaskId"
+	</sql>
+	
+	<sql id="onlyLoaneeDataOrderColumns">
+		a.id AS "id",
+		a.ufang_emp_no AS "user.empNo",
+		a.prod_code AS "prodCode",
+		a.data_id AS "data.id",
+		a.amount AS "amount",
+		a.data_group AS "dataGroup",
+		a.status AS "status",
+		a.pay_id AS "payId",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="UfangLoaneeDataOrder" id="ufangLoaneeDataOrderResultMap">		
+        <id column="id" property="id"/>
+        <result column="dataGroup" property="dataGroup" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+		<result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+		<result column="data.yunyingshangStatus" property="data.yunyingshangStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="ufangLoaneeDataOrderJoins">
+		LEFT JOIN UFANG_USER c ON c.emp_no = a.ufang_emp_no
+		LEFT JOIN UFANG_BRN e ON e.id = c.brn_id
+		LEFT JOIN UFANG_LOANEE_DATA d ON d.id = a.data_id
+	</sql>
+    
+	<select id="get" resultMap="ufangLoaneeDataOrderResultMap">
+		SELECT 
+			<include refid="ufangLoaneeDataOrderColumns"/>
+		FROM UFANG_LOANEE_DATA_ORDER a
+		<include refid="ufangLoaneeDataOrderJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="ufangLoaneeDataOrderResultMap">
+		SELECT 
+			<include refid="ufangLoaneeDataOrderColumns"/>
+		FROM UFANG_LOANEE_DATA_ORDER a
+		<include refid="ufangLoaneeDataOrderJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="user != null and user.empNam != null and user.empNam != ''">
+				AND c.emp_nam = #{user.empNam}
+			</if>
+			<if test="prodCode != null and prodCode != ''">
+				AND a.prod_code = #{prodCode}
+			</if>
+			<if test="dataGroup != null">
+				AND a.data_group = #{dataGroup,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>     
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>  
+			<if test="beginTime != null and endTime != null">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>   
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<select id="findListByCompanyNo" resultMap="ufangLoaneeDataOrderResultMap">
+		SELECT 
+			<include refid="onlyLoaneeDataOrderColumns"/>
+		FROM UFANG_LOANEE_DATA_ORDER a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.data_id = #{data.id}
+			AND left(a.ufang_emp_no,4) = left(#{user.empNo},4)     
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<select id="findListByEmpNo" resultMap="ufangLoaneeDataOrderResultMap">
+		SELECT 
+			<include refid="ufangLoaneeDataOrderColumns"/>
+		FROM UFANG_LOANEE_DATA_ORDER a
+		<include refid="ufangLoaneeDataOrderJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="user != null and user.empNo != null and user.empNo != ''">
+				AND c.emp_no = #{user.empNo}
+			</if>
+			<if test="dataGroup != null">
+				AND a.data_group = #{dataGroup,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>     
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>  
+			<if test="beginTime != null and endTime != null">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>   
+			<!-- 数据范围过滤 -->
+			${sqlMap.dsf}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="UfangLoaneeDataOrder">
+		INSERT INTO UFANG_LOANEE_DATA_ORDER(
+			id,
+			ufang_emp_no,
+			prod_code,
+			data_id,
+			amount,
+			data_group,
+			status,
+			pay_id,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{user.empNo},
+			#{prodCode},
+			#{data.id},
+			#{amount},
+			#{dataGroup,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{payId},
+			#{user.empNo},
+			#{createTime},
+			#{user.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="UfangLoaneeDataOrder">
+		UPDATE UFANG_LOANEE_DATA_ORDER SET 	
+			ufang_emp_no = #{user.empNo},
+			prod_code = #{prodCode},
+			data_id = #{data.id},
+			amount = #{amount},
+			data_group = #{dataGroup,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			pay_id = #{payId},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE UFANG_LOANEE_DATA_ORDER SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

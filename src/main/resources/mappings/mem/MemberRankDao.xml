@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberRankDao">
+    
+	<sql id="memberRankColumns">
+		a.id AS "id",
+		a.rank_no AS "rankNo",
+		a.rank_name AS "rankName",
+		a.consume_amount AS "consumeAmount",
+		a.discounts AS "discounts",
+		a.is_default AS "isDefault",
+		a.is_special AS "isSpecial",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="MemberRank" id="memberRankResultMap">
+		<id column="id" property="id"/>
+		<result column="isDefault"  property="isDefault" javaType="Boolean" jdbcType="CHAR" />		
+		<result column="isSpecial"  property="isSpecial" javaType="Boolean" jdbcType="CHAR" />		
+	</resultMap>
+	
+	<sql id="memberRankJoins">
+	</sql>
+    
+	<select id="get" resultMap="memberRankResultMap">
+		SELECT 
+			<include refid="memberRankColumns"/>
+		FROM MEM_MEMBER_RANK a
+		<include refid="memberRankJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="memberRankResultMap">
+		SELECT 
+			<include refid="memberRankColumns"/>
+		FROM MEM_MEMBER_RANK a
+		<include refid="memberRankJoins"/>
+		<where>
+			
+			<if test="rankNo != null and rankNo != ''">
+				AND a.rank_no = #{rankNo}
+			</if>
+			<if test="rankName != null and rankName != ''">
+				AND a.rank_name = #{rankName}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.rank_no ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="memberRankResultMap">
+		SELECT 
+			<include refid="memberRankColumns"/>
+		FROM MEM_MEMBER_RANK a
+		<include refid="memberRankJoins"/>
+		<where>
+			
+			<if test="rankNo != null and rankNo != ''">
+				AND a.rank_no = #{rankNo}
+			</if>
+			<if test="rankName != null and rankName != ''">
+				AND a.rank_name = #{rankName}
+			</if>			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO MEM_MEMBER_RANK(
+			id,
+			rank_no,
+			rank_name,
+			consume_amount,
+			discounts,
+			is_default,
+			is_special,
+			create_by, 
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{rankNo},
+			#{rankName},
+			#{consumeAmount},
+			#{discounts},
+			#{isDefault, javaType=Boolean, jdbcType=CHAR},
+			#{isSpecial, javaType=Boolean, jdbcType=CHAR},
+			#{createBy.empNo}, 
+			#{createTime}, 
+			#{updateBy.empNo}, 
+			#{updateTime}, 
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE MEM_MEMBER_RANK SET 	
+			rank_no = #{rankNo},
+			rank_name = #{rankName},
+			consume_amount = #{consumeAmount},
+			discounts = #{discounts},
+			is_default = #{isDefault, javaType=Boolean, jdbcType=CHAR},
+			is_special = #{isSpecial, javaType=Boolean, jdbcType=CHAR},
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MEM_MEMBER_RANK SET 
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<update id="setDefault">
+		UPDATE MEM_MEMBER_RANK
+		SET is_default =
+	    CASE  
+		WHEN id = #{id} THEN '1'
+		WHEN id != #{id} THEN '0'
+		END
+	</update>
+	<select id="findDefault" resultMap="memberRankResultMap">
+		SELECT 
+			<include refid="memberRankColumns"/>
+		FROM MEM_MEMBER_RANK a
+		<include refid="memberRankJoins"/>
+		WHERE a.is_default = '1'
+	</select>
+	<select id="getMemRankByNo" resultMap="memberRankResultMap">
+		SELECT 
+			<include refid="memberRankColumns"/>
+		FROM MEM_MEMBER_RANK a
+		WHERE a.rank_no = #{rankNo}
+	</select>
+	<!-- 查询最大的等级编号 -->
+	<select id="getMaxRankNo" resultType="String" >
+		SELECT
+			max(rank_no) as rankNo
+		FROM MEM_MEMBER_RANK 
+	</select>
+</mapper>

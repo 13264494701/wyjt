@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.loan.dao.NfsLoanArbitrationDao">
+    
+	<sql id="nfsLoanArbitrationColumns">
+		a.id AS "id",
+		a.loan_id AS "loan.id",
+		a.apply_amount AS "applyAmount",
+		a.fee AS "fee",
+		a.refund_fee AS "refundFee",
+		a.refuse_reason AS "refuseReason",
+		a.status AS "status",
+		a.channel AS "channel",
+		a.third_part_id AS "thirdPartId",
+		a.loanee_account AS "loaneeAccount",
+		a.loanee_account_name AS "loaneeAccountName",
+		a.loaner_account AS "loanerAccount",
+		a.loaner_account_Name AS "loanerAccountName",
+		a.pay_order_no AS "payOrderNo",
+		a.preservation_process AS "preservationProcess",
+		a.end_time AS "endTime",
+		a.rmk AS "rmk",
+		a.rule_time AS "ruleTime",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.version AS "version",
+		a.del_flag AS "delFlag",
+		a.strongStatus AS "strongStatus",
+		a.images AS "images",
+		c.loaner_id AS "loan.loaner.id",
+		c.loaner_name AS "loan.loaner.name",
+		c.loaner_phone_no AS "loan.loaner.username",
+		c.loaner_id_no AS "loan.loaner.idNo",
+		c.loanee_id AS "loan.loanee.id",
+		c.loanee_name AS "loan.loanee.name",
+		c.loanee_phone_no AS "loan.loanee.username",
+		c.loanee_id_no AS "loan.loanee.idNo",
+		c.due_repay_date AS "loan.dueRepayDate",
+		c.repay_type AS "loan.repayType",
+		c.amount AS "loan.amount",
+		c.interest AS "loan.interest",
+		c.loan_no AS "loan.no",
+		c.int_rate AS "loan.intRate",
+		c.term AS "loan.term",
+		c.repayed_term AS "loan.repayedTerm",
+		c.due_repay_term AS "loan.dueRepayTerm",
+		c.due_repay_amount AS "loan.dueRepayAmount",
+		c.complete_date AS "loan.completeDate",
+		c.trx_type AS "loan.trxType"
+	</sql>
+	
+	<resultMap type="NfsLoanArbitration" id="nfsLoanArbitrationResultMap">		
+        <id column="id" property="id"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="preservationProcess" property="preservationProcess" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="channel" property="channel" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="strongStatus" property="strongStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="loan.repayType" property="loan.repayType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="loan.trxType" property="loan.trxType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="nfsLoanArbitrationJoins">
+	    LEFT JOIN NFS_LOAN_RECORD c on a.loan_id = c.id
+	</sql>
+    
+	<select id="get" resultMap="nfsLoanArbitrationResultMap">
+		SELECT 
+			<include refid="nfsLoanArbitrationColumns"/>
+		FROM NFS_LOAN_ARBITRATION a
+		<include refid="nfsLoanArbitrationJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByLoanId" resultMap="nfsLoanArbitrationResultMap">
+		SELECT 
+			<include refid="nfsLoanArbitrationColumns"/>
+		FROM NFS_LOAN_ARBITRATION a
+		<include refid="nfsLoanArbitrationJoins"/>
+		WHERE
+			a.del_flag = '0' 
+		AND	a.loan_id = #{loanId}
+	</select>
+	
+	<select id="findInArbitration" resultMap="nfsLoanArbitrationResultMap">
+		SELECT 
+			<include refid="nfsLoanArbitrationColumns"/>
+		FROM NFS_LOAN_ARBITRATION a
+		<include refid="nfsLoanArbitrationJoins"/>
+		<where>
+			 a.del_flag = '0' AND (a.status = 0 OR a.status = 2 OR a.status = 3 OR a.status = 8) AND c.trx_type = #{trxType}
+			 <if test="loanerId != null and loanerId != ''">
+					AND c.loaner_id = #{loanerId}
+			 </if>
+		 </where>
+	 	<choose>
+			<when test="nfsLoanArbitration.page !=null and nfsLoanArbitration.page.orderBy != null and nfsLoanArbitration.page.orderBy != ''">
+				ORDER BY ${nfsLoanArbitration.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findTransferCase" resultMap="nfsLoanArbitrationResultMap">
+		SELECT 
+			<include refid="nfsLoanArbitrationColumns"/>
+		FROM NFS_LOAN_ARBITRATION a
+		<include refid="nfsLoanArbitrationJoins"/>
+		<where>
+			 a.del_flag = '0' and a.status = 0
+		 </where>
+	</select>
+	<select id="findEndOfArbitration" resultMap="nfsLoanArbitrationResultMap">
+		SELECT 
+			<include refid="nfsLoanArbitrationColumns"/>
+		FROM NFS_LOAN_ARBITRATION a
+		<include refid="nfsLoanArbitrationJoins"/>
+		<where>
+			 a.del_flag = '0' AND (a.status = 4 OR a.status = 1 OR a.status = 5 OR a.status = 6 OR a.status = 7)  AND c.trx_type = #{trxType}
+			 <if test="loanerId != null and loanerId != ''">
+					AND c.loaner_id = #{loanerId}
+			 </if>
+		 </where>
+	 	<choose>
+			<when test="nfsLoanArbitration.page !=null and nfsLoanArbitration.page.orderBy != null and nfsLoanArbitration.page.orderBy != ''">
+				ORDER BY ${nfsLoanArbitration.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findArbitration" resultMap="nfsLoanArbitrationResultMap">
+		SELECT 
+			<include refid="nfsLoanArbitrationColumns"/>
+		FROM NFS_LOAN_ARBITRATION a
+		<include refid="nfsLoanArbitrationJoins"/>
+		<where>
+			 a.del_flag = '0' <![CDATA[AND a.status = 6]]>  AND c.trx_type = #{trxType}
+			 <if test="loanerId != null and loanerId != ''">
+					AND c.loaner_id = #{loanerId}
+			 </if>
+		 </where>
+	 	<choose>
+			<when test="nfsLoanArbitration.page !=null and nfsLoanArbitration.page.orderBy != null and nfsLoanArbitration.page.orderBy != ''">
+				ORDER BY ${nfsLoanArbitration.page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findList" resultMap="nfsLoanArbitrationResultMap">
+		SELECT 
+			<include refid="nfsLoanArbitrationColumns"/>
+		FROM NFS_LOAN_ARBITRATION a
+		<include refid="nfsLoanArbitrationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+			<if test="loan !=null and loan.id != null and loan.id != ''">
+				AND a.loan_id = #{loan.id}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loan !=null and loan.loanee != null and loan.loanee.name != null and loan.loanee.name != ''">
+				AND c.loanee_name = #{loan.loanee.name}
+			</if>
+			<if test="loan !=null and loan.loanee != null and loan.loanee.username != null and loan.loanee.username != ''">
+				AND c.loanee_phone_no = #{loan.loanee.username}
+			</if>
+			<if test="loan != null and loan.loaner != null and loan.loaner.id != '' and loan.loaner.id != null">
+				AND c.loaner_id = #{loan.loaner.id}
+			</if>
+			<if test="member != null and member.id != null and member.id != ''">
+				AND c.loaner_id = #{member.id}
+			</if>
+			<if test="loan != null and loan.loanee != null and loan.loanee.id != '' and loan.loanee.id != null">
+				AND c.loanee_id = #{loan.loanee.id}
+			</if>
+			<if test="loan !=null and loan.loaner != null and loan.loaner.name != null and loan.loaner.name != ''">
+				AND c.loaner_name = #{loan.loaner.name}
+			</if>
+			<if test="loan !=null and loan.loaner != null and loan.loaner.username != null and loan.loaner.username != ''">
+				AND c.loaner_phone_no = #{loan.loaner.username}
+			</if>
+			<if test="loan !=null and loan.trxType != null">
+				AND c.trx_type = #{loan.trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="createTime != null and createTime != ''">
+				AND a.create_time = #{createTime}
+			</if>
+			<if test="updateTime != null and updateTime != ''">
+				AND a.update_time = #{updateTime}
+			</if>
+			<if test="beginTime != null">
+				 <![CDATA[AND a.create_time >= #{beginTime}]]> 
+			</if>
+			<if test="endTimes != null">
+				 <![CDATA[AND a.create_time <= #{endTimes}]]> 
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_time DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findMemberArbitrationList" resultMap="nfsLoanArbitrationResultMap">
+		SELECT
+		<include refid="nfsLoanArbitrationColumns"/>
+		FROM NFS_LOAN_ARBITRATION a
+		<include refid="nfsLoanArbitrationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND c.loaner_id = #{member.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findExecution" resultMap="nfsLoanArbitrationResultMap">
+		SELECT 
+			<include refid="nfsLoanArbitrationColumns"/>
+		FROM NFS_LOAN_ARBITRATION a
+		<include refid="nfsLoanArbitrationJoins"/>
+		<where>
+			a.del_flag = '0' and a.status = 6 and a.strongStatus = 1 AND c.trx_type = #{trxType}
+			<if test="id != null and id != ''">
+				AND c.loaner_id = #{id}
+			</if>
+		</where>		
+		<choose>
+			<when test="nfsLoanArbitration.page !=null and nfsLoanArbitration.page.orderBy != null and nfsLoanArbitration.page.orderBy != ''">
+				ORDER BY ${nfsLoanArbitration.page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	<insert id="insert" parameterType="NfsLoanArbitration">
+		INSERT INTO NFS_LOAN_ARBITRATION(
+			id,
+			loan_id,
+			apply_amount,
+			fee,
+			refund_fee,
+			refuse_reason,
+			status,
+			channel,
+			third_part_id,
+			loanee_account,
+			loanee_account_name,
+			loaner_account,
+			loaner_account_name,
+			pay_order_no,
+			preservation_process,
+			end_time,
+			rmk,
+			rule_time,
+			strongStatus,
+			images,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			version,
+			del_flag
+		) VALUES (
+			#{id},
+			#{loan.id},
+			#{applyAmount},
+			#{fee},
+			#{refundFee},
+			#{refuseReason},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{thirdPartId},
+			#{loaneeAccount},
+			#{loaneeAccountName},
+			#{loanerAccount},
+			#{loanerAccountName},
+			#{payOrderNo},
+			#{preservationProcess,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{endTime},
+			#{rmk},
+			#{ruleTime},
+			#{strongStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{images},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{version},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsLoanArbitration">
+		UPDATE NFS_LOAN_ARBITRATION SET 	
+			loan_id = #{loan.id},
+			apply_amount = #{applyAmount},
+			fee = #{fee},
+			refund_fee = #{refundFee},
+			refuse_reason = #{refuseReason},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			third_part_id = #{thirdPartId},
+			loanee_account = #{loaneeAccount},
+			loanee_account_name = #{loaneeAccountName},
+			loaner_account = #{loanerAccount},
+			loaner_account_name = #{loanerAccountName},
+			pay_order_no = #{payOrderNo},
+			preservation_process = #{preservationProcess,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			end_time = #{endTime},
+			strongStatus = #{strongStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			images = #{images},
+			rmk = #{rmk},
+			rule_time = #{ruleTime},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},			
+			version = version+1
+		WHERE id = #{id}
+		AND version = #{version}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_LOAN_ARBITRATION SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

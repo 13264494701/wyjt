@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.nfs.dao.NfsTransferRecordDao">
+    
+	<sql id="nfsTransferRecordColumns">
+		a.id AS "id",
+		a.amount AS "amount",
+		a.member_id AS "member.id",			
+		a.member_name AS "member.name",
+		a.member_username AS "member.username",
+		a.friend_id AS "friend.id",
+		a.friend_name AS "friend.name",
+		a.friend_username AS "friend.username",
+		a.status AS "status",
+		a.fail_reason AS "failReason",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="NfsTransferRecord" id="nfsTransferRecordResultMap">		
+        <id column="id" property="id"/>
+        <result column="status" property="status" typeHandler="com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler"/>
+	</resultMap>
+	
+	<sql id="nfsTransferRecordJoins">
+	</sql>
+    
+	<select id="get" resultMap="nfsTransferRecordResultMap">
+		SELECT 
+			<include refid="nfsTransferRecordColumns"/>
+		FROM NFS_TRANSFER_RECORD a
+		<include refid="nfsTransferRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getTotalTransferOneYear" resultType="java.math.BigDecimal">
+		SELECT sum(amount) from NFS_TRANSFER_RECORD   
+		where 
+			member_id = #{member.id}
+			and `status` = 2 
+			<![CDATA[AND create_time >= #{beginTime}]]> 
+	</select>
+	<select id="todayHasTransferFailedTimes" resultType="int">
+		SELECT 
+			count(*)
+		FROM NFS_TRANSFER_RECORD a
+		<include refid="nfsTransferRecordJoins"/>
+		WHERE a.member_id = #{member.id}
+		AND a.status = 1
+		<![CDATA[AND a.create_time >= #{startTime}]]>
+	</select>
+	
+	<select id="findList" resultMap="nfsTransferRecordResultMap">
+		SELECT 
+			<include refid="nfsTransferRecordColumns"/>
+		FROM NFS_TRANSFER_RECORD a
+		<include refid="nfsTransferRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="member != null and member.name != null and member.name != ''">
+				AND a.member_name = #{member.name}
+			</if>
+			<if test="member != null and member.username != null and member.username != ''">
+				AND a.member_username = #{member.username}
+			</if>
+			<if test="friend != null and friend.id != null and friend.id != ''">
+				AND a.friend_id = #{friend.id}
+			</if>
+			<if test="friend != null and friend.name != null and friend.name != ''">
+				AND a.friend_name = #{friend.name}
+			</if>
+			<if test="friend != null and friend.username != null and friend.username != ''">
+				AND a.friend_username = #{friend.username}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler}
+			</if>
+			<if test="beginTime != null">
+				 <![CDATA[AND a.create_time >= #{beginTime}]]> 
+			</if>
+			<if test="endTime != null">
+				 <![CDATA[AND a.create_time <= #{endTime}]]> 
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllTransferPageList" resultMap="nfsTransferRecordResultMap">
+		SELECT 
+			<include refid="nfsTransferRecordColumns"/>
+		FROM NFS_TRANSFER_RECORD a
+		<include refid="nfsTransferRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND (a.member_id = #{member.id} or a.friend_id = #{member.id})
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_time desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findByMemberIdAndFriendIdAndCreateDate" resultMap="nfsTransferRecordResultMap">
+		SELECT 
+			<include refid="nfsTransferRecordColumns"/>
+		FROM NFS_TRANSFER_RECORD a
+		<include refid="nfsTransferRecordJoins"/>
+			where a.del_flag = '0'
+			AND a.member_id = #{member.id}
+			AND a.friend_id = #{friend.id}
+			AND a.create_time &gt; #{earliestTime}
+			AND a.status = '2'
+	</select>
+	
+	<select id="findByMemberIdAndFriendId" resultMap="nfsTransferRecordResultMap">
+		SELECT 
+			<include refid="nfsTransferRecordColumns"/>
+		FROM NFS_TRANSFER_RECORD a
+		<include refid="nfsTransferRecordJoins"/>
+			where a.del_flag = '0'
+			AND a.member_id = #{memberId}
+			AND a.friend_id = #{friendId}
+			OR a.member_id = #{friendId}
+			AND a.friend_id = #{memberId}
+			order by a.update_time desc
+	</select>
+	
+	
+	<insert id="insert" parameterType="NfsTransferRecord">
+		INSERT INTO NFS_TRANSFER_RECORD(
+			id,
+			amount,
+			member_id,
+			member_name,
+			member_username,
+			friend_id,
+			friend_name,
+			friend_username,
+			status,
+			fail_reason,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{amount},
+			#{member.id},
+			#{member.name},
+			#{member.username},
+			#{friend.id},
+			#{friend.name},
+			#{friend.username},
+			#{status,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler},
+			#{failReason},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsTransferRecord">
+		UPDATE NFS_TRANSFER_RECORD SET 	
+			amount = #{amount},
+			status = #{status,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler},
+			fail_reason = #{failReason},
+			rmk = #{rmk},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_TRANSFER_RECORD SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

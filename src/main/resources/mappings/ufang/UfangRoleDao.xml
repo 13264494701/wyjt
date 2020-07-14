@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.ufang.dao.UfangRoleDao">
+    
+    <sql id="roleColumns">
+    	a.id AS "id",
+    	a.role_name AS roleName,
+		a.data_scope AS dataScope,
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+    </sql>
+    
+    <resultMap id="roleResult" type="UfangRole">
+		<id property="id" column="id" />
+		<result property="roleName" column="roleName" />
+		<result property="dataScope" column="dataScope" />
+		<result property="rmk" column="rmk" />
+		<collection property="menuList" ofType="UfangMenu">
+			<id property="id" column="menuList.id" />
+		</collection>
+	</resultMap>
+	
+
+    
+	<select id="get" resultMap="roleResult">
+		SELECT
+			<include refid="roleColumns"/>,
+			rm.menu_id AS "menuList.id"
+		FROM UFANG_ROLE a
+		LEFT JOIN UFANG_ROLE_MENU rm ON rm.role_id = a.id
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByName" resultMap="roleResult">
+		SELECT
+			<include refid="roleColumns"/>
+		FROM UFANG_ROLE a
+		WHERE a.role_name = #{roleName} AND a.del_flag = #{DEL_FLAG_NORMAL}
+	</select>
+	
+
+	
+	<select id="findList" resultMap="roleResult">
+		SELECT 
+			<include refid="roleColumns"/>
+		FROM UFANG_ROLE a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} 
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+					ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+					ORDER BY a.role_name
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="roleResult">
+		SELECT
+			<include refid="roleColumns"/>
+		FROM UFANG_ROLE a 
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY  a.role_name
+	</select>
+	
+	<insert id="insert" parameterType="UfangRole">
+		INSERT INTO UFANG_ROLE(
+			id, 
+			role_name, 
+			data_scope, 
+			rmk, 
+			create_by, 
+			create_time, 
+			update_by, 
+			update_time, 			
+			del_flag
+		) VALUES (
+			#{id}, 
+			#{roleName}, 
+			#{dataScope}, 
+			#{rmk}, 
+			#{createBy.empNo}, 
+			#{createTime}, 
+			#{updateBy.empNo}, 
+			#{updateTime}, 			
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="UfangRole">
+		UPDATE UFANG_ROLE SET 
+			role_name = #{roleName}, 
+			data_scope = #{dataScope}, 
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime}			
+		WHERE id = #{id}
+	</update>
+	
+	<delete id="deleteRoleMenu">
+		DELETE FROM UFANG_ROLE_MENU WHERE role_id = #{id}
+	</delete>
+	
+	<insert id="insertRoleMenu">
+		INSERT INTO UFANG_ROLE_MENU(role_id, menu_id)
+		<foreach collection="menuList" item="menu" separator=" union all ">
+			SELECT #{id}, #{menu.id} FROM dual
+		</foreach>
+	</insert>
+
+	
+	<update id="delete">
+		UPDATE UFANG_ROLE SET 
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime},		
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

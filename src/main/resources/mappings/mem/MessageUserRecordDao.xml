@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MessageUserRecordDao">
+    
+	<sql id="messageUserRecordColumns">
+		a.id AS "id",
+		a.username_str AS "usernameStr",
+		a.title AS "title",
+		a.content AS "content",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="MessageUserRecord" id="messageUserRecordResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	<sql id="messageUserRecordJoins">
+	</sql>
+    
+	<select id="get" resultMap="messageUserRecordResultMap">
+		SELECT 
+			<include refid="messageUserRecordColumns"/>
+		FROM MMS_MESSAGE_USER_RECORD a
+		<include refid="messageUserRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="messageUserRecordResultMap">
+		SELECT 
+			<include refid="messageUserRecordColumns"/>
+		FROM MMS_MESSAGE_USER_RECORD a
+		<include refid="messageUserRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="MessageUserRecord">
+		INSERT INTO MMS_MESSAGE_USER_RECORD(
+			id,
+			username_str,
+			title,
+			content,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{usernameStr},
+			#{title},
+			#{content},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MessageUserRecord">
+		UPDATE MMS_MESSAGE_USER_RECORD SET 	
+			username_str = #{usernameStr},
+			title = #{title},
+			content = #{content},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MMS_MESSAGE_USER_RECORD SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

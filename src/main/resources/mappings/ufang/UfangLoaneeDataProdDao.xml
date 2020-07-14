@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.ufang.dao.UfangLoaneeDataProdDao">
+    
+	<sql id="ufangLoaneeDataProdColumns">
+		a.id AS "id",
+		a.code AS "code",
+		a.name AS "name",
+		a.channel AS "channel",
+		a.min_age AS "minAge",
+		a.max_age AS "maxAge",
+		a.min_zmf AS "minZmf",
+		a.max_zmf AS "maxZmf",
+		a.is_yys AS "isYys",
+		a.price AS "price",
+		a.max_sales AS "maxSales",
+		a.discount AS "discount",
+		a.discount_begin_days AS "discountBeginDays",
+		a.is_on AS "isOn",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="UfangLoaneeDataProd" id="ufangLoaneeDataProdResultMap">		
+        <id column="id" property="id"/>
+        <result column="isYys"  property="isYys" javaType="Boolean" jdbcType="CHAR" />
+        <result column="isOn"  property="isOn" javaType="Boolean" jdbcType="CHAR" />
+	</resultMap>
+	<sql id="ufangLoaneeDataProdJoins">
+	</sql>
+    
+	<select id="get" resultMap="ufangLoaneeDataProdResultMap">
+		SELECT 
+			<include refid="ufangLoaneeDataProdColumns"/>
+		FROM UFANG_LOANEE_DATA_PROD a
+		<include refid="ufangLoaneeDataProdJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="ufangLoaneeDataProdResultMap">
+		SELECT 
+			<include refid="ufangLoaneeDataProdColumns"/>
+		FROM UFANG_LOANEE_DATA_PROD a
+		<include refid="ufangLoaneeDataProdJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="channel != null and channel != ''">
+				AND a.channel = #{channel}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="UfangLoaneeDataProd">
+		INSERT INTO UFANG_LOANEE_DATA_PROD(
+			id,
+			code,
+			name,
+			channel,
+			min_age,
+			max_age,
+			min_zmf,
+			max_zmf,
+			is_yys,
+			price,
+			max_sales,
+			discount,
+			discount_begin_days,
+			is_on,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{code},
+			#{name},
+			#{channel},
+			#{minAge},
+			#{maxAge},
+			#{minZmf},
+			#{maxZmf},
+			#{isYys, javaType=Boolean, jdbcType=CHAR},
+			#{price},
+			#{maxSales},
+			#{discount},
+			#{discountBeginDays},
+			#{isOn, javaType=Boolean, jdbcType=CHAR},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="UfangLoaneeDataProd">
+		UPDATE UFANG_LOANEE_DATA_PROD SET 	
+			code = #{code},
+			name = #{name},
+			channel = #{channel},
+			min_age = #{minAge},
+			max_age = #{maxAge},
+			min_zmf = #{minZmf},
+			max_zmf = #{maxZmf},
+			is_yys = #{isYys, javaType=Boolean, jdbcType=CHAR},
+			price = #{price},
+			max_sales = #{maxSales},
+			discount = #{discount},
+			discount_begin_days = #{discountBeginDays},
+			is_on = #{isOn, javaType=Boolean, jdbcType=CHAR},
+			rmk = #{rmk},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE UFANG_LOANEE_DATA_PROD SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberFriendApplyDao">
+    
+	<sql id="memberFriendApplyColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.username AS "member.username",
+		a.member_realname AS "member.name",
+		a.member_head_image AS "member.headImage",
+		a.friend_id AS "friend.id",
+		a.friend_head_image AS "friend.headImage",
+		a.friend_username AS "friend.username",
+		a.friend_realname AS "friend.name",
+		a.status AS "status",
+		a.agree_date AS "agreeDate",
+		a.channel AS "channel",
+		a.note AS "note",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="MemberFriendApply" id="memberFriendApplyResultMap">		
+        <id column="id" property="id"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="channel" property="channel" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	<sql id="memberFriendApplyJoins">
+	</sql>
+    
+	<select id="get" resultMap="memberFriendApplyResultMap">
+		SELECT 
+			<include refid="memberFriendApplyColumns"/>
+		FROM MEM_MEMBER_FRIEND_APPLY a
+		<include refid="memberFriendApplyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="memberFriendApplyResultMap">
+		SELECT 
+			<include refid="memberFriendApplyColumns"/>
+		FROM MEM_MEMBER_FRIEND_APPLY a
+		<include refid="memberFriendApplyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member != null and member.id!= null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="friend != null and friend.id != null and friend.id != ''">
+				AND a.friend_id = #{friend.id}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListForApp" resultMap="memberFriendApplyResultMap">
+		SELECT
+			<include refid="memberFriendApplyColumns"/>
+		FROM
+			MEM_MEMBER_FRIEND_APPLY a
+			<include refid="memberFriendApplyJoins"/>
+		WHERE
+			a.friend_id = #{apply.friend.id}
+		AND a.status = 0
+		AND a.del_flag = '0'
+		UNION ALL
+		SELECT
+			<include refid="memberFriendApplyColumns"/>
+		FROM
+			MEM_MEMBER_FRIEND_APPLY a
+			<include refid="memberFriendApplyJoins"/>
+		WHERE
+			a.friend_id =  #{apply.friend.id}
+		AND a.status = 1
+		AND a.agree_date >=  #{apply.agreeDate}
+		AND a.del_flag = '0'
+	</select>
+	
+	<insert id="insert" parameterType="MemberFriendApply">
+		INSERT INTO MEM_MEMBER_FRIEND_APPLY(
+			id,
+			member_id,
+			username,
+			member_realname,
+			member_head_image,
+			friend_id,
+			friend_username,
+			friend_realname,
+			friend_head_image,
+			status,
+			note,
+			agree_date,
+			channel,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{member.username},
+			#{member.name},
+			#{member.headImage},
+			#{friend.id},
+			#{friend.username},
+			#{friend.name},
+			#{friend.headImage},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{note},
+			#{agreeDate},
+			#{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MemberFriendApply">
+		UPDATE MEM_MEMBER_FRIEND_APPLY SET 	
+			member_id = #{member.id},
+			username = #{member.username},
+			member_realname = #{member.name},
+			member_head_image = #{member.headImage},
+			friend_id = #{friend.id},
+			friend_username = #{friend.username},
+			friend_realname = #{friend.name},
+			friend_head_image = #{friend.headImage},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			agree_date = #{agreeDate},
+			note = #{note},
+			channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MEM_MEMBER_FRIEND_APPLY SET
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}, 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

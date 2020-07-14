@@ -1,0 +1,640 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.loan.dao.NfsLoanApplyDao">
+    
+	<sql id="nfsLoanApplyColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.member_name AS "member.name",
+		a.member_image AS "member.headImage",
+		a.loan_role AS "loanRole",
+		a.loan_type AS "loanType",
+		a.loan_purp AS "loanPurp",
+		a.amount AS "amount",
+		a.remain_amount AS "remainAmount",
+		a.interest AS "interest",
+		a.trx_type AS "trxType",
+		a.repay_amt AS "repayAmt",
+		a.int_rate AS "intRate",
+		a.repay_type AS "repayType",
+		a.loan_start AS "loanStart",	
+		a.term AS "term",	
+		a.channel AS "channel",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="NfsLoanApply" id="nfsLoanApplyResultMap">		
+        <id column="id" property="id"/>
+        <result column="loanRole" property="loanRole" typeHandler="com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler" />
+        <result column="loanType" property="loanType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="loanPurp" property="loanPurp" typeHandler="com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler" />
+        <result column="repayType" property="repayType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="channel" property="channel" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="trxType" property="trxType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<resultMap type="NfsLoanApply" id="singleLoanApplyResultMap">		
+        <id column="id" property="id"/>
+        <result column="loanRole" property="loanRole" typeHandler="com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler" />
+        <result column="trxType" property="trxType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="loanType" property="loanType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="loanPurp" property="loanPurp" typeHandler="com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler" />
+        <result column="repayType" property="repayType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="channel" property="channel" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="detail.status" property="detail.status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="detail.intStatus" property="detail.intStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="detail.payStatus" property="detail.payStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="detail.aliveVideoStatus" property="detail.aliveVideoStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="detail.disputeResolution" property="detail.disputeResolution" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="nfsLoanApplyJoins">
+	</sql>
+    
+	<select id="get" resultMap="nfsLoanApplyResultMap">
+		SELECT 
+			<include refid="nfsLoanApplyColumns"/>
+		FROM NFS_LOAN_APPLY a
+		<include refid="nfsLoanApplyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="nfsLoanApplyResultMap">
+		SELECT 
+			<include refid="nfsLoanApplyColumns"/>
+		FROM NFS_LOAN_APPLY a
+		<include refid="nfsLoanApplyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="loanRole != null">
+				AND a.loan_role = #{loanRole,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler}
+			</if>
+			<if test="trxType != null">
+				AND a.trx_type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loanType != null">
+				AND a.loan_type = #{loanType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="repayType != null">
+				AND a.repay_type = #{repayType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="remainAmount != null">
+				<![CDATA[AND a.remain_amount > #{remainAmount}]]> 
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findSingleLoanApplyList" resultMap="singleLoanApplyResultMap">
+		SELECT 
+			<include refid="nfsLoanApplyColumns"/>,
+			c.id AS "detail.id",
+			c.member_id AS "detail.member.id",
+		    c.member_name AS "detail.member.name",
+		    c.member_image AS "detail.member.headImage",
+			c.status AS "detail.status",
+			c.int_status AS "detail.intStatus",
+		    c.alive_video_status AS "detail.aliveVideoStatus",
+		    c.dispute_resolution AS "detail.disputeResolution",
+			c.progress AS "detail.progress"			
+		FROM NFS_LOAN_APPLY a
+		JOIN NFS_LOAN_APPLY_DETAIL c ON c.apply_id= a.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.loan_type = 0
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="member != null and member.name != null and member.name != ''">
+				AND a.member_name = #{member.name}
+			</if>
+			<if test="loanRole != null">
+				AND a.loan_role = #{loanRole,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler}
+			</if>
+			<if test="repayType != null">
+				AND a.repay_type = #{repayType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="trxType != null">
+				AND a.trx_Type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findMultipleLoanApplyList" resultMap="singleLoanApplyResultMap">
+		SELECT 
+			<include refid="nfsLoanApplyColumns"/>,
+			c.id AS "detail.id",
+			c.status AS "detail.status",
+			c.member_image AS "detail.member.headImage",
+			c.member_name AS "detail.member.name",
+			c.progress AS "detail.progress"			
+		FROM NFS_LOAN_APPLY a
+		JOIN NFS_LOAN_APPLY_DETAIL c ON c.apply_id= a.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.loan_type = 1
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="loanRole != null">
+				AND a.loan_role = #{loanRole,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler}
+			</if>
+			<if test="detail != null and detail.member != null and detail.member.id != null and detail.member.id != ''">
+				AND c.member_id = #{detail.member.id}
+			</if>
+			<if test="repayType != null">
+				AND a.repay_type = #{repayType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="detail != null and detail.status != null">
+				AND c.status = #{detail.status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="trxType != null">
+				AND a.trx_Type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findSingleLoanApplyListForApp" resultMap="singleLoanApplyResultMap">
+		SELECT 
+			<include refid="nfsLoanApplyColumns"/>,
+			c.member_id AS "detail.member.id",
+		    c.member_name AS "detail.member.name",
+		    c.member_image AS "detail.member.headImage",
+			c.status AS "detail.status",
+			c.amount AS "detail.amount",
+			c.int_status AS "detail.intStatus",
+		    c.alive_video_status AS "detail.aliveVideoStatus",
+			c.progress AS "detail.progress",
+			c.id AS "detail.id"
+		FROM NFS_LOAN_APPLY a
+		INNER JOIN NFS_LOAN_APPLY_DETAIL c ON c.apply_id= a.id
+		LEFT JOIN MEM_MEMBER d ON a.member_id = d.id
+		LEFT JOIN MEM_MEMBER e ON c.member_id = e.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND c.status != '1'
+			<if test="trxType != null">
+				AND a.trx_Type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="member != null and member.name != null and member.name != ''">
+				AND a.member_name LIKE 
+					<if test="dbName == 'oracle'">||#{member.name}||'%'</if>
+					<if test="dbName == 'mssql'">#{member.name}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{member.name},'%')</if>
+			</if>
+			<if test="detail != null and detail.member != null and detail.member.name != null and detail.member.name != ''">
+				AND c.member_name LIKE 
+					<if test="dbName == 'oracle'">#{detail.member.name}||'%'</if>
+					<if test="dbName == 'mssql'">#{detail.member.name}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{detail.member.name},'%')</if>
+			</if>
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="member != null and member.username != null and member.username != ''">
+				AND d.username = #{member.username}
+			</if>
+			<if test="detail != null and detail.member != null and detail.member.username != null and detail.member.username != ''">
+				AND e.username = #{detail.member.username}
+			</if>
+			<if test="detail != null and detail.member != null and detail.member.id != null and detail.member.id != ''">
+				AND e.id = #{detail.member.id}
+			</if>
+			<if test="loanRole != null">
+				AND a.loan_role = #{loanRole,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler}
+			</if>
+			<if test="repayType != null">
+				AND a.repay_type = #{repayType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="detail != null and detail.status != null">
+				AND c.status = #{detail.status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="detail == null ">
+				AND c.status != '0'
+			</if>
+			<if test="beginDate != null">
+				<![CDATA[AND a.create_time >= date_sub(#{beginDate}, interval a.term-1 day)]]> 
+			</if>
+			<if test="endDate != null">
+				<![CDATA[AND a.create_time <= date_sub(#{endDate}, interval a.term-1 day)]]> 
+			</if>
+			<if test="loanType != null">
+				AND (a.loan_type = #{loanType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler} 
+					OR (
+					a.loan_type = 1
+					AND c.alive_video_status = 1
+					AND a.loan_role = 0
+					)
+				)
+			</if>
+			<if test="maxAmount != null and maxAmount != ''">
+				<![CDATA[AND a.amount <= #{maxAmount}]]> 
+			</if>
+			<if test="minAmount != null and minAmount != ''">
+				<![CDATA[AND a.amount >= #{minAmount}]]> 
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findMemberApplyListForApp" resultMap="singleLoanApplyResultMap">
+		SELECT 
+			<include refid="nfsLoanApplyColumns"/>,
+			c.member_id AS "detail.member.id",
+		    c.member_name AS "detail.member.name",
+		    c.member_image AS "detail.member.headImage",
+			c.status AS "detail.status",
+			c.int_status AS "detail.intStatus",
+		    c.alive_video_status AS "detail.aliveVideoStatus",
+			c.progress AS "detail.progress",
+			c.id AS "detail.id",
+			c.amount AS "detail.amount"
+		FROM NFS_LOAN_APPLY a
+		INNER JOIN NFS_LOAN_APPLY_DETAIL c ON c.apply_id= a.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND c.apply_member_id = #{member.id}
+			</if>
+			<if test="detail != null and detail.member != null and detail.member.name != null and detail.member.name != ''">
+				AND c.member_name LIKE 
+					<if test="dbName == 'oracle'">||#{detail.member.name}||'%'</if>
+					<if test="dbName == 'mssql'">#{detail.member.name}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{detail.member.name},'%')</if>
+			</if>
+			<if test="detail != null and detail.member != null and detail.member.id != null and detail.member.id != ''">
+				AND c.member_id = #{detail.member.id}
+			</if>
+			<if test="trxType != null">
+				AND a.trx_Type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loanRole != null">
+				AND a.loan_role = #{loanRole,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler}
+			</if>
+			<if test="repayType != null">
+				AND a.repay_type = #{repayType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="detail != null and detail.status != null">
+				AND c.status = #{detail.status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="detail != null and detail.status == null "><!--已结束的申请  -->
+				AND c.status != '0' AND c.status != '1'
+			</if>
+			<if test="beginDate != null">
+				<![CDATA[AND a.create_time >= date_sub(#{beginDate}, interval a.term-1 day)]]> 
+			</if>
+			<if test="endDate != null">
+				<![CDATA[AND a.create_time <= date_sub(#{endDate}, interval a.term-1 day)]]> 
+			</if>
+			<if test="loanType != null">
+				 AND (a.loan_type = #{loanType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler} 
+					OR (
+					a.loan_type = 1
+					AND c.alive_video_status = 1
+					AND a.loan_role = 0
+					)
+				)
+			</if>
+			<if test="maxAmount != null and maxAmount != ''">
+				<![CDATA[AND a.amount <= #{maxAmount}]]> 
+			</if>
+			<if test="minAmount != null and minAmount != ''">
+				<![CDATA[AND a.amount >= #{minAmount}]]> 
+			</if>
+			<if test="member != null and member.id != null and member.id != ''">
+				OR  
+			(	
+				c.member_id = #{member.id}
+				AND a.del_flag = #{DEL_FLAG_NORMAL}
+				<if test="detail != null and detail.member != null and detail.member.id != null and detail.member.id != ''">
+					AND c.apply_member_id = #{detail.member.id}
+				</if>
+				<if test="detail != null and detail.member != null and detail.member.name != null and detail.member.name != ''">
+					AND a.member_name LIKE 
+						<if test="dbName == 'oracle'">||#{detail.member.name}||'%'</if>
+						<if test="dbName == 'mssql'">#{detail.member.name}+'%'</if>
+						<if test="dbName == 'mysql'">concat(#{detail.member.name},'%')</if>
+				</if>
+				<if test="trxType != null">
+					AND a.trx_Type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+				</if>
+				<if test="loanRole != null">
+					AND c.loan_role = #{loanRole,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler}
+				</if>
+				<if test="repayType != null">
+					AND a.repay_type = #{repayType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+				</if>
+
+				<if test="detail != null and detail.status != null">
+					AND c.status = #{detail.status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+				</if>
+				<if test="detail != null and detail.status == null ">
+					AND c.status != '0' AND c.status != '1'
+				</if>
+				<if test="beginDate != null">
+					<![CDATA[AND a.create_time >= date_sub(#{beginDate}, interval a.term-1 day)]]> 
+				</if>
+				<if test="endDate != null">
+					<![CDATA[AND a.create_time <= date_sub(#{endDate}, interval a.term-1 day)]]> 
+				</if>
+				<if test="loanType != null">
+				AND (a.loan_type = #{loanType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler} 
+					OR (
+					a.loan_type = 1
+					AND c.alive_video_status = 1
+					AND a.loan_role = 0
+					)
+				)
+				</if>
+				<if test="maxAmount != null and maxAmount != ''">
+					<![CDATA[AND a.amount <= #{maxAmount}]]> 
+				</if>
+				<if test="minAmount != null and minAmount != ''">
+					<![CDATA[AND a.amount >= #{minAmount}]]> 
+				</if>
+			)
+			</if>
+			
+
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findApplyListForGxt" resultMap="singleLoanApplyResultMap">
+		SELECT 
+			<include refid="nfsLoanApplyColumns"/>,
+			c.member_id AS "detail.member.id",
+		    c.member_name AS "detail.member.name",
+		    c.member_image AS "detail.member.headImage",
+			c.status AS "detail.status",
+			c.int_status AS "detail.intStatus",
+		    c.alive_video_status AS "detail.aliveVideoStatus",
+			c.progress AS "detail.progress",
+			c.id AS "detail.id",
+			c.amount AS "detail.amount"
+		FROM NFS_LOAN_APPLY a
+		INNER JOIN NFS_LOAN_APPLY_DETAIL c ON c.apply_id= a.id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="trxType != null">
+					AND a.trx_Type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="member != null and member.id != null and member.id != ''">
+				AND c.apply_member_id = #{member.id}
+			</if>
+			<if test="detail != null and detail.member != null and detail.member.name != null and detail.member.name != ''">
+				AND c.member_name LIKE 
+					<if test="dbName == 'oracle'">||#{detail.member.name}||'%'</if>
+					<if test="dbName == 'mssql'">#{detail.member.name}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{detail.member.name},'%')</if>
+			</if>
+			<if test="detail != null and detail.member != null and detail.member.id != null and detail.member.id != ''">
+				AND c.member_id = #{detail.member.id}
+			</if>
+			<if test="loanRole != null">
+				AND a.loan_role = #{loanRole,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler}
+			</if>
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="detail != null and detail.status != null">
+				AND c.status = #{detail.status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="detail != null and detail.status == null "><!--已结束的申请  -->
+				AND c.status != '0' AND c.status != '1'
+			</if>
+			<if test="detail != null and detail.payStatus != null "><!--已结束的申请  -->
+				AND c.pay_status = #{detail.payStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginDate != null">
+				<![CDATA[AND a.loan_start >= date_sub(#{beginDate}, interval a.term-1 day) ]]> 
+			</if>
+			<if test="endDate != null">
+				<![CDATA[AND a.loan_start <= date_sub(#{endDate}, interval a.term-1 day)]]> 
+			</if>
+			<if test="loanType != null">
+				 AND a.loan_type = #{loanType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler} 
+			</if>
+			<if test="maxAmount != null and maxAmount != ''">
+				<![CDATA[AND a.amount <= #{maxAmount}]]> 
+			</if>
+			<if test="minAmount != null and minAmount != ''">
+				<![CDATA[AND a.amount >= #{minAmount}]]> 
+			</if>
+			<if test="member != null and member.id != null and member.id != ''">
+				OR  
+			(	
+				c.del_flag = #{DEL_FLAG_NORMAL}
+				AND c.member_id = #{member.id}
+				<if test="detail != null and detail.member != null and detail.member.id != null and detail.member.id != ''">
+					AND c.apply_member_id = #{detail.member.id}
+				</if>
+				<if test="detail != null and detail.member != null and detail.member.name != null and detail.member.name != ''">
+					AND a.member_name LIKE 
+						<if test="dbName == 'oracle'">||#{detail.member.name}||'%'</if>
+						<if test="dbName == 'mssql'">#{detail.member.name}+'%'</if>
+						<if test="dbName == 'mysql'">concat(#{detail.member.name},'%')</if>
+				</if>
+				<if test="trxType != null">
+					AND a.trx_Type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+				</if>
+				<if test="loanRole != null">
+					AND c.loan_role = #{loanRole,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler}
+				</if>
+				<if test="detail != null and detail.status != null">
+					AND c.status = #{detail.status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+				</if>
+				<if test="detail != null and detail.status == null ">
+					AND c.status != '0' AND c.status != '1'
+				</if>
+				<if test="beginDate != null">
+					<![CDATA[AND a.loan_start >= date_sub(#{beginDate}, interval a.term-1 day)]]> 
+				</if>
+				<if test="endDate != null">
+					<![CDATA[AND a.loan_start <= date_sub(#{endDate}, interval a.term-1 day)]]> 
+				</if>
+				<if test="loanType != null">
+				AND a.loan_type = #{loanType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler} 
+				</if>
+				<if test="maxAmount != null and maxAmount != ''">
+					<![CDATA[AND a.amount <= #{maxAmount}]]> 
+				</if>
+				<if test="minAmount != null and minAmount != ''">
+					<![CDATA[AND a.amount >= #{minAmount}]]> 
+				</if>
+			)
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="NfsLoanApply">
+		INSERT INTO NFS_LOAN_APPLY(
+			id,
+			member_id,
+			member_name,
+			member_image,
+			loan_role,
+			loan_type,
+			loan_purp,
+			amount,
+			remain_amount,
+			interest,
+			repay_amt,
+			int_rate,
+			repay_type,
+			trx_type,
+			loan_start,
+			term,
+			channel,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{member.name},
+			#{member.headImage},
+			#{loanRole,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler},
+			#{loanType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{loanPurp,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler},
+			#{amount},
+			#{remainAmount},
+			#{interest},
+			#{repayAmt},
+			#{intRate},
+			#{repayType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{loanStart},
+			#{term},
+			#{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},		
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsLoanApply">
+		UPDATE NFS_LOAN_APPLY SET 	
+			member_id = #{member.id},
+			member_name = #{member.name},
+			member_image = #{member.headImage},
+			loan_role = #{loanRole,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler},
+			loan_type = #{loanType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			loan_purp = #{loanPurp,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler},
+			amount = #{amount},
+			remain_amount = #{remainAmount},
+			interest =#{interest},
+			repay_amt = #{repayAmt},
+			int_rate = #{intRate},
+			repay_type = #{repayType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			trx_type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			loan_start = #{loanStart},
+			term = #{term},
+			channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},			
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_LOAN_APPLY SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	<!-- 仅用来处理主动放款没生成detail错误 -->
+	<select id="findNoDetailApply" resultMap="nfsLoanApplyResultMap">
+		SELECT 
+			<include refid="nfsLoanApplyColumns"/>
+		FROM NFS_LOAN_APPLY a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="beginDate != null">
+				<![CDATA[AND a.create_time >= #{beginDate}]]> 
+			</if>
+			<if test="endDate != null">
+				<![CDATA[AND a.create_time < #{endDate}]]> 
+			</if>
+			AND a.loan_role = 1
+		</where>
+		ORDER BY a.update_time DESC
+	</select>
+	
+	
+</mapper>

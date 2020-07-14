@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.loan.dao.NfsLoanPreservationDao">
+    
+	<sql id="nfsLoanPreservationColumns">
+		a.id AS "id",
+		a.proof_chain_id AS "proofChainId",
+		a.partner_order_id AS "partnerOrderId",
+		a.parent_order_id AS "parentOrderId",
+		a.business_id AS "businessId",
+		a.node_type AS "nodeType",
+		a.precode AS "precode",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="NfsLoanPreservation" id="nfsLoanPreservationResultMap">		
+        <id column="id" property="id"/>
+         <result column="nodeType" property="nodeType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	<sql id="nfsLoanPreservationJoins">
+	</sql>
+    
+	<select id="get" resultMap="nfsLoanPreservationResultMap">
+		SELECT 
+			<include refid="nfsLoanPreservationColumns"/>
+		FROM NFS_LOAN_PRESERVATION a
+		<include refid="nfsLoanPreservationJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	
+	<select id="getPreservationByMemberId" resultMap="nfsLoanPreservationResultMap">
+		SELECT 
+			<include refid="nfsLoanPreservationColumns"/>
+		FROM NFS_LOAN_PRESERVATION a
+		<include refid="nfsLoanPreservationJoins"/>
+		WHERE a.del_flag = '0'
+		AND a.business_id = #{memberId}
+		AND a.node_type = '0'
+	</select>
+	
+	
+	<select id="findList" resultMap="nfsLoanPreservationResultMap">
+		SELECT 
+			<include refid="nfsLoanPreservationColumns"/>
+		FROM NFS_LOAN_PRESERVATION a
+		<include refid="nfsLoanPreservationJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="proofChainId != null and proofChainId != ''">
+				AND a.proof_chain_id = #{proofChainId}
+			</if>
+			<if test="businessId != null and businessId != ''">
+				AND a.business_id = #{businessId}
+			</if>
+			<if test="partnerOrderId != null and partnerOrderId != ''">
+				AND a.partner_order_id = #{partnerOrderId}
+			</if>
+			<if test="nodeType != null">
+				AND a.node_type = #{nodeType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="precode != null and precode != ''">
+				AND a.precode = #{precode}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="NfsLoanPreservation">
+		INSERT INTO NFS_LOAN_PRESERVATION(
+			id,
+			proof_chain_id,
+			partner_order_id,
+			parent_order_id,
+			business_id,
+			node_type,
+			precode,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{proofChainId},
+			#{partnerOrderId},
+			#{parentOrderId},
+			#{businessId},
+			#{nodeType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{precode},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsLoanPreservation">
+		UPDATE NFS_LOAN_PRESERVATION SET 	
+			loan_id = #{loanId},
+			partner_order_id = #{partnerOrderId},
+			parent_order_id = #{parentOrderId},
+			business_id = #{businessId},
+			node_type = #{nodeType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			precode = #{precode},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_LOAN_PRESERVATION SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

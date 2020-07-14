@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MmsSmsUserRecordDao">
+    
+	<sql id="mmsSmsUserRecordColumns">
+		a.id AS "id",
+		a.username_str AS "usernameStr",
+		a.type AS "type",
+		a.content AS "content",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="MmsSmsUserRecord" id="mmsSmsUserRecordResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	<sql id="mmsSmsUserRecordJoins">
+	</sql>
+    
+	<select id="get" resultMap="mmsSmsUserRecordResultMap">
+		SELECT 
+			<include refid="mmsSmsUserRecordColumns"/>
+		FROM MMS_SMS_USER_RECORD a
+		<include refid="mmsSmsUserRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="mmsSmsUserRecordResultMap">
+		SELECT 
+			<include refid="mmsSmsUserRecordColumns"/>
+		FROM MMS_SMS_USER_RECORD a
+		<include refid="mmsSmsUserRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="MmsSmsUserRecord">
+		INSERT INTO MMS_SMS_USER_RECORD(
+			id,
+			username_str,
+			type,
+			content,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{usernameStr},
+			#{type},
+			#{content},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MmsSmsUserRecord">
+		UPDATE MMS_SMS_USER_RECORD SET 	
+			username_str = #{usernameStr},
+			type = #{type},
+			content = #{content},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MMS_SMS_USER_RECORD SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

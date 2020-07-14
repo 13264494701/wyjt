@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.cms.dao.CmsNoticeDao">
+    
+	<sql id="cmsNoticeColumns">
+		a.id AS "id",
+		a.position AS "position",
+		a.title AS "title",
+		a.image AS "image",
+		a.content AS "content",
+		a.url AS "url",
+		a.sort AS "sort",
+		a.is_pub AS "isPub",
+		a.begin_date AS "beginDate",
+		a.end_date AS "endDate",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="CmsNotice" id="cmsNoticeResultMap">		
+        <id column="id" property="id"/>
+         <result column="position" property="position" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+         <result column="isPub"  property="isPub" javaType="Boolean" jdbcType="CHAR" />	
+	</resultMap>
+	
+	<sql id="cmsNoticeJoins">
+	</sql>
+    
+	<select id="get" resultMap="cmsNoticeResultMap">
+		SELECT 
+			<include refid="cmsNoticeColumns"/>
+		FROM CMS_NOTICE a
+		<include refid="cmsNoticeJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="cmsNoticeResultMap">
+		SELECT 
+			<include refid="cmsNoticeColumns"/>
+		FROM CMS_NOTICE a
+		<include refid="cmsNoticeJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="position != null">
+				AND a.position = #{position,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="isPub != null">
+				AND a.is_pub = #{isPub,javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.sort desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="CmsNotice">
+		INSERT INTO CMS_NOTICE(
+			id,
+			position,
+			title,
+			image,
+			content,
+			url,
+			sort,
+			is_pub,
+			begin_date,
+			end_date,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{position,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{title},
+			#{image},
+			#{content},
+			#{url},
+			#{sort},
+			#{isPub,javaType=Boolean, jdbcType=CHAR},
+			#{beginDate},
+			#{endDate},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="CmsNotice">
+		UPDATE CMS_NOTICE SET 
+		    position = #{position,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},	
+			title = #{title},
+			image = #{image},
+			content = #{content},
+			url = #{url},
+			sort = #{sort},
+			is_pub = #{isPub,javaType=Boolean, jdbcType=CHAR},
+			begin_date = #{beginDate},
+			end_date = #{endDate},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE CMS_NOTICE SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="pub">
+		UPDATE CMS_NOTICE SET
+			is_pub = '1'
+		WHERE id = #{id}
+	</update>
+	
+	<update id="unpub">
+		UPDATE CMS_NOTICE SET
+			is_pub = '0'
+		WHERE id = #{id}
+	</update>
+</mapper>

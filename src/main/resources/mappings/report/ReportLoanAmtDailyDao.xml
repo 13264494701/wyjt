@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.report.dao.ReportLoanAmtDailyDao">
+    
+	<sql id="reportLoanAmtDailyColumns">
+		a.id AS "id",
+		a.date AS "date",
+		a.loan_quantity AS "loanQuantity",
+		a.loaner_lend AS "loanerLend",
+		a.loanee_borrow AS "loaneeBorrow",
+		a.repay_quantity AS "repayQuantity",
+		a.loanee_repay AS "loaneeRepay",
+		a.loaner_receive AS "loanerReceive",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="ReportLoanAmtDaily" id="reportLoanAmtDailyResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	
+	<sql id="reportLoanAmtDailyJoins">
+	</sql>
+    
+	<select id="get" resultMap="reportLoanAmtDailyResultMap">
+		SELECT 
+			<include refid="reportLoanAmtDailyColumns"/>
+		FROM REPORT_LOAN_AMT_DAILY a
+		<include refid="reportLoanAmtDailyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="reportLoanAmtDailyResultMap">
+		SELECT 
+		    a.id AS "id",
+			left(a.date,#{type}) AS "date",
+			sum(a.loan_quantity) AS "loanQuantity",
+		    sum(a.loaner_lend) AS "loanerLend",
+		    sum(a.loanee_borrow) AS "loaneeBorrow",
+		    sum(a.repay_quantity) AS "repayQuantity",
+		    sum(a.loanee_repay) AS "loaneeRepay",
+		    sum(a.loaner_receive) AS "loanerReceive",
+			a.create_by AS "createBy.empNo",
+		    a.create_time AS "createTime",
+		    a.update_by AS "updateBy.empNo",
+		    a.update_time AS "updateTime",
+		    a.del_flag AS "delFlag"
+		FROM REPORT_LOAN_AMT_DAILY a
+		<include refid="reportLoanAmtDailyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="date != null and date != ''">
+				AND a.date = #{date}
+			</if>
+		</where>
+		GROUP BY left(a.date,#{type})
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="ReportLoanAmtDaily">
+		INSERT INTO REPORT_LOAN_AMT_DAILY(
+			id,
+			date,
+			loan_quantity,
+			loaner_lend,
+			loanee_borrow,
+			repay_quantity,
+			loanee_repay,
+			loaner_receive,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{date},
+			#{loanQuantity},
+			#{loanerLend},
+			#{loaneeBorrow},
+			#{repayQuantity},
+			#{loaneeRepay},
+			#{loanerReceive},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="ReportLoanAmtDaily">
+		UPDATE REPORT_LOAN_AMT_DAILY SET 	
+			date = #{date},
+			loan_quantity = #{loanQuantity},
+			loaner_lend = #{loanerLend},
+			loanee_borrow = #{loaneeBorrow},
+			loan_quantity = #{repayQuantity},
+			loanee_repay = #{loaneeRepay},
+			loaner_receive = #{loanerReceive},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE REPORT_LOAN_AMT_DAILY SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="deleteByDate">
+		UPDATE REPORT_LOAN_AMT_DAILY SET
+			del_flag = 1
+		WHERE date = #{date}
+	</update>
+	
+	<select id="loanAmtCount" resultMap="reportLoanAmtDailyResultMap">
+		SELECT
+			date_sub( curdate( ), INTERVAL #{daysAgo} DAY ) AS date,
+			( SELECT count( id )/2 FROM MEM_MEMBER_ACT_TRX WHERE trx_code in ('LN010','LN050') AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS loanQuantity,
+			( SELECT ifnull(sum( trx_amt ),0) FROM MEM_MEMBER_ACT_TRX WHERE trx_code in ('LN010','LN050') AND  drc = 'C' AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS loanerLend,
+            ( SELECT ifnull(sum( trx_amt ),0) FROM MEM_MEMBER_ACT_TRX WHERE trx_code in ('LN010','LN050') AND  drc = 'D' AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS loaneeBorrow,
+            ( SELECT count( id )/2 FROM MEM_MEMBER_ACT_TRX WHERE trx_code in ('RP010','RP040','RP070') AND sub_no in('0001','0003') AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS repayQuantity,
+            ( SELECT ifnull(sum( trx_amt ),0) FROM MEM_MEMBER_ACT_TRX WHERE trx_code in ('RP010','RP040','RP070') AND  drc = 'C' AND sub_no in('0001','0003') AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS loaneeRepay,
+            ( SELECT ifnull(sum( trx_amt ),0) FROM MEM_MEMBER_ACT_TRX WHERE trx_code in ('RP010','RP040','RP070') AND  drc = 'D' AND sub_no in('0001','0003') AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS loanerReceive
+		FROM
+			MEM_MEMBER_ACT_TRX
+		LIMIT 1
+	</select>
+	
+</mapper>

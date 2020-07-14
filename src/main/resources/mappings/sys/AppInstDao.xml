@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.svc.sys.app.dao.AppInstDao">
+    
+	<sql id="appInstColumns">
+		a.id AS "id",
+		a.os_type AS "osType",
+		a.os_version AS "osVersion",
+		a.app_version AS "appVersion",
+		a.ak AS "ak",
+		a.device_model AS "deviceModel",
+		a.device_token AS "deviceToken",
+		a.push_token AS "pushToken",
+		a.channe_id AS "channeId",
+		a.login_ip AS "loginIp",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="AppInst" id="appInstResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	<sql id="appInstJoins">
+	</sql>
+    
+	<select id="get" resultMap="appInstResultMap">
+		SELECT 
+			<include refid="appInstColumns"/>
+		FROM APP_INST a
+		<include refid="appInstJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="appInstResultMap">
+		SELECT 
+			<include refid="appInstColumns"/>
+		FROM APP_INST a
+		<include refid="appInstJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="deviceToken != null and deviceToken != ''">
+				AND a.device_token = #{deviceToken}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="AppInst">
+		INSERT INTO APP_INST(
+			id,
+			os_type,
+			os_version,
+			app_version,
+			ak,
+			device_model,
+			device_token,
+			push_token,
+			channe_id,
+			login_ip,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		)  SELECT 			
+			#{id},
+			#{osType},
+			#{osVersion},
+			#{appVersion},
+			#{ak},
+			#{deviceModel},
+			#{deviceToken},
+			#{pushToken},
+			#{channeId},
+			#{loginIp},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+			FROM dual  
+			WHERE not exists (select * from APP_INST where device_token = #{deviceToken});
+	</insert>
+	
+	<update id="update" parameterType="AppInst">
+		UPDATE APP_INST SET 	
+			os_type = #{osType},
+			os_version = #{osVersion},
+			app_version = #{appVersion},
+			ak = #{ak},
+			device_model = #{deviceModel},
+			device_token = #{deviceToken},
+			push_token = #{pushToken},
+			channe_id = #{channeId},
+			login_ip = #{loginIp},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE APP_INST SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="idfaExist" parameterType="java.lang.String" resultType="java.lang.Boolean">
+        <![CDATA[ SELECT count(id) FROM APP_INST a WHERE a.device_token = #{idfa} ]]> 
+	</select>
+</mapper>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberPointDetailDao">
+    
+	<sql id="memberPointDetailColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.type AS "type",
+		a.credit_points AS "creditPoints",
+		a.debit_points AS "debitPoints",
+		a.curr_bal_points AS "currBalPoints",
+		a.trx_no AS "trxNo",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+
+	</sql>
+	
+	<resultMap type="MemberPointDetail" id="pointDetailResultMap">
+		<id column="id" property="id"/>
+		<result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="memberPointDetailJoins">
+	</sql>
+    
+	<select id="get" resultMap="pointDetailResultMap">
+		SELECT 
+			<include refid="memberPointDetailColumns"/>
+		FROM MEM_MEMBER_POINT_DETAIL a
+		<include refid="memberPointDetailJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="pointDetailResultMap">
+		SELECT 
+			<include refid="memberPointDetailColumns"/>
+		FROM MEM_MEMBER_POINT_DETAIL a
+		<include refid="memberPointDetailJoins"/>
+		<where>
+			a.del_flag = #{delFlag}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="trxNo != null and trxNo != ''">
+				AND a.trx_no = #{trxNo}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="MemberPointDetail">
+		INSERT INTO MEM_MEMBER_POINT_DETAIL(
+			id,
+			member_id,
+			type,
+			credit_points,
+			debit_points,
+			curr_bal_points,
+			trx_no,
+			rmk,
+			create_by, 
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{creditPoints},
+			#{debitPoints},
+			#{currBalPoints},
+			#{trxNo},
+			#{rmk},
+			#{createBy.empNo}, 
+			#{createTime}, 
+			#{updateBy.empNo}, 
+			#{updateTime}, 
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MemberPointDetail">
+		UPDATE MEM_MEMBER_POINT_DETAIL SET 	
+			member_id = #{member.id},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			credit_points = #{creditPoints},
+			debit_points = #{debitPoints},
+			curr_bal_points = #{currBalPoints},
+			trx_no = #{trxNo},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime}		
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MEM_MEMBER_POINT_DETAIL SET 
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

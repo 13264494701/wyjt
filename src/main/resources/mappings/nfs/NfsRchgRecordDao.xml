@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.nfs.dao.NfsRchgRecordDao">
+    
+	<sql id="nfsRchgRecordColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.member_name AS "member.name",
+		a.member_username AS "member.username",
+		a.card_id AS "card.id",
+		a.card_no AS "card.cardNo",
+		a.bank_name AS "bankName",
+		a.amount AS "amount",
+		a.payment_id AS "payment.id",
+		a.payment_no AS "payment.paymentNo",
+		a.third_payment_no AS "payment.thirdPaymentNo",
+		a.type AS "type",
+		a.channel AS "channel",
+		a.status AS "status",
+		a.fee AS "fee",
+		a.create_time AS "createTime",
+		a.create_by AS "createBy.empNo",
+		a.update_time AS "updateTime",
+		a.update_by AS "updateBy.empNo",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="NfsRchgRecord" id="nfsRchgRecordResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+		<result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+		<result column="channel" property="channel" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="nfsRchgRecordJoins">
+	</sql>
+    
+	<select id="get" resultMap="nfsRchgRecordResultMap">
+		SELECT 
+			<include refid="nfsRchgRecordColumns"/>
+		FROM NFS_RCHG_RECORD a
+		<include refid="nfsRchgRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getRchgRecordByMemberId" resultMap="nfsRchgRecordResultMap">
+		SELECT 
+			<include refid="nfsRchgRecordColumns"/>
+		FROM NFS_RCHG_RECORD a
+		<include refid="nfsRchgRecordJoins"/>
+		<where>
+		a.member_id = #{memberId} and a.status = 1
+		<if test="loanTime != null">
+			<![CDATA[AND a.create_time <= #{loanTime}]]>
+				ORDER BY a.id desc
+		</if>
+		</where>
+		LIMIT 0,1
+	</select>
+	
+	<select id="findList" resultMap="nfsRchgRecordResultMap">
+		SELECT 
+			<include refid="nfsRchgRecordColumns"/>
+		FROM NFS_RCHG_RECORD a
+		<include refid="nfsRchgRecordJoins"/>
+		<where>
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="member != null and member.name != null and member.name != ''">
+				AND a.member_name = #{member.name}
+			</if>
+			<if test="member != null and member.username != null and member.username != ''">
+				AND a.member_username = #{member.username}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="createTime != null and createTime != ''">
+				AND a.create_time = #{createTime}
+			</if>
+			<if test="payment != null and payment.paymentNo != null and payment.paymentNo != ''">
+				AND a.payment_no = #{payment.paymentNo}
+			</if>
+			<if test="payment != null and payment.thirdPaymentNo != null and payment.thirdPaymentNo != ''">
+				AND a.third_payment_no = #{payment.thirdPaymentNo}
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+			<if test="minAmount != null">
+				 <![CDATA[AND a.amount >= #{minAmount}]]> 
+			</if>
+			<if test="maxAmount != null">
+				 <![CDATA[AND a.amount <= #{maxAmount}]]> 
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="NfsRchgRecord">
+		INSERT INTO NFS_RCHG_RECORD(
+			id,
+			member_id,
+			member_name,
+			member_username,
+			card_id,
+			card_no,
+			bank_name,
+			amount,
+			payment_id,
+			payment_no,
+			third_payment_no,
+			type,
+			channel,
+			status,
+			fee,
+			create_time,
+			create_by,
+			update_time,
+			update_by,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{member.name},
+			#{member.username},
+			#{card.id},
+			#{card.cardNo},
+			#{bankName},
+			#{amount},
+			#{payment.id},
+			#{payment.paymentNo},
+			#{payment.thirdPaymentNo},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{fee},
+			#{createTime},
+			#{createBy.empNo},
+			#{updateTime},
+			#{updateBy.empNo},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsRchgRecord">
+		UPDATE NFS_RCHG_RECORD SET 	
+			member_id = #{member.id},
+			member_name = #{member.name},
+			member_username = #{member.username},
+			card_id = #{card.id},
+			card_no = #{card.cardNo},
+			bank_name = #{bankName},
+			amount = #{amount},
+			payment_id = #{payment.id},
+			payment_no = #{payment.paymentNo},
+			third_payment_no = #{payment.thirdPaymentNo},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			fee = #{fee},
+			create_time = #{createTime},
+			update_time = #{updateTime},
+			update_by = #{updateBy.empNo}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_RCHG_RECORD SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

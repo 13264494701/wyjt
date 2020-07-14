@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.ufang.dao.UfangUserActDao">
+    
+	<sql id="ufangUserActColumns">
+		a.id AS "id",
+		a.user_id AS "user.id",
+		a.sub_no AS "subNo",
+		a.curr_code AS "currCode",
+		a.cur_bal AS "curBal",
+		a.status AS "status",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.version AS "version",
+		a.del_flag AS "delFlag",	
+		c.username AS "user.username",
+		c.emp_no AS "user.empNo",
+		c.emp_nam AS "user.empNam"
+	</sql>
+	
+	<resultMap type="UfangUserAct" id="ufangUserActResultMap">		
+        <id column="id" property="id"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="ufangUserActJoins">
+		LEFT JOIN UFANG_USER c ON c.id = a.user_id
+		LEFT JOIN UFANG_BRN e ON e.id = c.brn_id
+	</sql>
+    
+	<select id="get" resultMap="ufangUserActResultMap">
+		SELECT 
+			<include refid="ufangUserActColumns"/>
+		FROM UFANG_USER_ACT a
+		<include refid="ufangUserActJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByUserAndSubNo" resultMap="ufangUserActResultMap">
+		SELECT
+		<include refid="ufangUserActColumns"/>
+		FROM UFANG_USER_ACT a
+		<include refid="ufangUserActJoins"/>
+		<where>
+		    a.del_flag = '0'
+			<if test="user != null and user.id != null and user.id != ''">
+				AND a.user_id = #{user.id}
+			</if>
+			<if test="subNo != null and subNo != ''">
+				AND a.sub_no = #{subNo}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findList" resultMap="ufangUserActResultMap">
+		SELECT 
+			<include refid="ufangUserActColumns"/>
+		FROM UFANG_USER_ACT a
+		<include refid="ufangUserActJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="user != null and user.id != null and user.id != ''">
+				AND a.user_id = #{user.id}
+			</if>
+			<if test="subNo != null and subNo != ''">
+				AND a.sub_no = #{subNo}
+			</if>
+		</where>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY  a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="UfangUserAct">
+		INSERT INTO UFANG_USER_ACT(
+			id,
+			user_id,
+			sub_no,
+			curr_code,
+			cur_bal,
+			status,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			version,
+			del_flag
+		) VALUES (
+			#{id},
+			#{user.id},
+			#{subNo},
+			#{currCode},
+			#{curBal},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{version},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="UfangUserAct">
+		UPDATE UFANG_USER_ACT SET
+		    user_id = #{user.id}, 	
+			sub_no = #{subNo},
+			curr_code = #{currCode},
+			cur_bal = #{curBal},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			version = version+1
+		WHERE id = #{id}
+		AND version = #{version}
+	</update>
+	
+	<update id="delete">
+		UPDATE UFANG_USER_ACT SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE user_id = #{user.id}
+	</update>
+	
+	<update id="updateActBal">
+		UPDATE UFANG_USER_ACT SET
+		cur_bal = cur_bal + #{trxAmt}
+		WHERE user_id = #{ufangUserAct.user.id}
+		AND sub_no = #{ufangUserAct.subNo}
+		AND del_flag = '0'
+	</update>
+</mapper>

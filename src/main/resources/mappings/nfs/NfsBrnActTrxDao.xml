@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.nfs.dao.NfsBrnActTrxDao">
+    
+	<sql id="nfsBrnActTrxColumns">
+		a.id AS "id",
+		a.trx_Code AS "trxCode",
+		a.brn_id AS "company.id",
+		a.brn_no AS "company.brnNo",
+		a.sub_no AS "subNo",
+		a.cur_bal AS "curBal",		
+		a.curr_code AS "currCode",
+		a.drc AS "drc",		
+		a.trx_amt AS "trxAmt",
+		a.org_id AS "orgId",
+		a.status AS "status",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		c.brn_name AS "company.brnName"
+	</sql>
+	
+	<resultMap type="NfsBrnActTrx" id="nfsBrnActTrxResultMap">		
+        <id column="id" property="id"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	<sql id="nfsBrnActTrxJoins">
+		LEFT JOIN SYS_BRN c ON c.id = a.brn_id
+	</sql>
+    
+	<select id="get" resultMap="nfsBrnActTrxResultMap">
+		SELECT 
+			<include refid="nfsBrnActTrxColumns"/>
+		FROM NFS_BRN_ACT_TRX a
+		<include refid="nfsBrnActTrxJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="nfsBrnActTrxResultMap">
+		SELECT 
+			<include refid="nfsBrnActTrxColumns"/>
+		FROM NFS_BRN_ACT_TRX a
+		<include refid="nfsBrnActTrxJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="company != null and company.id != null and company.id != ''">
+				AND a.brn_id = #{company.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY  a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByBusinessId" parameterType="java.lang.Long" resultMap="nfsBrnActTrxResultMap">
+		SELECT 
+			<include refid="nfsBrnActTrxColumns"/>
+		FROM NFS_BRN_ACT_TRX a
+		<include refid="nfsBrnActTrxJoins"/>
+		<where>
+			a.del_flag = '0'
+			AND a.org_id = #{businessId}
+		</where>
+	</select>
+	
+
+	
+	<insert id="insert" parameterType="NfsBrnActTrx">
+		INSERT INTO NFS_BRN_ACT_TRX(
+			id,
+			trx_Code,
+			brn_id,
+			brn_no,
+			sub_no,			
+			cur_bal,
+			drc,		
+			trx_amt,		
+			curr_code,
+			org_id,
+            status,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{trxCode},
+			#{company.id},
+			#{company.brnNo},
+			#{subNo},
+			#{curBal},		
+			#{drc},
+			#{trxAmt},
+			#{currCode},
+            #{orgId},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsBrnActTrx">
+		UPDATE NFS_BRN_ACT_TRX SET 	
+			trx_Code = #{trxCode},
+			brn_id = #{company.id},
+			brn_no = #{company.brnNo},
+			sub_no = #{subNo},
+			cur_bal = #{curBal},
+			drc = #{drc},			
+			trx_amt = #{trxAmt},			
+			curr_code = #{currCode},
+			org_id = #{orgId},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_BRN_ACT_TRX SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

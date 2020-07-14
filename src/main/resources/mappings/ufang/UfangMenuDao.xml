@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.ufang.dao.UfangMenuDao">
+	
+	<sql id="menuColumns">
+		a.id AS "id",
+		a.parent_id AS "parent.id",
+		a.parent_ids AS "parentIds",
+		a.name AS "name",
+		a.href AS "href",
+		a.target AS "target",
+		a.icon AS "icon",
+		a.sort AS "sort",
+		a.is_show AS "isShow",
+		a.permission AS "permission",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		p.name AS "parent.name"
+	</sql>
+	
+	<resultMap type="UfangMenu" id="menuResultMap">		
+        <id column="id" property="id"/>
+        <result column="isShow"  property="isShow" javaType="Boolean" jdbcType="CHAR" />	       	
+	</resultMap>
+	
+	<sql id="menuJoins">
+		LEFT JOIN UFANG_MENU p ON p.id = a.parent_id
+    </sql>
+	
+	<select id="get" resultMap="menuResultMap">
+		SELECT
+			<include refid="menuColumns"/>
+		FROM UFANG_MENU a
+		<include refid="menuJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="menuResultMap">
+		SELECT
+			<include refid="menuColumns"/>
+		FROM UFANG_MENU a
+		<include refid="menuJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY a.sort
+	</select>
+	
+	<select id="findAllList" resultMap="menuResultMap">
+		SELECT
+			<include refid="menuColumns"/>
+		FROM UFANG_MENU a
+		<include refid="menuJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY a.sort
+	</select>
+	
+	<select id="findByParentIdsLike" resultMap="menuResultMap">
+		SELECT
+			a.id,
+			a.parent_id AS "parent.id",
+			a.parent_ids
+		FROM UFANG_MENU a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} AND a.parent_ids LIKE #{parentIds}
+		ORDER BY a.sort
+	</select>
+	
+	<select id="findByUserId" resultMap="menuResultMap">
+		SELECT DISTINCT
+			<include refid="menuColumns"/>
+		FROM UFANG_MENU a
+		LEFT JOIN UFANG_MENU p ON p.id = a.parent_id
+		JOIN UFANG_ROLE_MENU rm ON rm.menu_id = a.id
+		JOIN UFANG_ROLE r ON r.id = rm.role_id 
+		JOIN SYS_USER_ROLE ur ON ur.role_id = r.id
+		JOIN SYS_USER u ON u.id = ur.user_id AND u.id = #{userId}
+		WHERE a.del_flag = '0' AND r.del_flag = '0' AND u.del_flag = '0'
+		ORDER BY a.sort
+	</select>
+	
+	<select id="findByUfangUserId" resultMap="menuResultMap">
+		SELECT DISTINCT
+			<include refid="menuColumns"/>
+		FROM UFANG_MENU a
+		LEFT JOIN UFANG_MENU p ON p.id = a.parent_id
+		JOIN UFANG_ROLE_MENU rm ON rm.menu_id = a.id
+		JOIN UFANG_ROLE r ON r.id = rm.role_id 
+		JOIN UFANG_USER_ROLE ur ON ur.role_id = r.id
+		JOIN UFANG_USER u ON u.id = ur.user_id AND u.id = #{userId}
+		WHERE a.del_flag = '0' AND r.del_flag = '0' AND u.del_flag = '0'
+		ORDER BY a.sort
+	</select>
+	
+	<insert id="insert" parameterType="UfangMenu">
+		INSERT INTO UFANG_MENU(
+			id, 
+			parent_id, 
+			parent_ids, 
+			name, 
+			href, 
+			target, 
+			icon, 
+			sort, 
+			is_show, 
+			permission, 
+			rmk, 
+			create_by, 
+			create_time, 
+			update_by, 
+			update_time, 
+			del_flag
+		) VALUES (
+			#{id}, 
+			#{parent.id}, 
+			#{parentIds}, 
+			#{name}, 
+			#{href}, 
+			#{target}, 
+			#{icon}, 
+			#{sort}, 
+			#{isShow,javaType=Boolean, jdbcType=CHAR}, 
+			#{permission}, 
+			#{rmk},
+			#{createBy.empNo}, 
+			#{createTime}, 
+			#{updateBy.empNo}, 
+			#{updateTime},  
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="UfangMenu">
+		UPDATE UFANG_MENU SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}, 
+			name = #{name}, 
+			href = #{href}, 
+			target = #{target}, 
+			icon = #{icon}, 
+			sort = #{sort}, 
+			is_show = #{isShow,javaType=Boolean, jdbcType=CHAR}, 
+			permission = #{permission}, 
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE UFANG_MENU SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateSort">
+		UPDATE UFANG_MENU SET 
+			sort = #{sort}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE UFANG_MENU SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id} OR parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{id}||',%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{id}, ',%')</if>
+	</update>
+	
+</mapper>

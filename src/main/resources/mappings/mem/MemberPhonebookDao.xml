@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberPhonebookDao">
+    
+	<sql id="memberPhonebookColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.username AS "member.username",
+		a.phone_list AS "phoneList",
+		a.phone_book AS "phoneBook",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="MemberPhonebook" id="memberPhonebookResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	<sql id="memberPhonebookJoins">
+	</sql>
+    
+	<select id="get" resultMap="memberPhonebookResultMap">
+		SELECT 
+			<include refid="memberPhonebookColumns"/>
+		FROM MEM_MEMBER_PHONEBOOK a
+		<include refid="memberPhonebookJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="memberPhonebookResultMap">
+		SELECT 
+			<include refid="memberPhonebookColumns"/>
+		FROM MEM_MEMBER_PHONEBOOK a
+		<include refid="memberPhonebookJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member!= null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="member!= null and member.username != null and member.username != ''">
+				AND a.username = #{member.username}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY  a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="MemberPhonebook">
+		INSERT INTO MEM_MEMBER_PHONEBOOK(
+			id,
+			member_id,
+			username,
+			phone_list,
+			phone_book,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{member.username},
+			#{phoneList},
+			#{phoneBook},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MemberPhonebook">
+		UPDATE MEM_MEMBER_PHONEBOOK SET 	
+			member_id = #{member.id},
+			username = #{member.username},
+			phone_list = #{phoneList},
+			phone_book = #{phoneBook},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MEM_MEMBER_PHONEBOOK SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

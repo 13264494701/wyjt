@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.check.dao.NfsCheckRecordDao">
+    
+	<sql id="nfsCheckRecordColumns">
+		a.id AS "id",
+		a.org_type AS "orgType",
+		a.org_id AS "orgId",
+		a.checker_no AS "checkerNo",
+		a.checker_name AS "checkerName",
+		a.check_time AS "checkTime",
+		a.check_status AS "checkStatus",
+		a.check_desc AS "checkDesc",
+		a.rechecker_no AS "recheckerNo",
+		a.rechecker_name AS "recheckerName",
+		a.recheck_time AS "recheckTime",
+		a.recheck_status AS "recheckStatus",
+		a.recheck_desc AS "recheckDesc",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="NfsCheckRecord" id="nfsCheckRecordResultMap">		
+        <id column="id" property="id"/>
+         <result column="orgType" property="orgType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+         <result column="checkStatus" property="checkStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+         <result column="recheckStatus" property="recheckStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	<sql id="nfsCheckRecordJoins">
+	</sql>
+    
+	<select id="get" resultMap="nfsCheckRecordResultMap">
+		SELECT 
+			<include refid="nfsCheckRecordColumns"/>
+		FROM NFS_CHECK_RECORD a
+		<include refid="nfsCheckRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="nfsCheckRecordResultMap">
+		SELECT 
+			<include refid="nfsCheckRecordColumns"/>
+		FROM NFS_CHECK_RECORD a
+		<include refid="nfsCheckRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="orgType != null">
+				AND a.org_type = #{orgType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="orgId != null and orgId != ''">
+				AND a.org_id = #{orgId}
+			</if>
+			<if test="checkStatus != null">
+				AND a.check_status = #{checkStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="recheckStatus != null">
+				AND a.recheck_status = #{recheckStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginTime != null">
+				 <![CDATA[AND a.create_time >= #{beginTime}]]> 
+			</if>
+			<if test="endTime != null">
+				 <![CDATA[AND a.create_time <= #{endTime}]]> 
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="NfsCheckRecord">
+		INSERT INTO NFS_CHECK_RECORD(
+			id,
+			org_type,
+			org_id,
+			checker_no,
+			checker_name,
+			check_time,
+			check_status,
+			check_desc,
+			rechecker_no,
+			rechecker_name,
+			recheck_time,
+			recheck_status,
+			recheck_desc,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{orgType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{orgId},
+			#{checkerNo},
+			#{checkerName},
+			#{checkTime},
+			#{checkStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{checkDesc},
+			#{recheckerNo},
+			#{recheckerName},
+			#{recheckTime},
+			#{recheckStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{recheckDesc},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsCheckRecord">
+		UPDATE NFS_CHECK_RECORD SET 	
+			org_type = #{orgType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			org_id = #{orgId},
+			checker_no = #{checkerNo},
+			checker_name = #{checkerName},
+			check_time = #{checkTime},
+			check_status = #{checkStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			check_desc = #{checkDesc},
+			rechecker_no = #{recheckerNo},
+			rechecker_name = #{recheckerName},
+			recheck_time = #{recheckTime},
+			recheck_status = #{recheckStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			recheck_desc = #{recheckDesc},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_CHECK_RECORD SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

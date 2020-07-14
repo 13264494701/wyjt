@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.ufang.dao.UfangUserActTrxDao">
+    
+	<sql id="ufangUserActTrxColumns">
+		a.id AS "id",
+		a.trx_Code AS "trxCode",
+		a.user_id AS "user.id",
+		a.sub_no AS "subNo",	
+		a.curr_code AS "currCode",
+		a.drc AS "drc",
+		a.org_id AS "orgId",
+		a.trx_amt AS "trxAmt",
+		a.cur_bal AS "curBal",
+		a.status AS "status",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		c.username AS "user.username",
+		c.emp_no AS "user.empNo",
+		c.emp_nam AS "user.empNam"
+	</sql>
+	
+	<resultMap type="UfangUserActTrx" id="ufangUserActTrxResultMap">		
+        <id column="id" property="id"/>      
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>      
+	</resultMap>
+	
+	<sql id="ufangUserActTrxJoins">
+		LEFT JOIN UFANG_USER c ON c.id = a.user_id
+	</sql>
+    
+	<select id="get" resultMap="ufangUserActTrxResultMap">
+		SELECT 
+			<include refid="ufangUserActTrxColumns"/>
+		FROM UFANG_USER_ACT_TRX a
+		<include refid="ufangUserActTrxJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="ufangUserActTrxResultMap">
+		SELECT 
+			<include refid="ufangUserActTrxColumns"/>
+		FROM UFANG_USER_ACT_TRX a
+		<include refid="ufangUserActTrxJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="user != null and user.id != null and user.id != ''">
+				AND a.user_id = #{user.id}
+			</if>
+			<if test="drc != null and drc != ''">
+				AND a.drc = #{drc}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY  a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	
+	<insert id="insert" parameterType="UfangUserActTrx">
+		INSERT INTO UFANG_USER_ACT_TRX(
+			id,
+			trx_Code,
+			user_id,
+			sub_no,		
+			drc,	
+			trx_amt,
+			cur_bal,
+			curr_code,			
+			org_id,
+			status,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{trxCode},
+			#{user.id},
+			#{subNo},	
+			#{drc},			
+			#{trxAmt},
+			#{curBal},
+			#{currCode},
+			#{orgId},
+            #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="UfangUserActTrx">
+		UPDATE UFANG_USER_ACT_TRX SET 	
+		    trx_Code = #{trxCode},
+			user_id = #{user.id},
+			sub_no = #{subNo},						
+			drc = #{drc},	
+			trx_amt = #{trxAmt},
+			cur_bal = #{curBal},
+			curr_code = #{currCode},
+			org_id = #{orgId},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},		
+			rmk= #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE UFANG_USER_ACT_TRX SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

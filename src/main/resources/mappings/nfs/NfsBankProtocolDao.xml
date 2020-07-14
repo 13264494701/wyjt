@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.nfs.dao.NfsBankProtocolDao">
+    
+	<sql id="nfsBankProtocolColumns">
+		a.id AS "id",
+		a.protocol_no AS "protocolNo",
+		a.member_id AS "memberId",
+		a.card_no AS "cardNo",
+		a.bank_name AS "bankName",
+		a.payment_plugin_id AS "paymentPluginId",
+		a.payment_plugin_name AS "paymentPluginName",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="NfsBankProtocol" id="nfsBankProtocolResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	<sql id="nfsBankProtocolJoins">
+	</sql>
+    
+	<select id="get" resultMap="nfsBankProtocolResultMap">
+		SELECT 
+			<include refid="nfsBankProtocolColumns"/>
+		FROM NFS_BANK_PROTOCOL a
+		<include refid="nfsBankProtocolJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByMember" resultMap="nfsBankProtocolResultMap">
+		SELECT 
+			<include refid="nfsBankProtocolColumns"/>
+		FROM NFS_BANK_PROTOCOL a
+		<include refid="nfsBankProtocolJoins"/>
+		WHERE a.member_id = #{memberId}
+	</select>
+	
+	<select id="findList" resultMap="nfsBankProtocolResultMap">
+		SELECT 
+			<include refid="nfsBankProtocolColumns"/>
+		FROM NFS_BANK_PROTOCOL a
+		<include refid="nfsBankProtocolJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="protocolNo != null and protocolNo != ''">
+				AND a.protocol_no = #{protocolNo}
+			</if>
+			<if test="memberId != null">
+				AND a.member_id = #{memberId}
+			</if>
+			<if test="cardNo != null and cardNo != ''">
+				AND a.card_no = #{cardNo}
+			</if>
+			<if test="paymentPluginId != null and paymentPluginId != ''">
+				AND a.payment_plugin_id = #{paymentPluginId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="NfsBankProtocol">
+		INSERT INTO NFS_BANK_PROTOCOL(
+			id,
+			protocol_no,
+			member_id,
+			card_no,
+			bank_name,
+			payment_plugin_id,
+			payment_plugin_name,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{protocolNo},
+			#{memberId},
+			#{cardNo},
+			#{bankName},
+			#{paymentPluginId},
+			#{paymentPluginName},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsBankProtocol">
+		UPDATE NFS_BANK_PROTOCOL SET 	
+			protocol_no = #{protocolNo},
+			member_id = #{memberId},
+			card_no = #{cardNo},
+			bank_name = #{bankName},
+			payment_plugin_id = #{paymentPluginId},
+			payment_plugin_name = #{paymentPluginName},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_BANK_PROTOCOL SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

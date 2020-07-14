@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.loan.dao.NfsLoanApplyDetailDao">
+    
+	<sql id="nfsLoanApplyDetailColumns">
+		a.id AS "id",
+		a.apply_id AS "apply.id",
+		a.apply_member_id AS "apply.member.id",
+		a.member_id AS "member.id",
+		a.member_name AS "member.name",
+		a.member_image AS "member.headImage",
+		a.loan_role AS "loanRole",
+		a.trx_type AS "trxType",
+		a.amount AS "amount",
+		a.status AS "status",
+		a.pay_status AS "payStatus",
+		a.int_status AS "intStatus",
+		a.alive_video_status AS "aliveVideoStatus",
+		a.video_url AS "videoUrl",
+		a.dispute_resolution AS "disputeResolution",
+		a.progress AS "progress",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.version AS "version",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="NfsLoanApplyDetail" id="nfsLoanApplyDetailResultMap">		
+        <id column="id" property="id"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="intStatus" property="intStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="payStatus" property="payStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="aliveVideoStatus" property="aliveVideoStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="disputeResolution" property="disputeResolution" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="loanRole" property="loanRole" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="trxType" property="trxType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="nfsLoanApplyDetailJoins">
+	</sql>
+    
+	<select id="get" resultMap="nfsLoanApplyDetailResultMap">
+		SELECT 
+			<include refid="nfsLoanApplyDetailColumns"/>
+		FROM NFS_LOAN_APPLY_DETAIL a
+		<include refid="nfsLoanApplyDetailJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByApplyIdAndMemberId" resultMap="nfsLoanApplyDetailResultMap">
+		SELECT 
+			<include refid="nfsLoanApplyDetailColumns"/>
+		FROM NFS_LOAN_APPLY_DETAIL a
+		<include refid="nfsLoanApplyDetailJoins"/>
+		WHERE a.apply_id = #{applyId}
+		AND a.member_id = #{memberId}
+	</select>
+	
+	<select id="findList" resultMap="nfsLoanApplyDetailResultMap">
+		SELECT 
+			<include refid="nfsLoanApplyDetailColumns"/>
+		FROM NFS_LOAN_APPLY_DETAIL a
+		<include refid="nfsLoanApplyDetailJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="apply != null and apply.id != null and apply.id != ''">
+				AND a.apply_id = #{apply.id}
+			</if>
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="member != null and member.name != null and member.name != ''">
+				AND a.member_name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{member.name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{member.name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{member.name},'%')</if>
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="intStatus != null">
+				AND a.int_status = #{intStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="payStatus != null">
+				AND a.pay_status = #{payStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="aliveVideoStatus != null">
+				AND a.alive_video_status = #{aliveVideoStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="trxType != null">
+				AND a.trx_type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findLoanOutTimeList" resultMap="nfsLoanApplyDetailResultMap">
+		SELECT 
+			<include refid="nfsLoanApplyDetailColumns"/>
+		FROM NFS_LOAN_APPLY_DETAIL a
+		<include refid="nfsLoanApplyDetailJoins"/>
+		WHERE a.del_flag = '0'
+		and a.status = '0'
+		and a.trx_type = '1'
+		<![CDATA[and TIMESTAMPDIFF(HOUR,a.create_time,now()) > 72]]> 
+	</select>
+	
+	
+	<insert id="insert" parameterType="NfsLoanApplyDetail">
+		INSERT INTO NFS_LOAN_APPLY_DETAIL(
+			id,
+			apply_id,
+			apply_member_id,
+			member_id,
+			member_name,
+			member_image,
+			loan_role,
+			amount,			
+			status,
+			trx_type,
+			pay_status,
+			int_status,
+			alive_video_status,
+			video_url,
+			dispute_resolution,
+			progress,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			version,
+			del_flag
+		) VALUES (
+			#{id},
+			#{apply.id},
+			#{apply.member.id},
+			#{member.id},
+			#{member.name},
+			#{member.headImage},
+			#{loanRole,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{amount},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{payStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{intStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{aliveVideoStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{videoUrl},
+			#{disputeResolution,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{progress},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{version},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsLoanApplyDetail">
+		UPDATE NFS_LOAN_APPLY_DETAIL SET 	
+			apply_id = #{apply.id},
+			apply_member_id = #{apply.member.id},
+			member_id = #{member.id},
+			member_name = #{member.name},
+			member_image = #{member.headImage},
+			loan_role = #{loanRole,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			amount = #{amount},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			trx_type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			pay_status = #{payStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			int_status = #{intStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			alive_video_status = #{aliveVideoStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			video_url = #{videoUrl},
+			dispute_resolution = #{disputeResolution,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			progress = #{progress},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			version = version+1
+		WHERE id = #{id}
+			AND version = #{version}
+	</update>
+	 
+	<update id="delete">
+		UPDATE NFS_LOAN_APPLY_DETAIL SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="getLendingLoanAndAmount" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT 
+			count(*) AS count,sum(amount) As totalAmount
+		FROM NFS_LOAN_APPLY_DETAIL a
+		<include refid="nfsLoanApplyDetailJoins"/>
+		<where>
+			<if test="paramMap.ids != null and paramMap.ids.size() > 0">
+				(a.apply_member_id in 
+					<foreach collection="paramMap.ids" item="id" separator="," open="(" close=")">
+							#{id}
+					</foreach>
+				OR a.member_id in 
+					<foreach collection="paramMap.ids" item="id" separator="," open="(" close=")">
+							#{id}
+					</foreach>
+				)
+			</if>
+			<![CDATA[AND a.create_time >= #{paramMap.beginTime}]]>
+			<![CDATA[AND a.create_time <= #{paramMap.endTime}]]>
+			AND a.`status` = 0 AND a.trx_type = 0
+		</where>	
+	</select>
+	
+</mapper>

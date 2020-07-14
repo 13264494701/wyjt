@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.svc.sys.brn.dao.BrnDao">
+
+	<sql id="brnColumns">
+		a.id,
+		a.parent_id AS "parent.id",
+		a.parent_ids,
+		a.area_id AS "area.id",
+		a.brn_no AS "brnNo",
+		a.brn_name AS "brnName",
+		a.brn_type AS "brnType",
+		a.brn_grade AS "brnGrade",
+		a.address, 
+		a.zip_code, 
+		a.phone, 
+		a.fax_no AS "faxNo",
+		a.email, 
+		a.primary_person ,
+		a.deputy_person ,
+		a.rmk,
+		a.create_by AS "createBy.empNo",
+		a.create_time,
+		a.update_by AS "updateBy.empNo",
+		a.update_time,
+		a.del_flag,
+		p.brn_name AS "parent.brnName",
+		ar.name AS "area.name",
+		ar.parent_ids AS "area.parentIds"
+	</sql>
+	
+	<sql id="brnJoins">
+		LEFT JOIN SYS_BRN p ON p.id = a.parent_id
+		LEFT JOIN SYS_AREA ar ON ar.id = a.area_id
+    </sql>
+	
+	<select id="get" resultType="brn">
+		SELECT
+			<include refid="brnColumns"/>
+		FROM SYS_BRN a
+		<include refid="brnJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="brn">
+		SELECT
+			<include refid="brnColumns"/>
+		FROM SYS_BRN a
+		<include refid="brnJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		OR a.id = #{currentUser.brn.id}
+		ORDER BY a.brn_no
+	</select>
+			
+	<select id="findAllList" resultType="brn">
+		SELECT
+			<include refid="brnColumns"/>
+		FROM SYS_BRN a
+		<include refid="brnJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY a.brn_no
+	</select>
+	
+	<select id="findByParentIdsLike" resultType="brn">
+		SELECT
+			<include refid="brnColumns"/>
+		FROM SYS_BRN a
+		<include refid="brnJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} AND a.parent_ids LIKE #{parentIds}
+		ORDER BY a.brn_no
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO SYS_BRN(
+			id, 
+			parent_id, 
+			parent_ids, 
+			area_id, 
+			brn_no, 
+			brn_name, 
+			brn_type, 
+			brn_grade, 
+			address, 
+			zip_code, 
+			phone, 
+			fax_no, 
+			email, 
+			primary_person,
+			deputy_person,
+			rmk,
+			create_by, 
+			create_time, 
+			update_by, 
+			update_time,  
+			del_flag
+		) VALUES (
+			#{id}, 
+			#{parent.id}, 
+			#{parentIds}, 
+			#{area.id}, 
+			#{brnNo}, 
+			#{brnName}, 
+			#{brnType}, 
+			#{brnGrade}, 
+			#{address}, 
+			#{zipCode}, 
+			#{phone}, 
+			#{faxNo}, 
+			#{email}, 
+			#{primaryPerson},
+			#{deputyPerson},
+			#{rmk}, 
+			#{createBy.empNo}, 
+			#{createTime}, 
+			#{updateBy.empNo}, 
+			#{updateTime}, 
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE SYS_BRN SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}, 
+			area_id = #{area.id}, 
+			brn_no = #{brnNo}, 
+			brn_name = #{brnName}, 
+			brn_type = #{brnType}, 
+			brn_grade = #{brnGrade}, 
+			address = #{address}, 
+			zip_code = #{zipCode}, 
+			phone = #{phone}, 
+			fax_no = #{faxNo}, 
+			email = #{email}, 
+			primary_person=#{primaryPerson},
+			deputy_person=#{deputyPerson},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime}			
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE SYS_BRN SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE SYS_BRN SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id} OR parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{id}||',%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{id}, ',%')</if>
+	</update>
+	
+	<select id="getChildrenByParentId" resultType="brn">
+		SELECT
+			<include refid="brnColumns"/>
+		FROM SYS_BRN a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		and a.parent_id = #{parentId}
+	</select>
+	
+	<select id="getChildMaxNo" resultType="String" parameterType="Long">
+		SELECT
+			max(a.brn_no) as brnNo
+		FROM SYS_BRN a
+		WHERE a.del_flag = '0' and a.parent_id = #{parentId}
+	</select>
+		
+	<select id="getbrnNamByNo" resultType="String" parameterType="String">
+		SELECT
+			a.brn_name as brnName
+		FROM SYS_BRN a
+		WHERE a.del_flag = '0' and a.brn_no = #{brnNo}
+	</select>
+</mapper>

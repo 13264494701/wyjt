@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.svc.plugin.PluginConfigDao">
+    
+	<sql id="pluginConfigColumns">
+		a.id AS "id",
+		a.plugin_id AS "pluginId",
+		a.display_order AS "displayOrder",
+		a.attributes AS "attributes",
+		a.is_enabled AS "isEnabled",		
+		a.is_installed AS "isInstalled",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="PluginConfig" id="pluginConfigResultMap">		
+	    <id column="id" property="id"/>
+        <result column="isEnabled"  property="isEnabled" javaType="Boolean" jdbcType="CHAR" />	
+        <result column="isInstalled"  property="isInstalled" javaType="Boolean" jdbcType="CHAR" />	
+	</resultMap>
+	
+	<sql id="pluginConfigJoins">
+	</sql>
+    
+	<select id="get" resultMap="pluginConfigResultMap">
+		SELECT 
+			<include refid="pluginConfigColumns"/>
+		FROM SYS_PLUGIN_CONFIG a
+		<include refid="pluginConfigJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findByPluginId" resultMap="pluginConfigResultMap">
+		SELECT 
+			<include refid="pluginConfigColumns"/>
+		FROM SYS_PLUGIN_CONFIG a
+		<include refid="pluginConfigJoins"/>
+		WHERE a.plugin_id = #{pluginId}	
+	</select>
+	
+	<select id="findList" resultMap="pluginConfigResultMap">
+		SELECT 
+			<include refid="pluginConfigColumns"/>
+		FROM SYS_PLUGIN_CONFIG a
+		<include refid="pluginConfigJoins"/>
+		<where>		
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="PluginConfig">
+		INSERT INTO SYS_PLUGIN_CONFIG(
+			id,
+			plugin_id,
+			display_order,
+			attributes,
+			is_enabled,	
+			is_installed,		
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{pluginId},
+			#{displayOrder},
+			#{attributes},
+			#{isEnabled, javaType=Boolean, jdbcType=CHAR},
+			#{isInstalled, javaType=Boolean, jdbcType=CHAR},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="PluginConfig">
+		UPDATE SYS_PLUGIN_CONFIG SET 	
+		    plugin_id = #{pluginId},
+		    attributes = #{attributes},
+			display_order = #{displayOrder},		
+			is_enabled = #{isEnabled, javaType=Boolean, jdbcType=CHAR},	
+			is_installed = #{isInstalled, javaType=Boolean, jdbcType=CHAR},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE SYS_PLUGIN_CONFIG SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

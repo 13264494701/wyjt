@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberRelationDao">
+    
+	<sql id="memberRelationColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.lower_member_id AS "lowerMember.id",
+		a.level AS "level",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		c.nickname AS "lowerMember.nickname",
+		c.head_image AS "lowerMember.headImage"
+	</sql>
+	
+	<resultMap type="MemberRelation" id="memberRelationResultMap">
+		<id column="id" property="id" />
+		<result column="level" property="level" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="memberRelationJoins">
+	    LEFT JOIN MEM_MEMBER c on c.id = a.lower_member_id 
+	</sql>
+    
+	<select id="get" resultMap="memberRelationResultMap">
+		SELECT 
+			<include refid="memberRelationColumns"/>
+		FROM MEM_MEMBER_RELATION a
+		<include refid="memberRelationJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getHigherMemberId" resultMap="memberRelationResultMap">
+		SELECT 
+			a.member_id AS "memberId"
+		FROM MEM_MEMBER_RELATION a
+		    <include refid="memberRelationJoins"/>
+		<where>
+			a.del_flag = #{delFlag}
+			<if test="lowerMember != null and lowerMember.id != null and lowerMember.id != ''">
+				AND a.lower_member_id = #{lowerMember.id}
+			</if>
+			<if test="level != null">
+				AND a.level = #{level,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findList" resultMap="memberRelationResultMap">
+		SELECT 
+			<include refid="memberRelationColumns"/>
+		FROM MEM_MEMBER_RELATION a
+		<include refid="memberRelationJoins"/>
+		<where>
+			a.del_flag = #{delFlag}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="lowerMember != null and lowerMember.id != null and lowerMember.id != ''">
+				AND a.lower_member_id = #{lowerMember.id}
+			</if>
+			<if test="level != null">
+				AND a.level = #{level,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="MemberRelation">
+		INSERT INTO MEM_MEMBER_RELATION(
+			id,
+			member_id,
+			lower_member_id,
+			level,
+			create_by, 
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{lowerMember.id},
+			#{level,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{createBy.empNo}, 
+			#{createTime}, 
+			#{updateBy.empNo}, 
+			#{updateTime}, 
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MemberRelation">
+		UPDATE MEM_MEMBER_RELATION SET 	
+			member_id = #{member.id},
+			lower_member_id = #{lowerMember.id},
+			level = #{level,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MEM_MEMBER_RELATION SET 
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

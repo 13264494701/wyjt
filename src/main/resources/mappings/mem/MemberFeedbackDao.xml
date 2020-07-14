@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberFeedbackDao">
+    
+	<sql id="memberFeedbackColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.note AS "note",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime"
+	</sql>
+	
+	<resultMap type="MemberFeedback" id="memberFeedbackResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	<sql id="memberFeedbackJoins">
+	</sql>
+    
+	<select id="get" resultMap="memberFeedbackResultMap">
+		SELECT 
+			<include refid="memberFeedbackColumns"/>
+		FROM MEM_MEMBER_FEEDBACK a
+		<include refid="memberFeedbackJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="memberFeedbackResultMap">
+		SELECT 
+			<include refid="memberFeedbackColumns"/>
+		FROM MEM_MEMBER_FEEDBACK a
+		<include refid="memberFeedbackJoins"/>
+		<where>
+			
+			<if test="member!= null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="note != null and note != ''">
+				AND a.note = #{note}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="MemberFeedback">
+		INSERT INTO MEM_MEMBER_FEEDBACK(
+			id,
+			member_id,
+			note,
+			create_by,
+			create_time
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{note},
+			#{createBy.empNo},
+			#{createTime}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MemberFeedback">
+		UPDATE MEM_MEMBER_FEEDBACK SET 	
+			member_id = #{member.id},
+			note = #{note},
+			create_time = #{createTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM MEM_MEMBER_FEEDBACK
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.report.dao.ReportLoanDailyDao">
+    
+	<sql id="reportLoanDailyColumns">
+		a.id AS "id",
+		a.date AS "date",
+		a.trx_type AS "trxType",
+		a.loan_quantity AS "loanQuantity",
+		a.loan_amount AS "loanAmount",
+		a.loan_fee AS "loanFee",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="ReportLoanDaily" id="reportLoanDailyResultMap">		
+        <id column="id" property="id"/>
+        <result column="trxType" property="trxType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="reportLoanDailyJoins">
+	</sql>
+    
+	<select id="get" resultMap="reportLoanDailyResultMap">
+		SELECT 
+			<include refid="reportLoanDailyColumns"/>
+		FROM REPORT_LOAN_DAILY a
+		<include refid="reportLoanDailyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="reportLoanDailyResultMap">
+		SELECT 
+		    a.id AS "id",
+			left(a.date,#{type}) AS "date",
+			a.trx_type AS "trxType",
+			sum(a.loan_quantity) AS "loanQuantity",
+		    sum(a.loan_amount) AS "loanAmount",
+		    sum(a.loan_fee) AS "loanFee",
+			a.create_by AS "createBy.empNo",
+		    a.create_time AS "createTime",
+		    a.update_by AS "updateBy.empNo",
+		    a.update_time AS "updateTime",
+		    a.del_flag AS "delFlag"
+		FROM REPORT_LOAN_DAILY a
+		<include refid="reportLoanDailyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="date != null and date != ''">
+				AND a.date = #{date}
+			</if>
+		</where>
+		GROUP BY left(a.date,#{type}),a.trx_type
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="ReportLoanDaily">
+		INSERT INTO REPORT_LOAN_DAILY(
+			id,
+			date,
+			trx_type,
+			loan_quantity,
+			loan_amount,
+			loan_fee,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{date},
+			#{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{loanQuantity},
+			#{loanAmount},
+			#{loanFee},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="ReportLoanDaily">
+		UPDATE REPORT_LOAN_DAILY SET 	
+			date = #{date},
+			trx_type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			loan_quantity = #{loanQuantity},
+			loan_amount = #{loanAmount},
+			loan_fee = #{loanFee},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE REPORT_LOAN_DAILY SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="deleteByDate">
+		UPDATE REPORT_LOAN_DAILY SET
+			del_flag = 1
+		WHERE date = #{date}
+	</update>
+	
+	<select id="loanCount" resultMap="reportLoanDailyResultMap">
+		SELECT
+			date_sub( curdate( ), INTERVAL #{daysAgo} DAY ) AS date,
+			trx_type AS trxType,
+			count( id ) AS loanQuantity,
+			ifnull(sum( amount ),0) AS loanAmount,
+			ifnull(sum( fee ),0) AS loanFee	
+		FROM
+			NFS_LOAN_RECORD
+		WHERE
+			to_days( now( ) ) - to_days( create_time ) = #{daysAgo}
+		GROUP BY trx_type	
+	</select>
+	
+</mapper>

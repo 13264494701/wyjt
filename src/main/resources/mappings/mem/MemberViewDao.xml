@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberViewDao">
+    
+	<sql id="memberViewColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.username AS "member.username",
+		a.org_password AS "member.password",
+		a.name AS "member.name",
+		a.friend_quantity AS "friendQuantity",
+		a.status AS "status",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="MemberView" id="memberViewResultMap">		
+        <id column="id" property="id"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	<sql id="memberViewJoins">
+	</sql>
+    
+	<select id="get" resultMap="memberViewResultMap">
+		SELECT 
+			<include refid="memberViewColumns"/>
+		FROM MEM_MEMBER_VIEW a
+		<include refid="memberViewJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="memberViewResultMap">
+		SELECT 
+			<include refid="memberViewColumns"/>
+		FROM MEM_MEMBER_VIEW a
+		<include refid="memberViewJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member!= null and member.username != null and member.username != ''">
+				AND a.username = #{member.username}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="MemberView">
+		INSERT INTO MEM_MEMBER_VIEW(
+			id,
+			member_id,
+			username,
+			org_password,
+			name,
+			friend_quantity,
+			status,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{member.username},
+			#{member.password},
+			#{member.name},
+			#{friendQuantity},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MemberView">
+		UPDATE MEM_MEMBER_VIEW SET 	
+			member_id = #{member.id},
+			username = #{member.username},
+			org_password = #{member.password},
+			name = #{member.name},
+			friend_quantity = #{friendQuantity},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			rmk = #{rmk},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MEM_MEMBER_VIEW SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findFriendCountList" resultMap="memberViewResultMap">
+        SELECT 
+             member_id AS "member.id",
+             COUNT(member_id) AS friendQuantity  
+        FROM MEM_MEMBER_FRIEND_RELATION 
+        GROUP BY member_id  
+        ORDER BY friendQuantity DESC 
+        LIMIT 300		
+	</select>
+</mapper>

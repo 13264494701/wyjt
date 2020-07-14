@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+  <!-- 普通优先级消息轮询的线程池 -->
+  <bean id="normalPriorEmailConsumer" class="com.jxf.mms.consumer.impl.EmailConsumer">
+    <property name="consumer_thread_number" value="4"/>    <!-- 线程池的大小 -->
+    <property name="interval" value="10" />    <!-- 每个线程轮询队列的间隔，单位：秒 -->
+    <property name="queue" ref="normalPriorEmailQueue" />
+  </bean>
+  
+  <!-- 高优先级消息轮询的线程池 -->
+  <bean id="highPriorEmailConsumer" class="com.jxf.mms.consumer.impl.EmailConsumer">
+    <property name="consumer_thread_number" value="2"/>    <!-- 线程池的大小 -->
+    <property name="interval" value="10" />    <!-- 每个线程轮询队列的间隔，单位：秒 -->
+    <property name="queue" ref="highPriorEmailQueue" />
+  </bean>
+  
+  <!-- 短信轮询的线程池 -->
+  <bean id="smsConsumer" class="com.jxf.mms.consumer.impl.SMSConsumer">
+    <property name="consumer_thread_number" value="1"/>    
+    <property name="interval" value="10" />    <!-- 每个线程轮询队列的间隔，单位：秒 -->
+    <property name="queue" ref="smsQueue" />
+    <property name="smsGateWay" ref="smsGateWay" />
+  </bean>
+
+  <!-- 普通优先级邮件队列 -->
+  <bean id="normalPriorEmailQueue" class="com.jxf.mms.queue.EmailQueue"></bean>
+  
+  <!-- 高优先级邮件队列 -->
+  <bean id="highPriorEmailQueue" class="com.jxf.mms.queue.EmailQueue"></bean>
+  
+  <!-- 短信队列 -->
+  <bean id="smsQueue" class="com.jxf.mms.queue.SMSQueue"></bean>
+
+  <bean id="sendMsgService" class="com.jxf.mms.service.impl.SendMsgServiceImpl"></bean>
+  
+  <!-- 领先互联网关 -->
+  <bean id="smsGateWay" class="com.jxf.mms.gateway.impl.LXHLHttpSMSGateWayImpl"/>
+  
+  <!-- 创蓝网关 
+  <bean id="clSmsGateWay" class="com.jxf.mms.gateway.impl.CLHttpSMSGateWayImpl">
+      <property name="url" value="http://sms.253.com/msg/" />  
+      <property name="un" value="N5234817" />  
+      <property name="pw" value="VwdOM1PByhb9d2" />  
+      <property name="rd" value="1" />
+      <property name="ex" value="null" />
+  </bean>
+  -->
+</beans>

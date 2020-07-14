@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.rc.dao.RcCaYysDetailsDao">
+    
+	<sql id="rcCaYysDetailsColumns">
+		a.id AS "id",
+		a.member_id AS "memberId",
+		a.content AS "content",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="RcCaYysDetails" id="rcCaYysDetailsResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	<sql id="rcCaYysDetailsJoins">
+	</sql>
+    
+	<select id="get" resultMap="rcCaYysDetailsResultMap">
+		SELECT 
+			<include refid="rcCaYysDetailsColumns"/>
+		FROM RC_CA_YYS_DETAILS a
+		<include refid="rcCaYysDetailsJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="rcCaYysDetailsResultMap">
+		SELECT 
+			<include refid="rcCaYysDetailsColumns"/>
+		FROM RC_CA_YYS_DETAILS a
+		<include refid="rcCaYysDetailsJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="memberId != null and memberId != ''">
+				AND a.member_id = #{memberId}
+			</if>
+			<if test="createTime != null and createTime != ''">
+				AND a.create_time = #{createTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			  ORDER BY a.id DESC 
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="RcCaYysDetails">
+		INSERT INTO RC_CA_YYS_DETAILS(
+			id,
+			member_id,
+			content,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{memberId},
+			#{content},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="RcCaYysDetails">
+		UPDATE RC_CA_YYS_DETAILS SET 	
+			member_id = #{memberId},
+			content = #{content},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE RC_CA_YYS_DETAILS SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

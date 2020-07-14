@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.report.dao.ReportMemberActDailyDao">
+    
+	<sql id="reportMemberActDailyColumns">
+		a.id AS "id",
+		left(a.date,#{type}) AS "date",
+		a.avl_bal AS "avlBal",
+		a.loan_bal AS "loanBal",
+		a.freezen_bal AS "freezenBal",
+		a.redbag_bal AS "redbagBal",
+		a.pending_repayment AS "pendingRepayment",
+		a.pending_receiver AS "pendingReceiver",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="ReportMemberActDaily" id="reportMemberActDailyResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	<sql id="reportMemberActDailyJoins">
+	</sql>
+    
+	<select id="get" resultMap="reportMemberActDailyResultMap">
+		SELECT 
+			<include refid="reportMemberActDailyColumns"/>
+		FROM REPORT_MEMBER_ACT_DAILY a
+		<include refid="reportMemberActDailyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="reportMemberActDailyResultMap">
+		SELECT 
+			<include refid="reportMemberActDailyColumns"/>
+		FROM REPORT_MEMBER_ACT_DAILY a
+		<include refid="reportMemberActDailyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="date != null and date != ''">
+				AND a.date = #{date}
+			</if>
+		</where>
+		GROUP BY left(date,#{type})
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY date DESC
+			</otherwise>
+		</choose>
+	</select>
+		
+	<insert id="insert" parameterType="ReportMemberActDaily">
+		INSERT INTO REPORT_MEMBER_ACT_DAILY(
+			id,
+			date,
+			avl_bal,
+			loan_bal,
+			freezen_bal,
+			redbag_bal,
+			pending_repayment,
+			pending_receiver,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{date},
+			#{avlBal},
+			#{loanBal},
+			#{freezenBal},
+			#{redbagBal},
+			#{pendingRepayment},
+			#{pendingReceiver},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="ReportMemberActDaily">
+		UPDATE REPORT_MEMBER_ACT_DAILY SET 	
+			date = #{date},
+			avl_bal = #{avlBal},
+			loan_bal = #{loanBal},
+			freezen_bal = #{freezenBal},
+			redbag_bal = #{redbagBal},
+			pending_repayment = #{pendingRepayment},
+			pending_receiver = #{pendingReceiver},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE REPORT_MEMBER_ACT_DAILY SET 
+		    update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="deleteByDate">
+		UPDATE REPORT_MEMBER_ACT_DAILY SET
+			del_flag = 1
+		WHERE date = #{date}
+	</update>
+	
+</mapper>

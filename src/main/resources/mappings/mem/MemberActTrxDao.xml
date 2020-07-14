@@ -1,0 +1,703 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberActTrxDao">
+    
+	<sql id="memberActTrxColumns">
+		a.id AS "id",
+		a.trx_code AS "trxCode",
+		a.member_id AS "member.id",
+		a.sub_no AS "subNo",
+		a.org_id AS "orgId",
+		a.trx_group AS "trxGroup",
+		a.title AS "title",
+		a.drc AS "drc",
+		a.trx_amt AS "trxAmt",	
+		a.cur_bal AS "curBal",				
+		a.curr_code AS "currCode",				
+		a.status AS "status",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<sql id="memberAllActTrxColumns">
+		id AS "id",
+		trx_code AS "trxCode",
+		member_id AS "member.id",
+		sub_no AS "subNo",
+		org_id AS "orgId",
+		trx_group AS "trxGroup",
+		title AS "title",
+		drc AS "drc",
+		trx_amt AS "trxAmt",	
+		cur_bal AS "curBal",				
+		curr_code AS "currCode",				
+		status AS "status",
+		rmk AS "rmk",
+		create_by AS "createBy.empNo",
+		create_time AS "createTime",
+		update_by AS "updateBy.empNo",
+		update_time AS "updateTime",
+		del_flag AS "delFlag"
+	</sql>
+
+
+	<resultMap type="MemberActTrx" id="memberActTrxResultMap">		
+        <id column="id" property="id"/>       
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="trxGroup" property="trxGroup" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="memberActTrxJoins">
+	</sql>
+    
+	<select id="get" resultMap="memberActTrxResultMap">
+		SELECT 
+			<include refid="memberActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX a
+		<include refid="memberActTrxJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="countTotalAccountByGroup" resultMap="memberActTrxResultMap">
+		SELECT
+			SUM(a.trx_amt) AS totalIncome,
+			( SELECT SUM(b.trx_amt) FROM MEM_MEMBER_ACT_TRX b
+		<where>
+			b.del_flag = '0' AND
+			b.member_id = #{member.id}
+			<if test="trxGroup != null">
+				AND b.trx_group = #{trxGroup,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="trxGroup == null">
+				AND b.trx_group !='6' AND b.sub_no != '0005' AND b.sub_no != '0006'
+			</if>
+			AND b.drc = 'C'
+			<if test="beginTime != null">
+				<![CDATA[AND b.create_time >= #{beginTime}]]>
+			</if>
+			<if test="endTime != null">
+				<![CDATA[AND b.create_time < #{endTime}]]>
+			</if>
+			<if test="minAmount != null">
+				<![CDATA[AND b.trx_amt >= #{minAmount}]]>
+			</if>
+			<if test="maxAmount != null">
+				<![CDATA[AND b.trx_amt <= #{maxAmount}]]>
+			</if>
+		</where> 
+		) 
+		AS totalExpenditure
+		FROM
+			MEM_MEMBER_ACT_TRX a
+			<include refid="memberActTrxJoins"/>
+		<where>
+			a.del_flag = '0' AND
+			a.member_id = #{member.id} 
+			<if test="trxGroup != null">
+				AND a.trx_group = #{trxGroup,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="trxGroup == null">
+				AND a.trx_group !='6' AND a.sub_no != '0005' AND a.sub_no != '0006'
+			</if>
+			AND a.drc = 'D'
+			<if test="beginTime != null">
+				<![CDATA[AND a.create_time >= #{beginTime}]]>
+			</if>
+			<if test="endTime != null">
+				<![CDATA[AND a.create_time < #{endTime}]]>
+			</if>
+			<if test="minAmount != null">
+				<![CDATA[AND a.trx_amt >= #{minAmount}]]>
+			</if>
+			<if test="maxAmount != null">
+				<![CDATA[AND a.trx_amt <= #{maxAmount}]]>
+			</if>
+		</where>
+	</select>
+	
+	<select id="getTrxByMemberAndSubNo" resultMap="memberActTrxResultMap" resultType="MemberActTrx">
+		SELECT 
+			<include refid="memberAllActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX 
+		<where>
+			member_id = #{member.id} 
+			AND sub_no in('0001','0002','0003')
+			<if test="beginTime != null and endTime != null">
+				AND create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+		</where>
+		union
+		SELECT 
+			<include refid="memberAllActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX_2017
+		<where>
+			member_id = #{member.id} 
+			AND sub_no in('0001','0002','0003')
+			<if test="beginTime != null and endTime != null">
+				AND create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+		</where>
+		union
+		SELECT 
+			<include refid="memberAllActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX_2016
+		<include refid="memberActTrxJoins"/>
+		<where>
+			member_id = #{member.id} 
+			AND sub_no in('0001','0002','0003')
+			<if test="beginTime != null and endTime != null">
+				AND create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+		</where>
+			ORDER BY id ASC
+	</select>
+	
+	<select id="getTrxByMemberAndLoan" resultMap="memberActTrxResultMap">
+		SELECT 
+			<include refid="memberAllActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX 
+		<where>
+			member_id = #{member.id} 
+			AND org_id = #{orgId}
+			AND sub_no in('0001','0002','0003')
+		</where>
+		union
+		SELECT 
+			<include refid="memberAllActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX_2017
+		<where>
+			member_id = #{member.id} 
+			AND org_id = #{orgId}
+			AND sub_no in('0001','0002','0003')
+		</where>
+		union
+		SELECT 
+			<include refid="memberAllActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX_2016
+		<include refid="memberActTrxJoins"/>
+		<where>
+			member_id = #{member.id} 
+			AND org_id = #{orgId}
+			AND sub_no in('0001','0002','0003')
+		</where>
+			ORDER BY id ASC
+	</select>
+	
+	<select id="getExtraTrx" resultMap="memberActTrxResultMap" resultType="MemberActTrx">
+		SELECT 
+			<include refid="memberAllActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX 
+		<where>
+			member_id = #{member.id} 
+			AND trx_code in('MB010','MB020','MB021','MB022','MB023','MB024','MB025','MB030','MB031')
+			<if test="beginTime != null and endTime != null">
+				AND create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+		</where>
+		union
+		SELECT 
+			<include refid="memberAllActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX_2017
+		<where>
+			member_id = #{member.id} 
+			AND trx_code in('MB010','MB020','MB021','MB022','MB023','MB024','MB025','MB030','MB031')
+			<if test="beginTime != null and endTime != null">
+				AND create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+		</where>
+		union
+		SELECT 
+			<include refid="memberAllActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX_2016
+		<include refid="memberActTrxJoins"/>
+		<where>
+			member_id = #{member.id} 
+			AND trx_code in('MB010','MB020','MB021','MB022','MB023','MB024','MB025','MB030','MB031')
+			<if test="beginTime != null and endTime != null">
+				AND create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+		</where>
+			ORDER BY id ASC
+	</select>
+	
+	<select id="findList" resultMap="memberActTrxResultMap">
+		SELECT 
+			<include refid="memberActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX a
+		<include refid="memberActTrxJoins"/>
+		<where>
+			a.del_flag = #{delFlag}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="subNo != null and subNo != ''">
+				AND a.sub_no = #{subNo}
+			</if>
+			<if test="trxCode != null and trxCode != ''">
+				AND a.trx_code = #{trxCode}
+			</if>
+			<if test="orgId != null and orgId != ''">
+				AND a.org_id = #{orgId}
+			</if>
+			<if test="drc != null and drc != ''">
+				AND a.drc = #{drc}
+			</if>
+			<if test="trxGroup != null">
+				AND a.trx_group = #{trxGroup,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginTime != null">
+				<![CDATA[AND a.create_time >= #{beginTime}]]>
+			</if>
+			<if test="endTime != null">
+				<![CDATA[AND a.create_time < #{endTime}]]>
+			</if>
+			<if test="minAmount != null">
+				<![CDATA[AND a.trx_amt >= #{minAmount}]]>
+			</if>
+			<if test="maxAmount != null">
+				<![CDATA[AND a.trx_amt <= #{maxAmount}]]>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>	
+	
+	<select id="findListExceptToPaidAndDueIn" resultMap="memberActTrxResultMap">
+		SELECT 
+			<include refid="memberActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX a
+		<include refid="memberActTrxJoins"/>
+		<where>
+			a.del_flag = #{delFlag}
+			AND a.member_id = #{member.id}
+			AND a.sub_no !='0003' 
+			AND a.sub_no !='0005' 
+			AND a.sub_no !='0006'
+			AND a.trx_code not in
+			
+			<foreach collection="sqlMap" index="index" item="trxCodeList" open="(" separator="," close=")">
+	               #{trxCodeList}
+	        </foreach>
+	        
+			<if test="beginTime != null">
+				<![CDATA[AND a.create_time >= #{beginTime}]]>
+			</if>
+			<if test="endTime != null">
+				<![CDATA[AND a.create_time < #{endTime}]]>
+			</if>
+			<if test="minAmount != null">
+				<![CDATA[AND a.trx_amt >= #{minAmount}]]>
+			</if>
+			<if test="maxAmount != null">
+				<![CDATA[AND a.trx_amt <= #{maxAmount}]]>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+		limit #{pageStart},20
+	</select>
+	
+	<select id="findActTrxList" resultMap="memberActTrxResultMap">
+		SELECT 
+			<include refid="memberActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX a
+		<include refid="memberActTrxJoins"/>
+		<where>
+			a.del_flag = #{delFlag} 
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="trxCode != null and trxCode != ''">
+				AND a.trx_code = #{trxCode}
+			</if>
+			<if test="subNo != null and subNo != ''">
+				AND a.sub_no = #{subNo}
+			</if>
+			<if test="orgId != null and orgId != ''">
+				AND a.org_id = #{orgId}
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title like 
+				<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="trxGroup != null">
+				AND a.trx_group = #{trxGroup,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginTime != null">
+				<![CDATA[AND a.create_time >= #{beginTime}]]>
+			</if>
+			<if test="endTime != null">
+				<![CDATA[AND a.create_time < #{endTime}]]>
+			</if>
+			<if test="minAmount != null">
+				<![CDATA[AND a.trx_amt >= #{minAmount}]]>
+			</if>
+			<if test="maxAmount != null">
+				<![CDATA[AND a.trx_amt <= #{maxAmount}]]>
+			</if>
+			AND a.sub_no in ('0001','0002','0003')
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllForAppList" resultMap="memberActTrxResultMap">
+		SELECT 
+			<include refid="memberActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX a
+		<include refid="memberActTrxJoins"/>
+		<where>
+			a.del_flag = #{delFlag}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="trxCode != null and trxCode != ''">
+				AND a.trx_code = #{trxCode}
+			</if>
+			<if test="drc != null and drc != ''">
+				AND a.drc = #{drc}
+			</if>
+			<if test="subNo != null and subNo != ''">
+				AND a.sub_no = #{subNo}
+			</if>
+			<if test="trxGroup != null">
+				AND a.trx_group = #{trxGroup,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="trxGroup == null">
+				AND a.trx_group != '6' AND a.sub_no != '0005' AND a.sub_no != '0006'
+			</if>
+			<if test="beginTime != null">
+				<![CDATA[AND a.create_time >= #{beginTime}]]>
+			</if>
+			<if test="endTime != null">
+				<![CDATA[AND a.create_time < #{endTime}]]>
+			</if>
+			<if test="minAmount != null">
+				<![CDATA[AND a.trx_amt >= #{minAmount}]]>
+			</if>
+			<if test="maxAmount != null">
+				<![CDATA[AND a.trx_amt <= #{maxAmount}]]>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByOrgId" parameterType="java.lang.Long" resultMap="memberActTrxResultMap">
+		SELECT 
+			<include refid="memberActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX a
+		<include refid="memberActTrxJoins"/>
+		<where>
+			a.del_flag = '0'
+			AND a.org_id = #{orgId}
+		</where>
+	</select>
+	
+	<select id="findLoanTrxListPage" resultMap="memberActTrxResultMap">
+		SELECT 
+			<include refid="memberActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX a
+		<include refid="memberActTrxJoins"/>
+		<where>
+			a.del_flag = #{delFlag} AND a.trx_code != 'LN030'
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="drc != null and drc != ''">
+				AND a.drc = #{drc}
+			</if>
+			<if test="trxGroup != null">
+				AND a.trx_group = #{trxGroup,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginTime != null">
+				<![CDATA[AND a.create_time >= #{beginTime}]]>
+			</if>
+			<if test="endTime != null">
+				<![CDATA[AND a.create_time < #{endTime}]]>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findCollectionTrxListPage" resultMap="memberActTrxResultMap">
+		SELECT 
+			<include refid="memberActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX a
+		<include refid="memberActTrxJoins"/>
+		<where>
+			a.del_flag = #{delFlag} AND a.trx_code != 'RP030' AND a.trx_code != 'RP050' 
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="drc != null and drc != ''">
+				AND a.drc = #{drc}
+			</if>
+			<if test="trxGroup != null">
+				AND a.trx_group = #{trxGroup,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginTime != null">
+				<![CDATA[AND a.create_time >= #{beginTime}]]>
+			</if>
+			<if test="endTime != null">
+				<![CDATA[AND a.create_time < #{endTime}]]>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findByTrxCodesList" resultMap="memberActTrxResultMap">
+		SELECT 
+			<include refid="memberActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX a
+		<include refid="memberActTrxJoins"/>
+		<where>
+			a.del_flag = #{delFlag}
+				AND a.member_id = #{member.id}
+				AND a.sub_no !='0003' 
+				AND a.sub_no !='0005' 
+				AND a.sub_no !='0006' 
+				AND a.trx_code in
+				
+		  <foreach collection="sqlMap" index="index" item="trxCodeList" open="(" separator="," close=")">
+               #{trxCodeList}
+          </foreach>
+				
+			<if test="beginTime != null">
+				<![CDATA[AND a.create_time >= #{beginTime}]]>
+			</if>
+			<if test="endTime != null">
+				<![CDATA[AND a.create_time < #{endTime}]]>
+			</if>
+			<if test="minAmount != null">
+				<![CDATA[AND a.trx_amt >= #{minAmount}]]>
+			</if>
+			<if test="maxAmount != null">
+				<![CDATA[AND a.trx_amt <= #{maxAmount}]]>
+			</if>
+			<if test="drc != null and drc != ''">
+				AND a.drc = #{drc}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+		limit #{pageStart},20
+		
+	</select>	
+	
+	<select id="countTotalByTrxCodes" resultMap="memberActTrxResultMap">
+		SELECT
+			SUM(a.trx_amt) AS totalIncome,
+			( SELECT SUM(b.trx_amt) FROM MEM_MEMBER_ACT_TRX b
+		<where>
+			b.del_flag = '0' AND
+			b.member_id = #{member.id}
+			AND b.drc = 'C'
+			<if test="sqlMap != null and sqlMap.containsKey('trxCodeList0')">
+				AND a.trx_code in 
+				<foreach collection="sqlMap" index="index" item="trxCode" open="(" separator="," close=")">
+               		#{trxCode}
+          		</foreach>
+			</if>
+			<if test="beginTime != null">
+				<![CDATA[AND b.create_time >= #{beginTime}]]>
+			</if>
+			<if test="endTime != null">
+				<![CDATA[AND b.create_time < #{endTime}]]>
+			</if>
+			<if test="minAmount != null">
+				<![CDATA[AND b.trx_amt >= #{minAmount}]]>
+			</if>
+			<if test="maxAmount != null">
+				<![CDATA[AND b.trx_amt <= #{maxAmount}]]>
+			</if>
+		</where> 
+		) 
+		AS totalExpenditure
+		FROM
+			MEM_MEMBER_ACT_TRX a
+			<include refid="memberActTrxJoins"/>
+		<where>
+			a.del_flag = '0' AND
+			a.member_id = #{member.id} 
+			AND a.drc = 'D'
+			<if test="sqlMap != null and sqlMap.containsKey('trxCodeList0')">
+				AND a.trx_code in
+				<foreach collection="sqlMap" index="index" item="trxCode" open="(" separator="," close=")">
+               		#{trxCode}
+          		</foreach>
+			</if>
+			<if test="beginTime != null">
+				<![CDATA[AND a.create_time >= #{beginTime}]]>
+			</if>
+			<if test="endTime != null">
+				<![CDATA[AND a.create_time < #{endTime}]]>
+			</if>
+			<if test="minAmount != null">
+				<![CDATA[AND a.trx_amt >= #{minAmount}]]>
+			</if>
+			<if test="maxAmount != null">
+				<![CDATA[AND a.trx_amt <= #{maxAmount}]]>
+			</if>
+		</where>
+	</select>	
+	
+	<insert id="insert" parameterType="MemberActTrx">
+		INSERT INTO MEM_MEMBER_ACT_TRX(
+			id,
+			trx_code,
+			member_id,
+			sub_no,
+			drc,
+			trx_amt,
+			cur_bal,			
+			curr_code,	
+			org_id,			
+			trx_group,
+			title,		
+			status,			
+			rmk,			
+			create_by, 
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{trxCode},
+			#{member.id},
+			#{subNo},
+			#{drc},
+			#{trxAmt},
+			#{curBal},
+			#{currCode},	
+			#{orgId},			
+			#{trxGroup,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{title},	
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},						
+			#{rmk}, 
+			#{createBy.empNo}, 
+			#{createTime}, 
+			#{updateBy.empNo}, 
+			#{updateTime}, 
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MemberActTrx">
+		UPDATE MEM_MEMBER_ACT_TRX SET 
+		    trx_code = #{trxCode},
+		    member_id = #{member.id},	
+		    sub_no = #{subNo},
+		    org_id = #{orgId},			
+			trx_group = #{trxGroup,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			title = #{title},
+			drc = #{drc},
+			trx_amt = #{trxAmt},
+			cur_bal = #{curBal},			
+			curr_code = #{currCode},			
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},			
+			rmk = #{rmk}, 
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MEM_MEMBER_ACT_TRX SET 
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="sumAmount" resultType="java.math.BigDecimal">
+		SELECT COALESCE(sum(a.trx_amt),0) 
+		FROM MEM_MEMBER_ACT_TRX a	
+		<where>	
+			<if test="member != null and .member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="trxCode != null and trxCode != ''">
+				AND a.trx_code = #{trxCode}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findLN040FailedList" resultMap="memberActTrxResultMap">
+		SELECT 
+			<include refid="memberActTrxColumns"/>
+		FROM MEM_MEMBER_ACT_TRX a
+		<include refid="memberActTrxJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="subNo != null and subNo != ''">
+				AND a.sub_no = #{subNo}
+			</if>
+			<if test="beginTime != null">
+				<![CDATA[AND a.create_time >= #{beginTime}]]>
+			</if>
+			AND a.trx_code = #{trxCode}
+			AND a.title like "%loanee%"
+		</where>
+			ORDER BY a.id DESC
+	</select>	
+	
+</mapper>

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mms.record.dao.MmsSmsRecordDao">
+    
+	<sql id="mmsSmsRecordColumns">
+		a.id AS "id",
+		a.tmpl_code AS "tmplCode",
+		a.msg_priority AS "msgPriority",
+		a.phone_no AS "phoneNo",
+		a.content AS "content",
+		a.verify_code AS "verifyCode",
+		a.send_time AS "sendTime"
+	</sql>
+	
+	<resultMap type="MmsSmsRecord" id="smsRecordResultMap">
+		<id column="id" property="id"/>
+	</resultMap>
+	
+	<sql id="mmsSmsRecordJoins">
+	</sql>
+    
+	<select id="get" resultMap="smsRecordResultMap">
+		SELECT 
+			<include refid="mmsSmsRecordColumns"/>
+		FROM MMS_SMS_RECORD a
+		    <include refid="mmsSmsRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+
+	<select id="getRecentRecord" resultMap="smsRecordResultMap">
+		SELECT 
+			<include refid="mmsSmsRecordColumns"/>
+ 		FROM MMS_SMS_RECORD a
+ 		WHERE NOT EXISTS(select 1 
+                  from MMS_SMS_RECORD b
+					where b.phone_no=a.phone_no 
+					AND b.tmpl_code = a.tmpl_code 
+					AND b.send_time>a.send_time)
+		AND a.phone_no = #{phoneNo} 
+		AND a.tmpl_code = #{tmplCode}
+	</select>
+	
+	<select id="findList" resultMap="smsRecordResultMap">
+		SELECT 
+			<include refid="mmsSmsRecordColumns"/>
+		FROM MMS_SMS_RECORD a
+		<include refid="mmsSmsRecordJoins"/>
+		<where>		
+			<if test="tmplCode != null and tmplCode != ''">
+				AND a.tmpl_code = #{tmplCode}
+			</if>
+			<if test="phoneNo != null and phoneNo != ''">
+				AND a.phone_no = #{phoneNo}
+			</if>
+			<if test="verifyCode != null and verifyCode != ''">
+				AND a.verify_code = #{verifyCode}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			   ORDER BY a.send_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="MmsSmsRecord">
+		INSERT INTO MMS_SMS_RECORD(
+			id,
+			tmpl_code,
+			msg_priority,
+			phone_no,
+			content,
+			verify_code,
+			send_time
+		) VALUES (
+			#{id},
+			#{tmplCode},
+			#{msgPriority},
+			#{phoneNo},
+			#{content},
+			#{verifyCode},
+			#{sendTime}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MmsSmsRecord">
+		UPDATE MMS_SMS_RECORD SET 	
+			tmpl_code = #{tmplCode},
+			msg_priority = #{msgPriority},
+			phone_no = #{phoneNo},
+			content = #{content},
+			verify_code = #{verifyCode},
+			send_time = #{sendTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM MMS_SMS_RECORD
+		WHERE id = #{id}
+	</update>
+	
+	<select id="countSmsHasSend" resultType="int">
+		SELECT COUNT(*) 
+		FROM MMS_SMS_RECORD a
+		<where>
+			<if test="phoneNo != null and phoneNo != ''">
+				AND a.phone_no = #{phoneNo}
+			</if>
+			<if test="verifyCode != null and verifyCode != '' ">
+				AND a.verify_code = #{verifyCode}
+			</if>
+			<if test="beginTime != null ">
+				AND a.send_time > #{beginTime}
+			</if>
+			<if test="tmplCode != null and tmplCode != ''">
+				AND a.tmpl_code = #{tmplCode}
+			</if>
+		</where>	
+	</select>
+</mapper>

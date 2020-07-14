@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.loan.dao.NfsLoanOperatingRecordDao">
+    
+	<sql id="loanOperatingRecordColumns">
+		a.id AS "id",
+		a.loan_id AS "oldRecord.id",
+		a.initiator AS "initiator",
+		a.loanee_id AS "oldRecord.loanee.id",
+		a.loaner_id AS "oldRecord.loaner.id",
+		a.type AS "type",
+		a.delay_days AS "delayDays",
+		a.delay_interest AS "delayInterest",
+		a.repayment_amount AS "repaymentAmount",
+		
+		a.old_amount AS "oldRecord.amount",
+		a.old_interest AS "oldRecord.interest",
+		a.old_overdue_interest AS "oldRecord.overdueInterest",
+		
+		a.now_amount AS "nowRecord.amount",
+		a.now_interest AS "nowRecord.interest",
+		a.now_repay_date AS "nowRecord.dueRepayDate",
+		a.now_status AS "nowRecord.status",
+		
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="NfsLoanOperatingRecord" id="loanOperatingRecordResultMap">		
+        <id column="id" property="id"/>
+         <result column="nowRecord.status" property="nowRecord.status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+         <result column="type" property="type" typeHandler="com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler" />
+	</resultMap>
+	<sql id="nfsLoanOperatingRecordJoins">
+	</sql>
+    
+	<select id="get" resultMap="loanOperatingRecordResultMap">
+		SELECT 
+			<include refid="loanOperatingRecordColumns"/>
+		FROM NFS_LOAN_OPERATING_RECORD a
+		<include refid="nfsLoanOperatingRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="loanOperatingRecordResultMap">
+		SELECT 
+			<include refid="loanOperatingRecordColumns"/>
+		FROM NFS_LOAN_OPERATING_RECORD a
+		<include refid="nfsLoanOperatingRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="oldRecord != null and oldRecord.id != null and   oldRecord.id != ''">
+				AND a.loan_id = #{oldRecord.id}
+			</if>
+			<if test="oldRecord != null and oldRecord.loanee != null and oldRecord.loanee != null and   oldRecord.loanee.id != ''">
+				AND a.loanee_id = #{oldRecord.loanee.id}
+			</if>
+			<if test="oldRecord != null and oldRecord.loaner != null and oldRecord.loaner != null and   oldRecord.loaner.id != ''">
+				AND a.loaner_id = #{oldRecord.loaner.id}
+			</if>
+			<if test="type != null ">
+				AND a.type = #{type,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler}
+			</if>
+			<if test="initiator != null and initiator != '' ">
+				AND a.initiator = #{initiator}
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_time desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="NfsLoanOperatingRecord">
+		INSERT INTO NFS_LOAN_OPERATING_RECORD(
+			id,
+			loan_id,
+			initiator,
+			loaner_id,
+			loanee_id,
+			type,
+			old_amount,
+			old_interest,
+			old_overdue_interest,
+			delay_days,
+			delay_interest,
+			repayment_amount,
+			now_amount,
+			now_interest,
+			now_repay_date,
+			now_status,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{oldRecord.id},
+			#{initiator},
+			#{oldRecord.loaner.id},
+			#{oldRecord.loanee.id},
+			#{type,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler},
+			#{oldRecord.amount},
+			#{oldRecord.interest},
+			#{oldRecord.overdueInterest},
+			#{delayDays},
+			#{delayInterest},
+			#{repaymentAmount},
+			#{nowRecord.amount},
+			#{nowRecord.interest},
+			#{nowRecord.dueRepayDate},
+			#{nowRecord.status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsLoanOperatingRecord">
+		UPDATE NFS_LOAN_OPERATING_RECORD SET 	
+			loan_id = #{oldRecord.id},
+			initiator = #{initiator},
+			loaner_id = #{oldRecord.loaner.id},
+			loanee_id = #{oldRecord.loanee.id},
+			type = #{type,typeHandler=com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler},
+			old_amount = #{oldRecord.amount},
+			old_interest = #{oldRecord.interest},
+			old_overdue_interest = #{oldRecord.overdueInterest},
+			delay_days = #{delayDays},
+			delay_interest = #{delayInterest},
+			repayment_amount = #{repaymentAmount},
+			now_amount = #{nowRecord.amount},
+			now_interest = #{nowRecord.interest},
+			now_repay_date = #{nowRecord.dueRepayDate},
+			now_status = #{nowRecord.status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_LOAN_OPERATING_RECORD SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	   <select id="findBorrowandLendZongList" resultMap="loanOperatingRecordResultMap">
+		SELECT 
+			<include refid="loanOperatingRecordColumns"/>
+		FROM NFS_LOAN_OPERATING_RECORD a
+		<include refid="nfsLoanOperatingRecordJoins"/>
+		<where>
+			<if test="nfsLoanOperatingRecord.oldRecord != null and nfsLoanOperatingRecord.oldRecord.loanee != null and nfsLoanOperatingRecord.oldRecord.loanee != null and   nfsLoanOperatingRecord.oldRecord.loanee.id != ''">
+				AND a.loanee_id = #{nfsLoanOperatingRecord.oldRecord.loanee.id}
+			</if>
+			<if test="nfsLoanOperatingRecord.oldRecord != null and nfsLoanOperatingRecord.oldRecord.loaner != null and nfsLoanOperatingRecord.oldRecord.loaner != null and   nfsLoanOperatingRecord.oldRecord.loaner.id != ''">
+				AND a.loaner_id = #{nfsLoanOperatingRecord.oldRecord.loaner.id}
+			</if>
+			<if test="nowDate != null and timeType==0" >
+				<![CDATA[AND a.create_time <= #{nowDate}]]> 
+			</if>
+			<if test="nowDate != null and timeType==1" >
+				<![CDATA[AND a.create_time >= #{nowDate}]]> 
+			</if>
+			and a.type=3
+		</where>
+	</select>
+	
+	
+	<select id="findBorrowDelyList" resultMap="loanOperatingRecordResultMap">
+		SELECT 
+			<include refid="loanOperatingRecordColumns"/>
+		FROM NFS_LOAN_OPERATING_RECORD a
+		<include refid="nfsLoanOperatingRecordJoins"/>
+		<where>
+			<if test="nfsLoanOperatingRecord.oldRecord != null and nfsLoanOperatingRecord.oldRecord.loanee != null and nfsLoanOperatingRecord.oldRecord.loanee != null and   nfsLoanOperatingRecord.oldRecord.loanee.id != ''">
+				AND a.loanee_id = #{nfsLoanOperatingRecord.oldRecord.loanee.id}
+			</if>
+			<if test="nfsLoanOperatingRecord.oldRecord != null and nfsLoanOperatingRecord.oldRecord.loaner != null and nfsLoanOperatingRecord.oldRecord.loaner != null and   nfsLoanOperatingRecord.oldRecord.loaner.id != ''">
+				AND a.loaner_id = #{nfsLoanOperatingRecord.oldRecord.loaner.id}
+			</if>
+			<if test="nowDate != null and timeType==0" >
+				<![CDATA[AND a.create_time <= #{nowDate}]]> 
+			</if>
+			<if test="nowDate != null and timeType==1" >
+				<![CDATA[AND a.create_time >= #{nowDate}]]> 
+			</if>
+			and a.type=1
+		</where>
+	</select>
+	
+</mapper>

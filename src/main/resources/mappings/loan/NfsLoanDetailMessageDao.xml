@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.loan.dao.NfsLoanDetailMessageDao">
+    
+	<sql id="nfsLoanDetailMessageColumns">
+		a.id AS "id",
+		a.detail_id AS "detail.id",
+		a.member_id AS "member.id",
+		a.type AS "type",
+		a.message_id AS "messageId",
+		a.note AS "note",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="NfsLoanDetailMessage" id="nfsLoanDetailMessageResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	<sql id="nfsLoanDetailMessageJoins">
+	</sql>
+    
+	<select id="get" resultMap="nfsLoanDetailMessageResultMap">
+		SELECT 
+			<include refid="nfsLoanDetailMessageColumns"/>
+		FROM NFS_LOAN_DETAIL_MESSAGE a
+		<include refid="nfsLoanDetailMessageJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="nfsLoanDetailMessageResultMap">
+		SELECT 
+			<include refid="nfsLoanDetailMessageColumns"/>
+		FROM NFS_LOAN_DETAIL_MESSAGE a
+		<include refid="nfsLoanDetailMessageJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="detail != null and detail.id != null and detail.id != ''">
+				AND a.detail_id = #{detail.id}
+			</if>
+			<if test="type != null and type != ''">
+				AND a.type = #{type}
+			</if>
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="messageId != null and messageId != ''">
+				AND a.message_id = #{messageId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="NfsLoanDetailMessage">
+		INSERT INTO NFS_LOAN_DETAIL_MESSAGE(
+			id,
+			detail_id,
+			member_id,
+			type,
+			message_id,
+			note,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{detail.id},
+			#{member.id},
+			#{type},
+			#{messageId},
+			#{note},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsLoanDetailMessage">
+		UPDATE NFS_LOAN_DETAIL_MESSAGE SET 	
+			detail_id = #{detail.id},
+			member_id = #{member.id},
+			type = #{type},
+			message_id = #{messageId},
+			note = #{note},
+			rmk = #{rmk},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_LOAN_DETAIL_MESSAGE SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

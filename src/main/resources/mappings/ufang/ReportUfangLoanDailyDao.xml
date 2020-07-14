@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.ufang.dao.ReportUfangLoanDailyDao">
+    
+	<sql id="reportUfangLoanDailyColumns">
+		a.id AS "id",
+		a.brn_id AS "ufangBrn.id",
+		a.brn_name AS "ufangBrn.brnName",
+		a.date AS "date",
+		a.completed_loan_quantity AS "completedLoanQuantity",
+		a.repayed_loan_amount AS "repayedLoanAmount",
+		a.created_loan_quantity AS "createdLoanQuantity",
+		a.created_loan_amount AS "createdLoanAmount",
+		a.overdue_loan_quantity AS "overdueLoanQuantity",
+		a.overdue_loan_amount AS "overdueLoanAmount",
+		a.lending_loan_quantity AS "lendingLoanQuantity",
+		a.lending_loan_amount AS "lendingLoanAmount",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="ReportUfangLoanDaily" id="reportUfangLoanDailyResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	<sql id="reportUfangLoanDailyJoins">
+	</sql>
+    
+	<select id="get" resultMap="reportUfangLoanDailyResultMap">
+		SELECT 
+			<include refid="reportUfangLoanDailyColumns"/>
+		FROM REPORT_UFANG_LOAN_DAILY a
+		<include refid="reportUfangLoanDailyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="reportUfangLoanDailyResultMap">
+		SELECT 
+			<include refid="reportUfangLoanDailyColumns"/>
+		FROM REPORT_UFANG_LOAN_DAILY a
+		<include refid="reportUfangLoanDailyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="beginTime != null and endTime != null">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+			<if test="ufangBrn != null and ufangBrn.id != null">
+				AND a.brn_id = #{ufangBrn.id}					
+			</if>
+			<if test="ufangBrn != null and ufangBrn.brnName != null and ufangBrn.brnName != ''">
+				AND a.brn_name = #{ufangBrn.brnName}					
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="ReportUfangLoanDaily">
+		INSERT INTO REPORT_UFANG_LOAN_DAILY(
+			id,
+			brn_id,
+			brn_name,
+			date,
+			completed_loan_quantity,
+			repayed_loan_amount,
+			created_loan_quantity,
+			created_loan_amount,
+			overdue_loan_quantity,
+			overdue_loan_amount,
+			lending_loan_quantity,
+			lending_loan_amount,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{ufangBrn.id},
+			#{ufangBrn.brnName},
+			#{date},
+			#{completedLoanQuantity},
+			#{repayedLoanAmount},
+			#{createdLoanQuantity},
+			#{createdLoanAmount},
+			#{overdueLoanQuantity},
+			#{overdueLoanAmount},
+			#{lendingLoanQuantity},
+			#{lendingLoanAmount},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="ReportUfangLoanDaily">
+		UPDATE REPORT_UFANG_LOAN_DAILY SET 	
+			brn_id = #{ufangBrn.id},
+			brn_name = #{ufangBrn.brnName},
+			date = #{date},
+			completed_loan_quantity = #{completedLoanQuantity},
+			repayed_loan_amount = #{repayedLoanAmount},
+			created_loan_quantity = #{createdLoanQuantity},
+			created_loan_amount = #{createdLoanAmount},
+			overdue_loan_quantity = #{overdueLoanQuantity},
+			overdue_loan_amount = #{overdueLoanAmount},
+			lending_loan_quantity = #{lendingLoanQuantity},
+			lending_loan_amount = #{lendingLoanAmount},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE REPORT_UFANG_LOAN_DAILY SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.cms.dao.CmsArticleContentDao">
+    
+	<sql id="cmsArticleContentColumns">
+		a.id AS "id",
+		a.content AS "content"
+	</sql>
+	
+	<resultMap type="CmsArticleContent" id="cmsArticleContentResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	
+	<sql id="cmsArticleContentJoins">
+	</sql>
+    
+	<select id="get" resultMap="cmsArticleContentResultMap">
+		SELECT 
+			<include refid="cmsArticleContentColumns"/>
+		FROM CMS_ARTICLE_CONTENT a
+		<include refid="cmsArticleContentJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="cmsArticleContentResultMap">
+		SELECT 
+			<include refid="cmsArticleContentColumns"/>
+		FROM CMS_ARTICLE_CONTENT a
+		<include refid="cmsArticleContentJoins"/>
+		<where>
+			
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="cmsArticleContentResultMap">
+		SELECT 
+			<include refid="cmsArticleContentColumns"/>
+		FROM CMS_ARTICLE_CONTENT a
+		<include refid="cmsArticleContentJoins"/>
+		<where>
+			
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="CmsArticleContent">
+		INSERT INTO CMS_ARTICLE_CONTENT(
+			id,
+			content
+		) VALUES (
+			#{id},
+			#{content}
+		)
+	</insert>
+	
+	<update id="update" parameterType="CmsArticleContent">
+		UPDATE CMS_ARTICLE_CONTENT SET 	
+			content = #{content}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM CMS_ARTICLE_CONTENT
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

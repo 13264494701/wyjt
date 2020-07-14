@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.rc.dao.RcQuotaDao">
+    
+	<sql id="rcQuotaColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.phone_no AS "member.username",
+		a.id_no AS "member.idNo",
+		a.name AS "member.name",
+		a.quota AS "quota",
+		a.score AS "score",
+		a.content AS "content",
+		a.order_id AS "orderId",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="RcQuota" id="rcQuotaResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	<sql id="rcQuotaJoins">
+	</sql>
+    
+	<select id="get" resultMap="rcQuotaResultMap">
+		SELECT 
+			<include refid="rcQuotaColumns"/>
+		FROM RC_QUOTA a
+		<include refid="rcQuotaJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByMemberId" resultMap="rcQuotaResultMap">
+		SELECT 
+			<include refid="rcQuotaColumns"/>
+		FROM RC_QUOTA a
+		<include refid="rcQuotaJoins"/>
+		WHERE 
+			a.del_flag = '0'
+			and a.member_id = #{memberId}
+	</select>
+	
+	<select id="getByPhoneNo" resultMap="rcQuotaResultMap">
+		SELECT 
+			<include refid="rcQuotaColumns"/>
+		FROM RC_QUOTA a
+		<include refid="rcQuotaJoins"/>
+		WHERE 
+			a.del_flag = '0'
+			and a.phone_no = #{phoneNo}
+	</select>
+	
+	<select id="findList" resultMap="rcQuotaResultMap">
+		SELECT 
+			<include refid="rcQuotaColumns"/>
+		FROM RC_QUOTA a
+		<include refid="rcQuotaJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="member != null and member.username != null and member.usernmae != ''">
+				AND a.phone_no = #{member.username}
+			</if>
+			<if test="member != null and member.name != null and member.nmae != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'mysql'">concat('%',#{member.name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="RcQuota">
+		INSERT INTO RC_QUOTA(
+			id,
+			member_id,
+			phone_no,
+			id_no,
+			name,
+			quota,
+			score,
+			content,
+			order_id,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{member.username},
+			#{member.idNo},
+			#{member.name},
+			#{quota},
+			#{score},
+			#{content},
+			#{orderId},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="RcQuota">
+		UPDATE RC_QUOTA SET 	
+			member_id = #{member.id},
+			phone_no = #{member.username},
+			id_no = #{member.idNo},
+			name = #{member.name},
+			quota = #{quota},
+			score = #{score},
+			content = #{content},
+			order_id = #{orderId},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE RC_QUOTA SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

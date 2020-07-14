@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberDao">
+    
+	<sql id="memberColumns">
+		a.id AS "id",
+		a.username AS "username",
+		a.password AS "password",
+		a.pay_password AS "payPassword",
+		a.name AS "name",
+		a.id_no AS "idNo",
+		a.verified_list AS "verifiedList",
+		a.rank_no AS "memberRank.rankNo",
+		a.nickname AS "nickname",
+		a.addr AS "addr",
+		a.area_id AS "area.id",
+		a.head_image AS "headImage",
+		a.gender AS "gender",
+		a.email AS "email",
+		a.is_enabled AS "isEnabled",
+		a.is_locked AS "isLocked",
+		a.is_auth AS "isAuth",
+		a.lock_key AS "lockKey",
+		a.locked_date AS "lockedDate",
+		a.reg_channel AS "regChannel",
+		a.register_ip AS "registerIp",
+		a.login_date AS "loginDate",
+		a.login_failure_count AS "loginFailureCount",
+		a.login_ip AS "loginIp",
+		a.safe_key_expire AS "safeKeyExpire",
+		a.safe_key_value AS "safeKeyValue",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.version AS "version",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="Member" id="memberResultMap">
+		<id column="id" property="id"/>
+		<result column="gender" property="gender" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+		<result column="regChannel" property="regChannel" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+		<result column="isEnabled"  property="isEnabled" javaType="Boolean" jdbcType="CHAR" />		
+		<result column="isLocked"  property="isLocked" javaType="Boolean" jdbcType="CHAR" />
+		<result column="isAuth"  property="isAuth" javaType="Boolean" jdbcType="CHAR" />
+	</resultMap>
+	
+	<sql id="memberJoins">
+	</sql>
+    
+	<select id="get" resultMap="memberResultMap">
+		SELECT 
+			<include refid="memberColumns"/>
+		FROM MEM_MEMBER a
+		    <include refid="memberJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getSpareMobile" resultType="String">
+		SELECT  username from MEM_MEMBER_TMP a WHERE a.spareMobile = #{username}
+	</select>
+	
+
+	
+	<select id="findListByEmail" resultMap="memberResultMap">
+		SELECT 
+			<include refid="memberColumns"/>
+		FROM MEM_MEMBER a
+		<include refid="memberJoins"/>
+		WHERE a.email = #{email}
+	</select>
+	
+	<select id="findByUsername" resultMap="memberResultMap">
+		SELECT 
+			<include refid="memberColumns"/>
+		FROM MEM_MEMBER a
+		<include refid="memberJoins"/>
+		WHERE a.username = #{username}
+	</select>
+	<select id="findByOrgUsername" resultType="Long">
+		SELECT 
+			a.id AS "memberId"
+		FROM MEM_MEMBER_TMP a
+		WHERE a.username = #{username}
+		LIMIT 1
+	</select>
+	
+	<select id="getByIdNo" resultMap="memberResultMap">
+		SELECT 
+			<include refid="memberColumns"/>
+		FROM MEM_MEMBER a
+		<include refid="memberJoins"/>
+		WHERE a.id_no = #{idNo}
+	</select>
+	
+	<select id="getBySafeKey" resultMap="memberResultMap">
+		SELECT 
+			<include refid="memberColumns"/>
+		FROM MEM_MEMBER a
+		<include refid="memberJoins"/>
+		WHERE a.safe_key_value = #{safeKey}
+	</select>
+	
+	<select id="findList" resultMap="memberResultMap">
+		SELECT 
+			<include refid="memberColumns"/>
+		FROM MEM_MEMBER a
+		<include refid="memberJoins"/>
+		<where>
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+			<if test="username != null and username != ''">
+				AND a.username = #{username}
+			</if>
+			<if test="idNo != null and idNo != ''">
+				AND a.id_no = #{idNo}
+			</if>
+			<if test="isAuth != null">
+				AND a.is_auth = #{isAuth, javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">#{name}||'%'</if>
+					<if test="dbName == 'mssql'">#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{name},'%')</if>
+			</if>
+			<if test="nickname != null and nickname != ''">
+				AND a.nickname LIKE 
+					<if test="dbName == 'oracle'">#{nickname}||'%'</if>
+					<if test="dbName == 'mssql'">#{nickname}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{nickname},'%')</if>
+			</if>
+			<if test="regChannel != null">
+				AND a.reg_channel = #{regChannel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+		<if test="count != null ">
+				LIMIT #{count}
+		</if>
+	</select>
+	
+	<update id="resetPayPw">
+		UPDATE MEM_MEMBER SET 
+			pay_password = #{payPwd}
+		WHERE id = #{memberId}
+	</update>
+	
+	<insert id="insert" parameterType="Member">
+		INSERT INTO MEM_MEMBER(
+			id,
+			username,
+			password,
+			pay_password,
+			name,
+			id_no,
+			verified_list,
+			rank_no,
+			nickname,
+			addr,
+			area_id,
+			head_image,
+			gender,
+			email,
+			is_enabled,
+			is_locked,
+			is_auth,
+			lock_key,
+			locked_date,
+			reg_channel,
+			register_ip,
+			login_date,
+			login_failure_count,
+			login_ip,
+			safe_key_expire,
+			safe_key_value,
+			rmk,
+			create_by, 
+			create_time,
+			update_by,
+			update_time,
+			version,
+			del_flag
+		) VALUES (
+			#{id},
+			#{username},
+			#{password},
+			#{payPassword},
+			#{name},
+			#{idNo},
+		    #{verifiedList},
+			#{memberRank.rankNo},
+			#{nickname},
+			#{addr},
+			#{area.id},
+			#{headImage},
+			#{gender,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{email},
+			#{isEnabled, javaType=Boolean, jdbcType=CHAR},
+			#{isLocked, javaType=Boolean, jdbcType=CHAR},
+			#{isAuth, javaType=Boolean, jdbcType=CHAR},
+			#{lockKey},
+			#{lockedDate},
+			#{regChannel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{registerIp},
+			#{loginDate},
+			#{loginFailureCount},
+			#{loginIp},		
+			#{safeKeyExpire},
+			#{safeKeyValue},
+			#{rmk},
+			#{createBy.empNo}, 
+			#{createTime}, 
+			#{updateBy.empNo}, 
+			#{updateTime}, 
+			#{version},
+			#{delFlag}
+		)
+	</insert>
+	
+	<insert id="insertHis" parameterType="Member">
+		INSERT INTO MEM_MEMBER_HIS(
+			id,
+			username,
+			password,
+			pay_password,
+			name,
+			id_no,
+			verified_list,
+			rank_no,
+			nickname,
+			addr,
+			area_id,
+			head_image,
+			gender,
+			email,
+			is_enabled,
+			is_locked,
+			is_auth,
+			lock_key,
+			locked_date,
+			reg_channel,
+			register_ip,
+			login_date,
+			login_failure_count,
+			login_ip,
+			safe_key_expire,
+			safe_key_value,
+			rmk,
+			create_by, 
+			create_time,
+			update_by,
+			update_time,
+			version,
+			del_flag
+		) VALUES (
+			#{id},
+			#{username},
+			#{password},
+			#{payPassword},
+			#{name},
+			#{idNo},
+		    #{verifiedList},
+			#{memberRank.rankNo},
+			#{nickname},
+			#{addr},
+			#{area.id},
+			#{headImage},
+			#{gender,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{email},
+			#{isEnabled, javaType=Boolean, jdbcType=CHAR},
+			#{isLocked, javaType=Boolean, jdbcType=CHAR},
+			#{isAuth, javaType=Boolean, jdbcType=CHAR},
+			#{lockKey},
+			#{lockedDate},
+			#{regChannel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{registerIp},
+			#{loginDate},
+			#{loginFailureCount},
+			#{loginIp},		
+			#{safeKeyExpire},
+			#{safeKeyValue},
+			#{rmk},
+			#{createBy.empNo}, 
+			#{createTime}, 
+			#{updateBy.empNo}, 
+			#{updateTime}, 
+			#{version},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="Member">
+		UPDATE MEM_MEMBER SET 	
+			username = #{username},
+			password = #{password},
+			pay_password = #{payPassword},
+			name = #{name},
+			id_no = #{idNo},
+			verified_list = #{verifiedList},
+			rank_no = #{memberRank.rankNo},
+			nickname = #{nickname},
+			addr = #{addr},
+			area_id = #{area.id},
+			head_image = #{headImage},
+			gender = #{gender,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			email = #{email},
+			is_enabled = #{isEnabled, javaType=Boolean, jdbcType=CHAR},
+			is_locked = #{isLocked, javaType=Boolean, jdbcType=CHAR},
+			is_auth = #{isAuth, javaType=Boolean, jdbcType=CHAR},
+			lock_key = #{lockKey},
+			locked_date = #{lockedDate},
+			reg_channel = #{regChannel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			register_ip = #{registerIp},
+			login_date = #{loginDate},
+			login_failure_count = #{loginFailureCount},
+			login_ip = #{loginIp},
+			safe_key_expire = #{safeKeyExpire},
+			safe_key_value = #{safeKeyValue},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime},
+			version = version+1
+		WHERE id = #{id}
+		AND version = #{version}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM MEM_MEMBER 
+		WHERE id = #{id}
+	</update>
+
+	<update id="updateRankNo">
+		UPDATE MEM_MEMBER SET
+			rank_no = #{memberRank.rankNo}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateUsername">
+		UPDATE MEM_MEMBER SET
+			username = #{username},
+			update_by = #{updateBy.empNo}, 
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="usernameExists" resultType="String">
+        SELECT '1' FROM MEM_MEMBER a WHERE a.username = #{username} AND a.del_flag = '0' LIMIT 1;
+	</select>
+	<select id="emailExists" resultType="String">
+        SELECT '1'  FROM MEM_MEMBER a WHERE a.email = #{email} AND a.del_flag = '0' LIMIT 1;
+	</select>
+	
+    <select id="lockExists1" resultType="String">
+        SELECT '1'  FROM MEM_MEMBER_LOCK1 a WHERE a.id = #{id} AND a.del_flag = '0' LIMIT 1;
+	</select>
+	
+	 <select id="lockExists2" resultType="String">
+        SELECT '1'  FROM MEM_MEMBER_LOCK2 a WHERE a.id = #{id} AND a.del_flag = '0' LIMIT 1;
+	</select>
+		
+    <select id="lockExists3" resultType="String">
+        SELECT '1'  FROM MEM_MEMBER_LOCK3 a WHERE a.id = #{id} AND a.del_flag = '0' LIMIT 1;
+	</select>
+	
+</mapper>

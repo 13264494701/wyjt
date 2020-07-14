@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.rc.dao.RcCaSourceDataDao">
+    
+	<sql id="rcCaSourceDataColumns">
+		a.id AS "id",
+		a.member_id AS "memberId",
+		a.source_data_id AS "sourceDataId",
+		a.type AS "type",
+		a.path AS "path",
+		a.status AS "status",
+		a.is_member AS "isMember",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="RcCaSourceData" id="rcCaSourceDataResultMap">		
+        <id column="id" property="id"/>
+        <result column="isMember"  property="isMember" javaType="Boolean" jdbcType="CHAR" />
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	<sql id="rcCaSourceDataJoins">
+	</sql>
+    
+	<select id="get" resultMap="rcCaSourceDataResultMap">
+		SELECT 
+			<include refid="rcCaSourceDataColumns"/>
+		FROM RC_CA_SOURCE_DATA a
+		<include refid="rcCaSourceDataJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getSourceDataId" resultMap="rcCaSourceDataResultMap">
+		SELECT 
+			<include refid="rcCaSourceDataColumns"/>
+		FROM RC_CA_SOURCE_DATA a
+		<include refid="rcCaSourceDataJoins"/>
+		WHERE a.source_data_id = #{sourceDataId}
+		LIMIT 1
+	</select>
+	
+	<select id="findList" resultMap="rcCaSourceDataResultMap">
+		SELECT 
+			<include refid="rcCaSourceDataColumns"/>
+		FROM RC_CA_SOURCE_DATA a
+		<include refid="rcCaSourceDataJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="memberId != null and memberId != ''">
+				AND a.member_id = #{memberId}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="createTime != null and createTime != ''">
+				AND a.create_time = #{createTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			  ORDER BY a.id DESC  
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="RcCaSourceData">
+		INSERT INTO RC_CA_SOURCE_DATA(
+			id,
+			member_id,
+			source_data_id,
+			type,
+			path,
+			status,
+			is_member,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{memberId},
+			#{sourceDataId},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{path},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{isMember, javaType=Boolean, jdbcType=CHAR},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="RcCaSourceData">
+		UPDATE RC_CA_SOURCE_DATA SET 	
+			member_id = #{memberId},
+			source_data_id = #{sourceDataId},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			path = #{path},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			is_member =#{isMember, javaType=Boolean, jdbcType=CHAR},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE RC_CA_SOURCE_DATA SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

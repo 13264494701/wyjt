@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.ufang.dao.UfangRchgRecordDao">
+    
+	<sql id="ufangRchgRecordColumns">
+		a.id AS "id",
+		a.user_id AS "user.id",
+		a.user_name AS "user.empNam",
+		a.amount AS "amount",
+		a.payment_id AS "payment.id",
+		a.type AS "type",
+		a.channel AS "channel",
+		a.status AS "status",
+		a.create_time AS "createTime",
+		a.create_by AS "createBy.empNo",
+		a.update_time AS "updateTime",
+		a.update_by AS "updateBy.empNo",
+		d.payment_no AS "payment.paymentNo",
+		d.third_payment_no AS "payment.thirdPaymentNo"
+	</sql>
+	
+	<resultMap type="UfangRchgRecord" id="ufangRchgRecordResultMap">		
+        <id column="id" property="id"/>
+		<result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+		<result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+		<result column="channel" property="channel" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	<sql id="ufangRchgRecordJoins">
+		LEFT JOIN UFANG_USER c ON a.user_id=c.id
+		LEFT JOIN NFS_PAYMENT d ON a.payment_id = d.id
+	</sql>
+    
+	<select id="get" resultMap="ufangRchgRecordResultMap">
+		SELECT 
+			<include refid="ufangRchgRecordColumns"/>
+		FROM UFANG_RCHG_RECORD a
+		<include refid="ufangRchgRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="ufangRchgRecordResultMap">
+		SELECT 
+			<include refid="ufangRchgRecordColumns"/>
+		FROM UFANG_RCHG_RECORD a
+		<include refid="ufangRchgRecordJoins"/>
+		<where>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="user!= null and user.empNo != null and user.empNo != ''">
+				c.emp_no LIKE concat(#{user.empNo},'%')
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="UfangRchgRecord">
+		INSERT INTO UFANG_RCHG_RECORD(
+			id,
+			user_id,
+			user_name,
+			amount,
+			payment_id,
+			type,
+			channel,
+			status,
+			create_time,
+			create_by,
+			update_time,
+			update_by
+		) VALUES (
+			#{id},
+			#{user.id},
+			#{user.empNam},
+			#{amount},
+			#{payment.id},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{createTime},
+			#{createBy.empNo},
+			#{updateTime},
+			#{updateBy.empNo}
+		)
+	</insert>
+	
+	<update id="update" parameterType="UfangRchgRecord">
+		UPDATE UFANG_RCHG_RECORD SET
+			payment_id=#{payment.id},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			create_time = #{createTime},
+			update_time = #{updateTime},
+			update_by = #{updateBy.empNo}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM UFANG_RCHG_RECORD
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

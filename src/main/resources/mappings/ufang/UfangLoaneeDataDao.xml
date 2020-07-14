@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.ufang.dao.UfangLoaneeDataDao">
+
+	<sql id="ufangLoaneeDataColumns">
+		a.id AS "id",
+		a.prod_code AS "prodCode",
+		a.name AS "name",
+		a.phone_no AS "phoneNo",
+		a.id_no AS "idNo",
+		a.age AS "age",
+		a.zhimafen AS "zhimafen",
+		a.qq_no AS "qqNo",
+		a.weixin_no AS "weixinNo",
+		a.yunyingshang_status AS "yunyingshangStatus",
+		a.report_task_id AS "reportTaskId",
+		a.loanee_id AS "loaneeId",
+		a.apply_amount AS "applyAmount",
+		a.apply_ip AS "applyIp",
+		a.apply_area AS "applyArea",
+		a.phone_area AS "phoneArea",
+		a.sales AS "sales",
+		a.channel AS "channel",
+		a.status AS "status",
+		a.price AS "price",
+		a.apply_time AS "applyTime",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"		
+	</sql>
+
+	<resultMap type="UfangLoaneeData" id="ufangLoaneeDataResultMap">
+		<id column="id" property="id"/>
+		<result column="yunyingshangStatus" property="yunyingshangStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+		<result column="channel" property="channel" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+		<result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+
+	<sql id="ufangLoaneeDataJoins">
+		
+	</sql>
+
+	<select id="get" resultMap="ufangLoaneeDataResultMap">
+		SELECT
+		<include refid="ufangLoaneeDataColumns"/>
+		FROM UFANG_LOANEE_DATA a
+		<include refid="ufangLoaneeDataJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findByPhoneNo" resultMap="ufangLoaneeDataResultMap">
+		SELECT
+		<include refid="ufangLoaneeDataColumns"/>
+		FROM UFANG_LOANEE_DATA a
+		WHERE a.phone_no = #{phoneNo}
+		LIMIT 1
+	</select>
+	
+	<select id="findList" resultMap="ufangLoaneeDataResultMap">
+		SELECT
+		<include refid="ufangLoaneeDataColumns"/>
+		FROM UFANG_LOANEE_DATA a
+		<where>
+			<if test="prodCode != null and prodCode != ''">
+				AND a.prod_code = #{prodCode}
+			</if>
+			<if test="phoneNo != null and phoneNo != ''">
+				AND a.phone_no = #{phoneNo}
+			</if>
+			<if test="minAge != null and maxAge != null and minAge != '' and maxAge != ''">
+				AND a.age BETWEEN #{minAge} AND #{maxAge}
+			</if>
+			<if test="minZmf != null and maxZmf != null and minZmf != '' and maxZmf != ''">
+				AND a.zhimafen BETWEEN #{minZmf} AND #{maxZmf}
+			</if>
+			<if test="beginApplyTime != null and endApplyTime != null">
+				AND a.apply_time BETWEEN #{beginApplyTime} AND #{endApplyTime}					
+			</if>
+			<if test="beginUpdateTime != null and endUpdateTime != null">
+				AND a.update_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+			<if test="yunyingshangStatus != null">
+				AND a.yunyingshang_status = #{yunyingshangStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>           
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByEmpNo" resultMap="ufangLoaneeDataResultMap">
+		SELECT
+		<include refid="ufangLoaneeDataColumns"/>,
+		c.status AS "bought"
+		FROM UFANG_LOANEE_DATA a
+		LEFT JOIN UFANG_LOANEE_DATA_ORDER c ON c.data_id = a.id AND LEFT ( c.ufang_emp_no, 4 ) = #{empNo}
+		<where>
+			<if test="prodCode != null and prodCode != ''">
+				AND a.prod_code = #{prodCode}
+			</if>
+			<if test="minAge != null and maxAge != null and minAge != '' and maxAge != ''">
+				AND a.age BETWEEN #{minAge} AND #{maxAge}
+			</if>
+			<if test="minZmf != null and maxZmf != null and minZmf != '' and maxZmf != ''">
+				AND a.zhimafen BETWEEN #{minZmf} AND #{maxZmf}
+			</if>
+			<if test="minPrice != null and maxPrice != null">
+				AND a.price BETWEEN #{minPrice} AND #{maxPrice}
+			</if>
+			<if test="beginApplyTime != null and endApplyTime != null">
+				AND a.apply_time BETWEEN #{beginApplyTime} AND #{endApplyTime}					
+			</if>
+			<if test="beginUpdateTime != null and endUpdateTime != null">
+				AND a.update_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+			<if test="yunyingshangStatus != null">
+				AND a.yunyingshang_status = #{yunyingshangStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="applyArea != null and applyArea != ''">
+			    AND a.apply_area like  CONCAT('%', #{applyArea}, '%')
+		    </if>
+			    AND a.sales &lt;= 3
+				AND c.status is null
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.apply_time DESC
+			</otherwise>
+		</choose>
+	</select>	
+	
+	<insert id="insert" parameterType="UfangLoaneeData">
+		INSERT INTO UFANG_LOANEE_DATA(
+			id,
+			prod_code,
+			name,
+			phone_no,
+			id_no,
+			age,
+			zhimafen,
+			qq_no,
+			weixin_no,
+			yunyingshang_status,
+			report_task_id,
+			loanee_id,
+			apply_amount,
+			apply_ip,
+			apply_area,
+			phone_area,
+			sales,
+			channel,
+			status,
+			price,
+			apply_time,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{prodCode},
+			#{name},
+			#{phoneNo},
+			#{idNo},
+			#{age},
+			#{zhimafen},
+			#{qqNo},
+			#{weixinNo},
+			#{yunyingshangStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{reportTaskId},
+			#{loaneeId},
+			#{applyAmount},
+			#{applyIp},
+			#{applyArea},
+			#{phoneArea},
+			#{sales},
+			#{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{price},
+			#{applyTime},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+
+	<update id="update" parameterType="UfangLoaneeData">
+		UPDATE UFANG_LOANEE_DATA SET 	
+		    prod_code = #{prodCode},
+			name = #{name},
+			phone_no = #{phoneNo},
+			id_no = #{idNo},
+			age = #{age},
+			zhimafen = #{zhimafen},
+			qq_no = #{qqNo},
+			weixin_no = #{weixinNo},
+			yunyingshang_status = #{yunyingshangStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			report_task_id = #{reportTaskId},
+			loanee_id = #{loaneeId},
+			apply_amount = #{applyAmount},
+			apply_ip = #{applyIp},
+			apply_area = #{applyArea},
+			phone_area = #{phoneArea},
+			sales = #{sales},
+			channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			price = #{price},
+			apply_time = #{applyTime},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+
+	<update id="delete">
+		UPDATE UFANG_LOANEE_DATA SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+
+	<select id="selectWeekUpdateCount" resultType="int">
+		SELECT
+		count( * )
+		FROM
+		UFANG_LOANEE_DATA
+		WHERE
+		phone_no = #{phoneNo}
+		AND to_days( now( ) ) - to_days( update_time ) &lt;7
+	</select>
+
+	<update id="updatesales">
+		UPDATE UFANG_LOANEE_DATA SET sales = sales + 1 WHERE id = #{id}
+	</update>
+</mapper>

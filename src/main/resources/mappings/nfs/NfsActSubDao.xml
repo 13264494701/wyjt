@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.nfs.dao.NfsActSubDao">
+    
+	<sql id="nfsActSubColumns">
+		a.id AS "id",
+		a.trx_role AS "trxRole",
+		a.sub_no AS "subNo",
+		a.name AS "name",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="NfsActSub" id="nfsActSubResultMap">		
+        <id column="id" property="id"/>
+        <result column="trxRole" property="trxRole" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="nfsActSubJoins">
+	</sql>
+    
+	<select id="get" resultMap="nfsActSubResultMap">
+		SELECT 
+			<include refid="nfsActSubColumns"/>
+		FROM NFS_ACT_SUB a
+		<include refid="nfsActSubJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getSubName" resultType="String">
+		SELECT 
+			a.name
+		FROM NFS_ACT_SUB a
+		<where>
+			a.del_flag = '0'
+			<if test="trxRole != null">
+				AND a.trx_role = #{trxRole,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="subNo != null and subNo != ''">
+				AND a.sub_no = #{subNo}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findList" resultMap="nfsActSubResultMap">
+		SELECT 
+			<include refid="nfsActSubColumns"/>
+		FROM NFS_ACT_SUB a
+		<include refid="nfsActSubJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="trxRole != null">
+				AND a.trx_role = #{trxRole,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="subNo != null and subNo != ''">
+				AND a.sub_no = #{subNo}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.trx_role ASC,a.sub_no ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="NfsActSub">
+		INSERT INTO NFS_ACT_SUB(
+			id,
+			trx_role,
+			sub_no,
+			name,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{trxRole,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{subNo},
+			#{name},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsActSub">
+		UPDATE NFS_ACT_SUB SET 	
+			trx_role = #{trxRole,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			sub_no = #{subNo},
+			name = #{name},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_ACT_SUB SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

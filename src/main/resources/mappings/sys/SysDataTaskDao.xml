@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.svc.sys.data.dao.SysDataTaskDao">
+    
+	<sql id="sysDataTaskColumns">
+		a.id AS "id",
+		a.data_id AS "data.id",
+		a.start_id AS "startId",
+		a.end_id AS "endId",
+		a.quantity AS "quantity",
+		a.status AS "status",
+		a.is_on AS "isOn",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.version AS "version",
+		a.del_flag AS "delFlag",
+		c.name AS "data.name"
+	</sql>
+	
+	<resultMap type="SysDataTask" id="sysDataTaskResultMap">		
+        <id column="id" property="id"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="isOn"  property="isOn" javaType="Boolean" jdbcType="CHAR" />
+	</resultMap>
+	
+	<sql id="sysDataTaskJoins">
+	   LEFT JOIN SYS_DATA_IMPORT c on a.data_id = c.id
+	</sql>
+    
+	<select id="get" resultMap="sysDataTaskResultMap">
+		SELECT 
+			<include refid="sysDataTaskColumns"/>
+		FROM SYS_DATA_TASK a
+		<include refid="sysDataTaskJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="sysDataTaskResultMap">
+		SELECT 
+			<include refid="sysDataTaskColumns"/>
+		FROM SYS_DATA_TASK a
+		<include refid="sysDataTaskJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="data != null and data.id != null and data.id != ''">
+				AND a.data_id = #{data.id }
+			</if>
+		    <if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="isOn != null">
+				AND a.is_on = #{isOn, javaType=Boolean, jdbcType=CHAR}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="SysDataTask">
+		INSERT INTO SYS_DATA_TASK(
+			id,
+			data_id,
+			start_id,
+			end_id,
+			quantity,
+			status,
+			is_on,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			version,
+			del_flag
+		) VALUES (
+			#{id},
+			#{data.id},
+			#{startId},
+			#{endId},
+			#{quantity},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{isOn, javaType=Boolean, jdbcType=CHAR},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{version},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="SysDataTask">
+		UPDATE SYS_DATA_TASK SET 	
+			data_id = #{data.id},
+			start_id = #{startId},
+			end_id = #{endId},
+			quantity = #{quantity},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			is_on = #{isOn, javaType=Boolean, jdbcType=CHAR},
+			rmk = #{rmk},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			version = version+1
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE SYS_DATA_TASK SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

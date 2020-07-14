@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberFriendReportDao">
+    
+	<sql id="memberFriendReportColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.friend_id AS "friend.id",
+		a.type AS "type",
+		a.status AS "status",
+		a.title AS "title",
+		a.content AS "content",
+		a.images AS "images",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		c.name AS "member.name",
+		c.username AS "member.username",
+		c.head_image AS "member.headImage",
+		c.nickname AS "member.nickname",
+		d.name AS "friend.name",
+		d.username AS "friend.username",
+		d.head_image AS "friend.headImage",
+		d.nickname AS "friend.nickname"
+	</sql>
+	
+	<resultMap type="MemberFriendReport" id="MemberFriendReportResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="MemberFriendReportJoins">
+	    LEFT JOIN MEM_MEMBER c on a.member_id = c.id
+	    LEFT JOIN MEM_MEMBER d on a.friend_id = d.id
+	</sql>
+    
+	<select id="get" resultMap="MemberFriendReportResultMap">
+		SELECT 
+			<include refid="memberFriendReportColumns"/>
+		FROM MEM_MEMBER_FRIEND_REPORT a
+		<include refid="MemberFriendReportJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="MemberFriendReportResultMap">
+		SELECT 
+			<include refid="memberFriendReportColumns"/>
+		FROM MEM_MEMBER_FRIEND_REPORT a
+		<include refid="MemberFriendReportJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member!= null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="member!= null and member.username != null and member.username != ''">
+				AND c.username = #{member.username}
+			</if>
+			<if test="friend != null and friend.id != null and friend.id != ''">
+				AND a.friend_id = #{friend.id}
+			</if>
+			<if test="friend != null and friend.username != null and friend.username != ''">
+				AND d.username = #{friend.username}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY  a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="MemberFriendReport">
+		INSERT INTO MEM_MEMBER_FRIEND_REPORT(
+			id,
+			member_id,
+			friend_id,
+			type,
+			status,
+			title,
+			content,
+			images,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{friend.id},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{title},
+			#{content},
+			#{images},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MemberFriendReport">
+		UPDATE MEM_MEMBER_FRIEND_REPORT SET 	
+			member_id = #{member.id},
+			friend_id = #{friend.id},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			title = #{title},
+			content = #{content},
+			images = #{images},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MEM_MEMBER_FRIEND_REPORT SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

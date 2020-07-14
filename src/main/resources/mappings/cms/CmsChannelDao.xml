@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.cms.dao.CmsChannelDao">
+    
+	<sql id="cmsChannelColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.alias AS "alias",
+		a.url AS "url",
+		a.keywords AS "keywords",
+		a.description AS "description",
+		a.sort AS "sort",
+		a.in_nav AS "inNav",
+		a.allow_comment AS "allowComment",
+		a.is_audit AS "isAudit",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.id",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.id",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="CmsChannel" id="cmsChannelResultMap">		
+        <id column="id" property="id"/>
+        <result column="inNav"  property="inNav" javaType="Boolean" jdbcType="CHAR" />	
+        <result column="allowComment"  property="allowComment" javaType="Boolean" jdbcType="CHAR" />	
+        <result column="isAudit"  property="isAudit" javaType="Boolean" jdbcType="CHAR" />	
+	</resultMap>
+	<sql id="cmsChannelJoins">
+	</sql>
+    
+	<select id="get" resultMap="cmsChannelResultMap">
+		SELECT 
+			<include refid="cmsChannelColumns"/>
+		FROM CMS_CHANNEL a
+		<include refid="cmsChannelJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByAlias" resultMap="cmsChannelResultMap">
+		SELECT 
+			<include refid="cmsChannelColumns"/>
+		FROM CMS_CHANNEL a
+		    <include refid="cmsChannelJoins"/>
+		WHERE a.alias = #{alias}
+	</select>
+	
+	<select id="findList" resultMap="cmsChannelResultMap">
+		SELECT 
+			<include refid="cmsChannelColumns"/>
+		FROM CMS_CHANNEL a
+		<include refid="cmsChannelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.sort ASC
+			</otherwise>
+		</choose>
+		<if test="count != null ">
+				LIMIT #{count}
+		</if>
+	</select>
+	
+	<select id="findAllList" resultMap="cmsChannelResultMap">
+		SELECT 
+			<include refid="cmsChannelColumns"/>
+		FROM CMS_CHANNEL a
+		<include refid="cmsChannelJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.sort ASC
+			</otherwise>
+		</choose>
+		<if test="count != null ">
+				LIMIT #{count}
+		</if>
+	</select>
+	
+	<insert id="insert" parameterType="CmsChannel">
+		INSERT INTO CMS_CHANNEL(
+			id,
+			name,
+			alias,
+			url,
+			keywords,
+			description,
+			sort,
+			in_nav,
+			allow_comment,
+			is_audit,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{alias},
+			#{url},
+			#{keywords},
+			#{description},
+			#{sort},
+			#{inNav,javaType=Boolean, jdbcType=CHAR},
+			#{allowComment,javaType=Boolean, jdbcType=CHAR},
+			#{isAudit,javaType=Boolean, jdbcType=CHAR},
+			#{rmk},
+			#{createBy.id},
+			#{createTime},
+			#{updateBy.id},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="CmsChannel">
+		UPDATE CMS_CHANNEL SET 	
+			name = #{name},
+			alias = #{alias},
+			url = #{url},
+			keywords = #{keywords},
+			description = #{description},
+			sort = #{sort},
+			in_nav = #{inNav,javaType=Boolean, jdbcType=CHAR},
+			allow_comment = #{allowComment,javaType=Boolean, jdbcType=CHAR},
+			is_audit = #{isAudit,javaType=Boolean, jdbcType=CHAR},
+			rmk = #{rmk},
+			update_by = #{updateBy.id},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE CMS_CHANNEL SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

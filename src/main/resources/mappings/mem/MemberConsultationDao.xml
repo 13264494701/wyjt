@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberConsultationDao">
+    
+	<sql id="consultationColumns">
+		a.id AS "id",
+		a.member_no AS "member.memberNo",
+		a.content AS "content",
+		a.ip_addr AS "ipAddr",
+		a.is_show AS "isShow",
+		a.for_consultation AS "forConsultation.id",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime",
+	</sql>
+	
+	<resultMap type="MemberConsultation" id="consultationResultMap">
+		<id column="id" property="id"/>
+		<result column="isShow"  property="isShow" javaType="Boolean" jdbcType="CHAR" />		
+	</resultMap>
+	
+	<sql id="consultationJoins">
+	    LEFT JOIN MEM_MEMBER c on c.member_no = a.member_no 
+	</sql>
+    
+	<select id="get" resultMap="consultationResultMap">
+		SELECT 
+			<include refid="consultationColumns"/>
+		FROM MEM_MEMBER_CONSULTATION a
+		    <include refid="consultationJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList"  resultMap="consultationResultMap">
+		SELECT 
+			<include refid="consultationColumns"/>
+		FROM MEM_MEMBER_CONSULTATION a
+		    <include refid="consultationJoins"/>
+		<where>
+			<if test="member != null and member.memberNo != null  and member.memberNo != ''">
+				AND a.member_no = #{member.memberNo}
+			</if>
+			AND (ISNULL(a.for_consultation)='1' OR for_consultation ='')
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<if test="count != null ">
+				LIMIT #{count}
+		</if>
+	</select>
+	
+	<select id="findAllList" resultMap="consultationResultMap">
+		SELECT 
+			<include refid="consultationColumns"/>
+		FROM MEM_MEMBER_CONSULTATION a
+		    <include refid="consultationJoins"/>
+		<where>
+			<if test="member != null and member.memberNo != null  and member.memberNo != ''">
+				AND a.member_no = #{member.memberNo}
+			</if>
+			AND (ISNULL(a.for_consultation)='1' OR for_consultation ='')
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+		<if test="count != null ">
+				LIMIT #{count}
+		</if>
+	</select>
+	<select id="findReplyConsultationList"  resultMap="consultationResultMap">
+		SELECT 
+			<include refid="consultationColumns"/>
+		FROM MEM_MEMBER_CONSULTATION a
+		    <include refid="consultationJoins"/>
+        WHERE a.for_consultation = #{id}
+        ORDER BY a.id ASC	
+	</select>
+	<insert id="insert">
+		INSERT INTO MEM_MEMBER_CONSULTATION(
+			id,
+			member_no,
+			content,
+			ip_addr,
+			is_show,
+			for_consultation,
+			create_time,
+			update_time
+		) VALUES (
+			#{id},
+			#{member.memberNo},
+			#{content},
+			#{ipAddr},
+			#{isShow, javaType=Boolean, jdbcType=CHAR},
+			#{forConsultation.id},
+			#{createTime},
+			#{updateTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE MEM_MEMBER_CONSULTATION SET 	
+			member_no = #{member.memberNo},
+			content = #{content},
+			ip_addr = #{ipAddr},
+			is_show = #{isShow, javaType=Boolean, jdbcType=CHAR},
+			for_consultation = #{forConsultation.id},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM MEM_MEMBER_CONSULTATION
+		WHERE id = #{id}
+	</update>
+	
+	<select id="count" resultType="java.lang.Long">
+		SELECT 
+			COUNT(*)
+		FROM MEM_MEMBER_CONSULTATION a
+		<where>		
+			<if test="member != null and member.memberNo != null and member.memberNo != ''">
+				AND a.member_no = #{member.memberNo}
+			</if>
+			<if test="isShow != null and isShow != ''">
+				AND a.is_show = #{isShow, javaType=Boolean, jdbcType=CHAR}
+			</if>
+		</where>
+	</select>
+</mapper>

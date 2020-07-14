@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.report.dao.ReportLoaneeDataDailyDao">
+    
+	<sql id="reportLoaneeDataDailyColumns">
+		a.id AS "id",
+		a.date AS "date",
+		a.wyjt_app AS "wyjtApp",
+		a.wyjt_weixin AS "wyjtWeixin",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="ReportLoaneeDataDaily" id="reportLoaneeDataDailyResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	
+	<sql id="reportLoaneeDataDailyJoins">
+	</sql>
+    
+	<select id="get" resultMap="reportLoaneeDataDailyResultMap">
+		SELECT 
+			<include refid="reportLoaneeDataDailyColumns"/>
+		FROM REPORT_LOANEE_DATA_DAILY a
+		<include refid="reportLoaneeDataDailyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="reportLoaneeDataDailyResultMap">
+		SELECT 
+		    a.id AS "id",
+			left(a.date,#{type}) AS "date",
+			sum(a.wyjt_app) AS "wyjtApp",
+		    sum(a.wyjt_weixin) AS "wyjtWeixin",
+			a.create_by AS "createBy.empNo",
+		    a.create_time AS "createTime",
+		    a.update_by AS "updateBy.empNo",
+		    a.update_time AS "updateTime",
+		    a.del_flag AS "delFlag"
+		FROM REPORT_LOANEE_DATA_DAILY a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="date != null and date != ''">
+				AND a.date = #{date}
+			</if>
+		</where>
+		GROUP BY left(a.date,#{type})
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			     ORDER BY a.date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="ReportLoaneeDataDaily">
+		INSERT INTO REPORT_LOANEE_DATA_DAILY(
+			id,
+			date,
+			wyjt_app,
+			wyjt_weixin,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{date},
+			#{wyjtApp},
+			#{wyjtWeixin},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="ReportLoaneeDataDaily">
+		UPDATE REPORT_LOANEE_DATA_DAILY SET 	
+			date = #{date},
+			wyjt_app = #{wyjtApp},
+			wyjt_weixin = #{wyjtWeixin},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE REPORT_LOANEE_DATA_DAILY SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="deleteByDate">
+		UPDATE REPORT_LOANEE_DATA_DAILY SET
+			del_flag = 1
+		WHERE date = #{date}
+	</update>
+	
+	<select id="dataCount" resultType="ReportLoaneeDataDaily">
+		SELECT
+			date_sub( curdate( ), INTERVAL #{daysAgo} DAY ) AS date,
+			( SELECT count( id ) FROM UFANG_LOANEE_DATA WHERE prod_code = '001' AND to_days( now( ) ) - to_days( update_time ) = #{daysAgo} ) AS wyjtApp,
+            ( SELECT count( id ) FROM UFANG_LOANEE_DATA WHERE prod_code = '002' AND to_days( now( ) ) - to_days( update_time ) = #{daysAgo} ) AS wyjtWeixin
+		FROM
+			UFANG_LOANEE_DATA
+		LIMIT 1
+	</select>
+</mapper>

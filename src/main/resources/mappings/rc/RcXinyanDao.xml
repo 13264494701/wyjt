@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.rc.dao.RcXinyanDao">
+    
+	<sql id="rcXinyanColumns">
+		a.id AS "id",
+		a.ufang_emp_no AS "ufangEmpNo",
+		a.token AS "token",
+		a.name AS "name",
+		a.id_no AS "idNo",
+		a.phone_no AS "phoneNo",
+		a.result AS "result",
+		a.rmk AS "rmk",
+		a.is_selfbuy AS "isSelfbuy",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="RcXinyan" id="rcXinyanResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	<sql id="rcXinyanJoins">
+	</sql>
+    
+	<select id="get" resultMap="rcXinyanResultMap">
+		SELECT 
+			<include refid="rcXinyanColumns"/>
+		FROM RC_XINYAN a
+		<include refid="rcXinyanJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="rcXinyanResultMap">
+		SELECT 
+			<include refid="rcXinyanColumns"/>
+		FROM RC_XINYAN a
+		<include refid="rcXinyanJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="token != null and token != ''">
+				AND a.token = #{token}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="idNo != null and idNo != ''">
+				AND a.id_no = #{idNo}
+			</if>
+			<if test="phoneNo != null and phoneNo != ''">
+				AND a.phone_no = #{phoneNo}
+			</if>
+			<if test="isSelfbuy != null and isSelfbuy != ''">
+				AND a.is_selfbuy = #{isSelfbuy}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			 ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="RcXinyan">
+		INSERT INTO RC_XINYAN(
+			id,
+			ufang_emp_no,
+			token,
+			name,
+			id_no,
+			phone_no,
+			result,
+			rmk,
+			is_selfbuy,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{ufangEmpNo},
+			#{token},
+			#{name},
+			#{idNo},
+			#{phoneNo},
+			#{result},
+			#{rmk},
+			#{isSelfbuy},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="RcXinyan">
+		UPDATE RC_XINYAN SET 	
+			ufang_emp_no = #{ufangEmpNo},
+			token = #{token},
+			name = #{name},
+			id_no = #{idNo},
+			phone_no = #{phoneNo},
+			result = #{result},
+			rmk = #{rmk},
+			is_selfbuy = #{isSelfbuy},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE RC_XINYAN SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

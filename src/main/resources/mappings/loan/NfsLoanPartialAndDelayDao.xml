@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.loan.dao.NfsLoanPartialAndDelayDao">
+    
+	<sql id="nfsLoanPartialAndDelayColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.member_role AS "memberRole",
+		a.loan_id AS "loan.id",
+		a.type AS "type",
+		a.partial_amount AS "partialAmount",
+		a.remain_amount AS "remainAmount",
+		a.delay_interest AS "delayInterest",
+		a.overdue_interest AS "overdueInterest",
+		a.delay_rate AS "delayRate",
+		a.old_amount AS "oldAmount",
+		a.old_interest AS "oldInterest",
+		a.old_rate AS "oldRate",
+		a.now_repay_date AS "nowRepayDate",
+		a.delay_days AS "delayDays",
+		a.status AS "status",
+		a.pay_status AS "payStatus",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.version AS "version",
+		a.del_flag AS "delFlag",
+		c.name AS "member.name",
+		d.loanee_id AS "loan.loanee.id",
+		d.loanee_name AS "loan.loanee.name",
+		d.loanee_phone_no AS "loan.loanee.username"
+	</sql>
+	
+	<resultMap type="NfsLoanPartialAndDelay" id="nfsLoanPartialAndDelayResultMap">		
+        <id column="id" property="id"/>
+        <result column="memberRole" property="memberRole" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="payStatus" property="payStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="nfsLoanPartialAndDelayJoins">
+	    LEFT JOIN MEM_MEMBER c on c.id = a.member_id 
+	    LEFT JOIN NFS_LOAN_RECORD d on a.loan_id = d.id
+	</sql>
+    
+	<select id="get" resultMap="nfsLoanPartialAndDelayResultMap">
+		SELECT 
+			<include refid="nfsLoanPartialAndDelayColumns"/>
+		FROM NFS_LOAN_PARTIAL_AND_DELAY a
+		<include refid="nfsLoanPartialAndDelayJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<select id="getAgreedApplyCount" parameterType="java.lang.Long" resultType="java.lang.Integer">
+		SELECT 
+			count(1) 
+		FROM NFS_LOAN_PARTIAL_AND_DELAY 
+		WHERE loan_id = #{loanId} AND status = '1'
+		AND  (type = '0' OR type = '2')
+	</select>
+	
+	<select id="findNearestByRecordId" parameterType="java.lang.Long" resultMap="nfsLoanPartialAndDelayResultMap">
+		SELECT 
+			<include refid="nfsLoanPartialAndDelayColumns"/>
+		FROM NFS_LOAN_PARTIAL_AND_DELAY a
+		<include refid="nfsLoanPartialAndDelayJoins"/>
+		WHERE a.loan_id = #{loanId} 
+		order by  a.create_time desc limit 1
+	</select>
+	
+	<select id="findList" resultMap="nfsLoanPartialAndDelayResultMap">
+		SELECT 
+			<include refid="nfsLoanPartialAndDelayColumns"/>
+		FROM NFS_LOAN_PARTIAL_AND_DELAY a
+		<include refid="nfsLoanPartialAndDelayJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="loan != null and loan.id != null and loan.id != ''">
+				AND a.loan_id = #{loan.id}
+			</if>
+			<if test="memberRole != null">
+				AND a.member_role = #{memberRole,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="payStatus != null">
+				AND a.pay_status = #{payStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="member != null and member.name != null and member.name != ''">
+				AND c.name = #{member.name}
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.update_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+			<if test="maxAmount != null and minAmount != null">
+				AND a.remain_amount BETWEEN #{minAmount} AND #{maxAmount}					
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.update_time desc
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="NfsLoanPartialAndDelay">
+		INSERT INTO NFS_LOAN_PARTIAL_AND_DELAY(
+			id,
+			member_id,
+			member_role,
+			loan_id,
+			type,
+			partial_amount,
+			remain_amount,
+			delay_interest,
+			overdue_interest,
+			delay_rate,
+			old_amount,
+			old_interest,
+			old_rate,
+			now_repay_date,
+			delay_days,
+			status,
+			pay_status,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			version,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{memberRole,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{loan.id},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{partialAmount},
+			#{remainAmount},
+			#{delayInterest},
+			#{overdueInterest},
+			#{delayRate},
+			#{oldAmount},
+			#{oldInterest},
+			#{oldRate},
+			#{nowRepayDate},
+			#{delayDays},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{payStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{version},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsLoanPartialAndDelay">
+		UPDATE NFS_LOAN_PARTIAL_AND_DELAY SET 	
+			member_id = #{member.id},
+			member_role = #{memberRole,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			loan_id = #{loan.id},
+			partial_amount = #{partialAmount},
+			remain_amount = #{remainAmount},
+			delay_interest = #{delayInterest},
+			overdue_interest = #{overdueInterest},
+			delay_rate= #{delayRate},
+			old_amount = #{oldAmount},
+			old_interest = #{oldInterest},
+			old_rate= #{oldRate},
+			now_repay_date = #{nowRepayDate},
+			delay_days = #{delayDays},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			pay_status = #{payStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			version = version+1
+		WHERE id = #{id}
+			and version = #{version}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_LOAN_PARTIAL_AND_DELAY SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

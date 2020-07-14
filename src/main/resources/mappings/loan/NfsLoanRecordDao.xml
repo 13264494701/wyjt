@@ -1,0 +1,1246 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.loan.dao.NfsLoanRecordDao">
+    
+	<sql id="nfsLoanRecordColumns">
+		a.id AS "id",
+		a.loan_no AS "loanNo",
+		a.loaner_id AS "loaner.id",
+		a.loaner_name AS "loaner.name",
+		a.loaner_headimage AS "loaner.headImage",
+		a.loaner_id_no AS "loaner.idNo",
+		a.loaner_phone_no AS "loaner.username",
+		a.loaner_email AS "loaner.email",
+		a.loanee_id AS "loanee.id",
+		a.loanee_name AS "loanee.name",
+		a.loanee_headimage AS "loanee.headImage",
+		a.loanee_id_no AS "loanee.idNo",
+		a.loanee_phone_no AS "loanee.username",
+		a.loanee_email AS "loanee.email",
+		a.loan_type AS "loanType",
+		a.loan_purp AS "loanPurp",
+		a.repay_type AS "repayType",
+		a.amount AS "amount",
+		a.int_rate AS "intRate",
+		a.interest AS "interest",
+		a.fee AS "fee",
+		a.trx_type AS "trxType",
+		a.loan_start AS "loanStart",
+		a.term AS "term",
+		a.repayed_term AS "repayedTerm",
+		a.due_repay_term AS "dueRepayTerm",
+		a.due_repay_date AS "dueRepayDate",
+		a.due_repay_amount AS "dueRepayAmount",
+		a.complete_date AS "completeDate",
+		a.overdue_interest AS "overdueInterest",
+		a.status AS "status",
+		a.partial_status AS "partialStatus",
+		a.delay_status AS "delayStatus",
+		a.auction_status AS "auctionStatus",
+		a.line_down_status AS "lineDownStatus",
+		a.dispute_resolution AS "disputeResolution",
+		a.progress AS "progress",
+		a.channel AS "channel",
+		a.apply_detail_id AS "loanApplyDetail.id",	
+		a.arbitration_status AS "arbitrationStatus",
+		a.collection_status AS "collectionStatus",
+		a.collection_times AS "collectionTimes",
+		a.loanee_delete AS "loaneeDelete",
+		a.loaner_delete AS "loanerDelete",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+
+	</sql>
+	
+	<sql id="nfsLoanRecordCaseColumns">
+		a.id AS "id",
+		a.loan_no AS "loanNo",
+		a.create_time AS "createTime",
+		a.loaner_id AS "loaner.id",
+		a.loaner_name AS "loaner.name",
+		a.loaner_id_no AS "loaner.idNo",
+		a.loaner_phone_no AS "loaner.username",
+		mr.nickname AS "loaner.nickname",
+		mr.create_time AS "loaner.createTime",
+		a.loanee_id AS "loanee.id",
+		a.loanee_name AS "loanee.name",
+		a.loanee_id_no AS "loanee.idNo",
+		a.loanee_phone_no AS "loanee.username",
+		me.nickname AS "loanee.nickname",
+		a.trx_type AS "trxType",
+		a.loan_start AS "loanStart",
+		a.amount AS "amount",
+		a.int_rate AS "intRate",
+		a.interest AS "interest",
+		a.fee AS "fee",
+		a.term AS "term",
+		a.repay_type AS "repayType",
+		a.repayed_term AS "repayedTerm",
+		a.due_repay_term AS "dueRepayTerm",
+		a.due_repay_date AS "dueRepayDate",
+		a.due_repay_amount AS "dueRepayAmount",
+		a.complete_date AS "completeDate",
+		a.overdue_interest AS "overdueInterest",
+		me.create_time AS "loanee.createTime",
+		ad.id AS "loanApplyDetail.id",
+		ap.id AS "apply.id"
+	</sql>
+	
+	<resultMap type="NfsLoanRecord" id="nfsLoanRecordResultMap">		
+        <id column="id" property="id"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="partialStatus" property="partialStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="delayStatus" property="delayStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />      
+        <result column="channel" property="channel" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="loanType" property="loanType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="loanPurp" property="loanPurp" typeHandler="com.jxf.svc.utils.enumUtils.CodeEnumTypeHandler" />
+        <result column="repayType" property="repayType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="arbitrationStatus" property="arbitrationStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="collectionStatus" property="collectionStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="lineDownStatus" property="lineDownStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="auctionStatus" property="auctionStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="disputeResolution" property="disputeResolution" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="trxType" property="trxType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="loaneeDelete"  property="loaneeDelete" javaType="Boolean" jdbcType="CHAR" />
+        <result column="loanerDelete"  property="loanerDelete" javaType="Boolean" jdbcType="CHAR" />
+	</resultMap>
+	
+	<resultMap type="NfsLoanRecord" id="nfsLoanRecordCaseResultMap">		
+        <id column="id" property="id"/>
+        <result column="repayType" property="repayType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="trxType" property="trxType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+		
+	<sql id="nfsLoanRecordJoins">
+
+	</sql>
+	
+	<sql id="nfsLoanRecordCaseJoins">
+		LEFT JOIN MEM_MEMBER mr ON mr.id = a.loaner_id
+		LEFT JOIN MEM_MEMBER me ON me.id = a.loanee_id
+		LEFT JOIN NFS_LOAN_APPLY_DETAIL ad ON ad.id = a.apply_detail_id
+		LEFT JOIN NFS_LOAN_APPLY ap ON ap.id = ad.apply_id
+	</sql>
+    
+	<select id="get" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a
+		<include refid="nfsLoanRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findContractByMemberId" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>,		
+			c.contract_url AS "contractUrl"
+		FROM NFS_LOAN_RECORD a
+		LEFT JOIN NFS_LOAN_CONTRACT c on c.loan_id = a.id
+		<where>
+			a.del_flag = 0
+			AND (a.loaner_id = #{loaner.id} OR a.loanee_id = #{loanee.id})
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="countOverdueMoreThan15daysRecord" resultType="java.lang.Integer">
+		SELECT 
+			count(1)
+		FROM NFS_LOAN_RECORD a
+		WHERE a.loanee_id = #{loanee.id}
+		<![CDATA[AND a.due_repay_date < #{dueRepayDate}]]>
+		AND a.del_flag = '0'
+	</select>
+	
+	<select id="findByApplyDetailId" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a
+		<include refid="nfsLoanRecordJoins"/>
+		WHERE a.apply_detail_id = #{detailId}
+	</select>
+	
+	<select id="listCase" resultMap="nfsLoanRecordCaseResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordCaseColumns"/>
+		FROM NFS_LOAN_RECORD a
+		<include refid="nfsLoanRecordCaseJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a
+		<include refid="nfsLoanRecordJoins"/>
+		<where>
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+			<if test="loanNo != null and loanNo != ''">
+				AND a.loan_no = #{loanNo}
+			</if>
+			<if test="loaner != null and loaner.id != null and loaner.id != ''">
+				AND a.loaner_id = #{loaner.id}
+			</if>
+			<if test="loaner != null and loaner.username != null and loaner.username != ''">
+				AND a.loaner_phone_no = #{loaner.username}
+			</if>
+			<if test="loaner != null and loaner.name != null and loaner.name != ''">
+				AND a.loaner_name = #{loaner.name}
+			</if>
+			<if test="loanee != null and loanee.id != null and loanee.id != ''">
+				AND a.loanee_id = #{loanee.id}
+			</if>
+			<if test="loanee != null and loanee.username != null and loanee.username != ''">
+				AND a.loanee_phone_no = #{loanee.username}
+			</if>
+			<if test="loanee != null and loanee.name != null and loanee.name != ''">
+				AND a.loanee_name = #{loanee.name}
+			</if>
+			<if test="trxType != null">
+				AND a.trx_type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loanType != null">
+				AND a.loan_type = #{loanType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="repayType != null">
+				AND a.repay_type = #{repayType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="partialStatus != null">
+				AND a.partial_status = #{partialStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="delayStatus != null">
+				AND a.delay_status = #{delayStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="auctionStatus != null">
+				AND a.auction_status = #{auctionStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="lineDownStatus != null">
+				AND a.line_down_status = #{lineDownStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="collectionStatus != null">
+				AND a.collection_status = #{collectionStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="arbitrationStatus != null">
+				AND a.arbitration_status = #{arbitrationStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loaneeDelete != null">
+				AND a.loanee_delete = #{loaneeDelete, javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="loanerDelete != null">
+				AND a.loaner_delete = #{loanerDelete, javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loanApplyDetail != null and loanApplyDetail.id != null and loanApplyDetail.id != ''">
+				AND a.apply_detail_id = #{loanApplyDetail.id}
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+			<if test="beginUpdateTime != null and endUpdateTime != null">
+				AND a.update_time BETWEEN #{beginUpdateTime} AND #{endUpdateTime}					
+			</if>
+			<if test="beginDueRepayDate != null ">
+				<![CDATA[AND a.due_repay_date >= #{beginDueRepayDate}]]> 
+			</if>
+			<if test="endDueRepayDate != null">
+				<![CDATA[AND a.due_repay_date <= #{endDueRepayDate}]]> 
+			</if>
+			<if test="beginCompleteDate != null and endCompleteDate != null">
+				AND a.complete_date BETWEEN #{beginCompleteDate} AND #{endCompleteDate}					
+			</if>
+			<if test="maxAmount != null and minAmount != null">
+				AND a.amount BETWEEN #{minAmount} AND #{maxAmount}					
+			</if>
+			<if test="maxTerm != null and minTerm != null">
+				AND a.term BETWEEN #{minTerm} AND #{maxTerm}					
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAuctionList" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a
+		<include refid="nfsLoanRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+			<if test="loaner != null and loaner.id != null and loaner.id != ''">
+				AND a.loaner_id = #{loaner.id}
+			</if>
+			<if test="loaner != null and loaner.name != null and loaner.name != ''">
+				AND a.loaner_name = #{loaner.name}
+			</if>
+			<if test="loanee != null and loanee.id != null and loanee.id != ''">
+				AND a.loanee_id = #{loanee.id}
+			</if>
+			<if test="loanee != null and loanee.name != null and loanee.name != ''">
+				AND a.loanee_name = #{loanee.name}
+			</if>
+			<if test="trxType != null">
+				AND a.trx_type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="partialStatus != null">
+				AND a.partial_status = #{partialStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="delayStatus != null">
+				AND a.delay_status = #{delayStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="auctionStatus != null">
+				AND a.auction_status = #{auctionStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="lineDownStatus != null">
+				AND a.line_down_status = #{lineDownStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="collectionStatus != null">
+				AND a.collection_status = #{collectionStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="arbitrationStatus != null">
+				AND a.arbitration_status = #{arbitrationStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+			<if test="repayType != null">
+				AND a.repay_type = #{repayType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<when test="overdueTab == 1">
+				ORDER BY a.due_repay_date DESC
+			</when>
+			<when test="overdueTab == 2">
+				ORDER BY a.due_repay_date 
+			</when>
+			<when test="amountTab == 1">
+				ORDER BY a.amount
+			</when>
+			<when test="amountTab == 2">
+				ORDER BY a.amount DESC
+			</when>
+			<otherwise>
+			    ORDER BY a.update_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findWhoOweMeList" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a
+		<include refid="nfsLoanRecordJoins"/>
+		<where>
+			a.del_flag = '0' AND a.auction_status !=2 
+			<if test="loaner != null and loaner.id != null and loaner.id != ''">
+				AND a.loaner_id = #{loaner.id}
+			</if>
+			<if test="loaner != null and loaner.username != null and loaner.username != ''">
+				AND a.loaner_phone_no = #{loaner.username}
+			</if>
+			<if test="loaner != null and loaner.name != null and loaner.name != ''">
+				AND a.loaner_name = #{loaner.name}
+			</if>
+			<if test="loanee != null and loanee.id != null and loanee.id != ''">
+				AND a.loanee_id = #{loanee.id}
+			</if>
+			<if test="loanee != null and loanee.username != null and loanee.username != ''">
+				AND a.loanee_phone_no = #{loanee.username}
+			</if>
+			<if test="trxType != null">
+				AND a.trx_type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loanee != null and loanee.name != null and loanee.name != ''">
+				AND a.loanee_name = #{loanee.name}
+			</if>
+		</where>
+	</select>	
+	
+	<select id="findToPaidList" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a
+		<include refid="nfsLoanRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} 
+			<if test="loanNo != null and loanNo != ''">
+				AND a.loan_no = #{loanNo}
+			</if>
+			<if test="loaner != null and loaner.id != null and loaner.id != ''">
+				AND a.loaner_id = #{loaner.id}
+			</if>
+			<if test="loaner != null and loaner.name != null and loaner.name != ''">
+				AND a.loaner_name LIKE
+					<if test="dbName == 'oracle'">||#{loaner.name}||'%'</if>
+					<if test="dbName == 'mssql'">#{loaner.name}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{loaner.name},'%')</if>
+			</if>
+			<if test="loanee != null and loanee.id != null and loanee.id != ''">
+				AND a.loanee_id = #{loanee.id}
+			</if>
+			<if test="loanee != null and loanee.name != null and loanee.name != ''">
+				AND a.loanee_name LIKE
+					<if test="dbName == 'oracle'">||#{loanee.name}||'%'</if>
+					<if test="dbName == 'mssql'">#{loanee.name}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{loanee.name},'%')</if>
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loaneeDelete != null">
+				AND a.loanee_delete = #{loaneeDelete, javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="loanerDelete != null">
+				AND a.loaner_delete = #{loanerDelete, javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="partialStatus != null">
+				AND a.partial_status = #{partialStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="delayStatus != null">
+				AND a.delay_status = #{delayStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="lineDownStatus != null">
+				AND a.line_down_status = #{lineDownStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loanApplyDetail != null and loanApplyDetail.id != null and loanApplyDetail.id != ''">
+				AND a.apply_detail_id = #{loanApplyDetail.id}
+			</if>
+			<if test="beginTime != null ">
+				<![CDATA[AND a.create_time >= #{beginTime}]]> 
+			</if>
+			<if test="endTime != null">
+				<![CDATA[AND a.create_time <= #{endTime}]]> 
+			</if>
+			
+			<if test="loanType != null">
+				AND a.loan_type = #{loanType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="repayType != null">
+				AND a.repay_type = #{repayType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			
+			<if test="beginDueRepayDate != null">
+				<![CDATA[AND a.due_repay_date >= #{beginDueRepayDate}]]> 
+			</if>
+			<if test="endDueRepayDate != null">
+				<![CDATA[AND a.due_repay_date <= #{endDueRepayDate}]]> 
+			</if>
+			
+			<if test="trxType != null">
+				AND a.trx_type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="maxAmount != null and maxAmount != ''">
+				<![CDATA[AND a.amount <= #{maxAmount}]]> 
+			</if>
+			<if test="minAmount != null and minAmount != ''">
+				<![CDATA[AND a.amount >= #{minAmount}]]> 
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.due_repay_date
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findClosedList" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a
+		<include refid="nfsLoanRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} 
+			<if test="loanNo != null and loanNo != ''">
+				AND a.loan_no = #{loanNo}
+			</if>
+			<if test="loaner != null">
+				AND a.auction_status != 2
+			</if>
+			<if test="loaner != null and loaner.id != null and loaner.id != ''">
+				AND a.loaner_id = #{loaner.id} 
+			</if>
+			<if test="loaner != null and loaner.name != null and loaner.name != ''">
+				AND a.loaner_name LIKE
+					<if test="dbName == 'oracle'">||#{loaner.name}||'%'</if>
+					<if test="dbName == 'mssql'">#{loaner.name}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{loaner.name},'%')</if>
+			</if>
+			<if test="loanee != null and loanee.id != null and loanee.id != ''">
+				AND a.loanee_id = #{loanee.id}
+			</if>
+			<if test="loanee != null and loanee.name != null and loanee.name != ''">
+				AND a.loanee_name LIKE
+					<if test="dbName == 'oracle'">||#{loanee.name}||'%'</if>
+					<if test="dbName == 'mssql'">#{loanee.name}+'%'</if>
+					<if test="dbName == 'mysql'">concat(#{loanee.name},'%')</if>
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loaneeDelete != null">
+				AND a.loanee_delete = #{loaneeDelete, javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="loanerDelete != null">
+				AND a.loaner_delete = #{loanerDelete, javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="partialStatus != null">
+				AND a.partial_status = #{partialStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="delayStatus != null">
+				AND a.delay_status = #{delayStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="lineDownStatus != null">
+				AND a.line_down_status = #{lineDownStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loanApplyDetail != null and loanApplyDetail.id != null and loanApplyDetail.id != ''">
+				AND a.apply_detail_id = #{loanApplyDetail.id}
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+			<if test="trxType != null">
+				AND a.trx_type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loanType != null">
+				AND a.loan_type = #{loanType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="repayType != null">
+				AND a.repay_type = #{repayType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="maxAmount != null and maxAmount != ''">
+				<![CDATA[AND a.amount <= #{maxAmount}]]> 
+			</if>
+			<if test="minAmount != null and minAmount != ''">
+				<![CDATA[AND a.amount >= #{minAmount}]]> 
+			</if>
+				<if test="beginDueRepayDate != null">
+				<![CDATA[AND a.due_repay_date >= #{beginDueRepayDate}]]> 
+			</if>
+			<if test="endDueRepayDate != null">
+				<![CDATA[AND a.due_repay_date < #{endDueRepayDate}]]> 
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.due_repay_date desc
+			</otherwise>
+		</choose>
+	</select>
+	
+
+	
+	<select id="findListForUfang" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a
+		<where>
+		    a.loaner_id = #{loaner.id}
+			<if test="loanNo != null and loanNo != ''">
+				AND a.loan_no = #{loanNo}
+			</if>
+			<if test="loanee != null and loanee.id != null and loanee.id != ''">
+				AND a.loanee_id = #{loanee.id}
+			</if>
+			<if test="loanee != null and loanee.name != null and loanee.name != ''">
+				AND a.loanee_name = #{loanee.name}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="partialStatus != null">
+				AND a.partial_status = #{partialStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="delayStatus != null">
+				AND a.delay_status = #{delayStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="auctionStatus != null">
+				AND a.auction_status = #{auctionStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="lineDownStatus != null">
+				AND a.line_down_status = #{lineDownStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loanType != null">
+				AND a.loan_type = #{loanType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="repayType != null">
+				AND a.repay_type = #{repayType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginTime != null ">
+				<![CDATA[AND a.create_time >= #{beginTime}]]> 
+			</if>
+			<if test="endTime != null">
+				<![CDATA[AND a.create_time <= #{endTime}]]> 
+			</if>
+			<if test="maxAmount != null and maxAmount != ''">
+				<![CDATA[AND a.amount <= #{maxAmount}]]> 
+			</if>
+			<if test="minAmount != null and minAmount != ''">
+				<![CDATA[AND a.amount >= #{minAmount}]]> 
+			</if>
+		</where>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findApplyForArbitration" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a 
+		LEFT JOIN NFS_LOAN_APPLY_DETAIL d ON d.id = a.apply_detail_id
+		<where>
+			a.del_flag = '0' AND a.status = '2' <![CDATA[AND a.amount >= 100]]> AND a.arbitration_status = 0 AND a.collection_status = '0' AND a.auction_status = '0' AND d.dispute_resolution = '0'
+			<if test="loaner != null and loaner.id != null and loaner.id != ''">
+				AND a.loaner_id = #{loaner.id}
+			</if>
+			<if test="trxType != null">
+				AND a.trx_type = #{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findCollection" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a 
+		LEFT JOIN NFS_LOAN_ARBITRATION b ON b.loan_id = a.id
+		<include refid="nfsLoanRecordJoins"/>
+		<where>
+			a.del_flag = '0' 
+			AND a.status = '2' 
+			AND a.collection_status = '0' 
+			AND a.auction_status = '0'
+			AND (a.arbitration_status = '0' OR (a.arbitration_status = '1' AND (b.status = '1' OR b.status = '4' OR b.status = '5' OR b.status = '6'))) 
+			<![CDATA[AND a.amount >= 100]]> <![CDATA[AND a.collection_times < 3]]> AND a.trx_type = '0'
+			<if test="loanRecord.loaner != null and loanRecord.loaner.id != null and loanRecord.loaner.id != ''">
+				AND a.loaner_id = #{loanRecord.loaner.id}
+			</if>
+		</where>
+		<choose>
+			<when test="loanRecord.page !=null and loanRecord.page.orderBy != null and loanRecord.page.orderBy != ''">
+				ORDER BY ${loanRecord.page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="NfsLoanRecord">
+		INSERT INTO NFS_LOAN_RECORD(
+			id,
+			loan_no,
+			loaner_id,
+			loaner_name,
+			loaner_headimage,
+		    loaner_id_no,
+		    loaner_phone_no,
+		    loaner_email,
+			loanee_id,
+			loanee_name,
+			loanee_headimage,
+			loanee_id_no,
+			loanee_phone_no,
+			loanee_email,
+			loan_type,
+			loan_purp,
+			loan_start,
+			trx_type,
+			repay_type,
+			amount,
+			int_rate,
+			interest,
+			fee,
+			term,
+			repayed_term,
+			due_repay_term,
+			due_repay_date,
+			due_repay_amount,
+			complete_date,
+			overdue_interest,
+			status,
+			partial_status,
+			delay_status,
+			auction_status,
+			line_down_status,
+			arbitration_status,
+			collection_status,
+			collection_times,
+			dispute_resolution,
+			progress,
+			channel,
+			apply_detail_id,	
+			loanee_delete,
+			loaner_delete,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{loanNo},
+			#{loaner.id},
+			#{loaner.name},
+			#{loaner.headImage},
+			#{loaner.idNo},
+			#{loaner.username},
+			#{loaner.email},
+			#{loanee.id},
+			#{loanee.name},
+			#{loanee.headImage},
+			#{loanee.idNo},
+			#{loanee.username},
+			#{loanee.email},
+			#{loanType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{loanPurp,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{loanStart},
+			#{trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{repayType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{amount},
+			#{intRate},
+			#{interest},
+			#{fee},
+			#{term},
+			#{repayedTerm},
+			#{dueRepayTerm},
+			#{dueRepayDate},
+			#{dueRepayAmount},
+			#{completeDate},
+			#{overdueInterest},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{partialStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{delayStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{auctionStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{lineDownStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{arbitrationStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{collectionStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{collectionTimes},
+			#{disputeResolution,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{progress},
+			#{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{loanApplyDetail.id},
+			#{loaneeDelete, javaType=Boolean, jdbcType=CHAR},
+			#{loanerDelete, javaType=Boolean, jdbcType=CHAR},	
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsLoanRecord">
+		UPDATE NFS_LOAN_RECORD SET 	
+			loan_no = #{loanNo},
+			loaner_id = #{loaner.id},
+			loaner_name = #{loaner.name},
+			loaner_headimage = #{loaner.headImage},
+			loaner_id_no = #{loaner.idNo},
+			loaner_phone_no = #{loaner.username},
+			loaner_email = #{loaner.email},
+			loanee_id = #{loanee.id},
+			loanee_name = #{loanee.name},
+			loanee_headimage = #{loanee.headImage},
+			loanee_id_no = #{loanee.idNo},
+			loanee_phone_no = #{loanee.username},
+			loanee_email = #{loanee.email},
+			loan_start = #{loanStart},
+		    loan_type = #{loanType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			loan_purp = #{loanPurp,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			repay_type = #{repayType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			amount = #{amount},
+			int_rate = #{intRate},
+			interest = #{interest},
+			fee = #{fee},
+			term = #{term},			
+			repayed_term = #{repayedTerm},
+			due_repay_term = #{dueRepayTerm},
+			due_repay_date = #{dueRepayDate},
+			due_repay_amount = #{dueRepayAmount},
+			complete_date = #{completeDate},
+			overdue_interest = #{overdueInterest},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			partial_status = #{partialStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			delay_status = #{delayStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			auction_status = #{auctionStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			line_down_status = #{lineDownStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			arbitration_status = #{arbitrationStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			collection_status = #{collectionStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			collection_times = #{collectionTimes},
+			dispute_resolution = #{disputeResolution,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			progress = #{progress},
+			channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			apply_detail_id = #{loanApplyDetail.id},
+			loanee_delete = #{loaneeDelete, javaType=Boolean, jdbcType=CHAR},
+			loaner_delete = #{loanerDelete, javaType=Boolean, jdbcType=CHAR},		
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_LOAN_RECORD SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="daihuan" resultType="com.jxf.loan.entity.NfsLoanReport">
+		SELECT
+			sum( due_repay_amount * ( due_repay_term - repayed_term ) ) AS amount,
+			count( id ) AS quantity
+		FROM
+			NFS_LOAN_RECORD
+		WHERE
+			status = #{status}
+			AND loanee_id = #{id}
+			AND TO_DAYS( now() ) - TO_DAYS( create_time ) &lt; #{daysAgo}
+	</select>
+
+	<select id="daishou" resultType="com.jxf.loan.entity.NfsLoanReport">
+		SELECT
+			sum( due_repay_amount * ( due_repay_term - repayed_term ) ) AS amount,
+			count( id ) AS quantity
+		FROM
+			NFS_LOAN_RECORD
+		WHERE
+			status = #{status}
+			AND loaner_id = #{id}
+			AND TO_DAYS( now() ) - TO_DAYS( create_time ) &lt; #{daysAgo}
+	</select>
+
+	<select id="yuqiyihuan" resultType="com.jxf.loan.entity.NfsLoanReport">
+		SELECT
+			sum( due_repay_amount * repayed_term ) AS amount,
+			count( id ) AS quantity
+		FROM
+			NFS_LOAN_RECORD
+		WHERE
+			status = #{status}
+			AND loanee_id = #{id}
+			AND TO_DAYS( now() ) - TO_DAYS( create_time ) &lt; #{daysAgo}
+	</select>
+
+	<select id="jieru" resultType="com.jxf.loan.entity.NfsLoanReport">
+		SELECT
+			sum( due_repay_amount * repayed_term ) AS amount,
+			count( id ) AS quantity
+		FROM
+			NFS_LOAN_RECORD
+		WHERE
+			loanee_id = #{id}
+			AND TO_DAYS( now() ) - TO_DAYS( create_time ) &lt; #{daysAgo}
+	</select>
+
+	<select id="jiechu" resultType="com.jxf.loan.entity.NfsLoanReport">
+		SELECT
+			sum( due_repay_amount * repayed_term ) AS amount,
+			count( id ) AS quantity
+		FROM
+			NFS_LOAN_RECORD
+		WHERE
+			loaner_id = #{id}
+			AND TO_DAYS( now() ) - TO_DAYS( create_time ) &lt; #{daysAgo}
+	</select>
+
+	<select id="yihuan" resultType="com.jxf.loan.entity.NfsLoanReport">
+		SELECT
+			sum( due_repay_amount * due_repay_term ) AS amount,
+			count( id ) AS quantity
+		FROM
+			NFS_LOAN_RECORD
+		WHERE
+			status = #{status}
+			AND loanee_id = #{id}
+			AND TO_DAYS( complete_date ) &lt;= TO_DAYS( due_repay_date )
+			AND TO_DAYS( now() ) - TO_DAYS( create_time ) &lt; #{daysAgo}
+	</select>
+	
+	<select id="yihuanyuqi" resultType="com.jxf.loan.entity.NfsLoanReport">
+		SELECT
+			sum( due_repay_amount * due_repay_term ) AS amount,
+			count( id ) AS quantity
+		FROM
+			NFS_LOAN_RECORD
+		WHERE
+			status = #{status}
+			AND loanee_id = #{id}
+			AND TO_DAYS( complete_date ) &gt; TO_DAYS( due_repay_date )
+			AND TO_DAYS( now() ) - TO_DAYS( create_time ) &lt; #{daysAgo}
+	</select>
+	
+    <select id="findBorrowandLendList" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a 
+		<include refid="nfsLoanRecordJoins"/>
+		<where>
+			a.del_flag = '0' 
+			<if test="nfsLoanRecord.loaner != null and nfsLoanRecord.loaner.id != null and nfsLoanRecord.loaner.id != ''">
+				AND a.loaner_id = #{nfsLoanRecord.loaner.id}
+			</if>
+			 <if test="nowDate != null and timeType==0" >
+				<![CDATA[AND a.create_time <= #{nowDate}]]> 
+			</if>
+			<if test="nowDate != null and timeType==1" >
+				<![CDATA[AND a.create_time >= #{nowDate}]]> 
+			</if>
+			<if test="nfsLoanRecord.loanee != null and nfsLoanRecord.loanee.id != null and nfsLoanRecord.loanee.id != ''">
+				AND a.loanee_id = #{nfsLoanRecord.loanee.id}
+			</if>
+			AND a.status !=1   
+		</where>
+		<choose>
+			<when test="nfsLoanRecord.page !=null and nfsLoanRecord.page.orderBy != null and nfsLoanRecord.page.orderBy != ''">
+				ORDER BY ${nfsLoanRecord.page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	 <select id="findBorrowandLendOverList" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a 
+		<include refid="nfsLoanRecordJoins"/>
+		<where>
+			a.del_flag = '0' 
+			 <if test="nowDate != null and timeType==0" >
+				<![CDATA[AND a.create_time <= #{nowDate}]]> 
+			</if>
+			<if test="nowDate != null and timeType==1" >
+				<![CDATA[AND a.create_time >= #{nowDate}]]> 
+			</if>
+			<if test="nfsLoanRecord.loanee != null and nfsLoanRecord.loanee.id != null and nfsLoanRecord.loanee.id != ''">
+				AND a.loanee_id = #{nfsLoanRecord.loanee.id}
+			</if>
+			and  <![CDATA[concat(a.due_repay_date,' 23:59:59') < a.complete_date]]>  and a.status =1
+		</where>
+		<choose>
+			<when test="nfsLoanRecord.page !=null and nfsLoanRecord.page.orderBy != null and nfsLoanRecord.page.orderBy != ''">
+				ORDER BY ${nfsLoanRecord.page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findBorrowOverNotReturnList" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a 
+		<include refid="nfsLoanRecordJoins"/>
+		<where>
+			a.del_flag = '0' 
+		 <if test="nowDate != null and timeType==0" >
+				<![CDATA[AND a.create_time <= #{nowDate}]]> 
+			</if>
+			<if test="nowDate != null and timeType==1" >
+				<![CDATA[AND a.create_time >= #{nowDate}]]> 
+			</if>
+			<if test="nfsLoanRecord.loanee != null and nfsLoanRecord.loanee.id != null and nfsLoanRecord.loanee.id != ''">
+				AND a.loanee_id = #{nfsLoanRecord.loanee.id}
+			</if>
+			 and a.status =2
+		</where>
+		<choose>
+			<when test="nfsLoanRecord.page !=null and nfsLoanRecord.page.orderBy != null and nfsLoanRecord.page.orderBy != ''">
+				ORDER BY ${nfsLoanRecord.page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findBorrowOnTimeReturnList" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a 
+		<include refid="nfsLoanRecordJoins"/>
+		<where>
+			a.del_flag = '0' 
+			 <if test="nowDate != null and timeType==0" >
+				<![CDATA[AND a.create_time <= #{nowDate}]]> 
+			</if>
+			<if test="nowDate != null and timeType==1" >
+				<![CDATA[AND a.create_time >= #{nowDate}]]> 
+			</if>
+			<if test="nfsLoanRecord.loanee != null and nfsLoanRecord.loanee.id != null and nfsLoanRecord.loanee.id != ''">
+				AND a.loanee_id = #{nfsLoanRecord.loanee.id}
+			</if>
+			and  <![CDATA[ concat(a.due_repay_date,' 23:59:59')  >= a.complete_date]]> and a.status =1
+		</where>
+		<choose>
+			<when test="nfsLoanRecord.page !=null and nfsLoanRecord.page.orderBy != null and nfsLoanRecord.page.orderBy != ''">
+				ORDER BY ${nfsLoanRecord.page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="penddingRepayList" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a 
+		<include refid="nfsLoanRecordJoins"/>
+		<where>
+			a.del_flag = '0' 
+		 <if test="nowDate != null and timeType==0" >
+				<![CDATA[AND a.create_time <= #{nowDate}]]> 
+			</if>
+			<if test="nowDate != null and timeType==1" >
+				<![CDATA[AND a.create_time >= #{nowDate}]]> 
+			</if>
+			<if test="nfsLoanRecord.loanee != null and nfsLoanRecord.loanee.id != null and nfsLoanRecord.loanee.id != ''">
+				AND a.loanee_id = #{nfsLoanRecord.loanee.id}
+			</if>
+			 and a.status =0
+		</where>
+		<choose>
+			<when test="nfsLoanRecord.page !=null and nfsLoanRecord.page.orderBy != null and nfsLoanRecord.page.orderBy != ''">
+				ORDER BY ${nfsLoanRecord.page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findLoanList" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a 
+		<include refid="nfsLoanRecordJoins"/>
+		<where>
+			a.del_flag = '0' 
+			<if test="nfsLoanRecord.loaner != null and nfsLoanRecord.loaner.id != null and nfsLoanRecord.loaner.id != ''">
+				AND a.loaner_id = #{nfsLoanRecord.loaner.id}
+			</if>
+			 <if test="nowDate != null and timeType==0" >
+				<![CDATA[AND a.create_time <= #{nowDate}]]> 
+			</if>
+			<if test="nowDate != null and timeType==1" >
+				<![CDATA[AND a.create_time >= #{nowDate}]]> 
+			</if>
+			<if test="nfsLoanRecord.loanee != null and nfsLoanRecord.loanee.id != null and nfsLoanRecord.loanee.id != ''">
+				AND a.loanee_id = #{nfsLoanRecord.loanee.id}
+			</if>
+		</where>
+		<choose>
+			<when test="nfsLoanRecord.page !=null and nfsLoanRecord.page.orderBy != null and nfsLoanRecord.page.orderBy != ''">
+				ORDER BY ${nfsLoanRecord.page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findPeriodRepayLoanList" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a 
+		<include refid="nfsLoanRecordJoins"/>
+		<where>
+			a.del_flag = '0' 
+			AND status != 1
+			AND repay_type = 1
+		</where>
+		
+	</select>
+	
+	<select id="findUfangUserLoanCount" parameterType="java.util.Map" resultType="java.lang.Long">
+		SELECT 
+			a.id
+		FROM NFS_LOAN_RECORD a 
+		<include refid="nfsLoanRecordJoins"/>
+		<where>
+			a.del_flag = '0' 
+			AND a.loaner_id in 
+			<foreach collection="paramMap.ids" item="id" separator="," open="(" close=")">
+					#{id}
+			</foreach>
+			<if test="paramMap.timeType != null and paramMap.timeType == '1' and paramMap.beginTime != null">
+				<![CDATA[AND a.due_repay_date >= #{paramMap.beginTime}]]> 
+			</if>
+			<if test="paramMap.timeType != null and paramMap.timeType == '1' and paramMap.endTime != null">
+				<![CDATA[AND a.due_repay_date <= #{paramMap.endTime}]]> 
+			</if>
+			<if test="paramMap.timeType != null and paramMap.timeType == '2' and paramMap.beginTime != null">
+				<![CDATA[AND a.complete_date >= #{paramMap.beginTime}]]> 
+			</if>
+			<if test="paramMap.timeType != null and paramMap.timeType == '2' and paramMap.endTime != null">
+				<![CDATA[AND a.complete_date <= #{paramMap.endTime}]]> 
+			</if>
+			<if test="paramMap.timeType != null and paramMap.timeType == '3' and paramMap.beginTime != null">
+				<![CDATA[AND a.create_time >= #{paramMap.beginTime}]]> 
+			</if>
+			<if test="paramMap.timeType != null and paramMap.timeType == '3' and paramMap.endTime != null">
+				<![CDATA[AND a.create_time <= #{paramMap.endTime}]]> 
+			</if>
+			<if test="paramMap.timeType != null and paramMap.timeType == '4' and paramMap.beginTime != null">
+				<![CDATA[AND a.update_time >= #{paramMap.beginTime}]]> 
+			</if>
+			<if test="paramMap.timeType != null and paramMap.timeType == '4' and paramMap.endTime != null">
+				<![CDATA[AND a.update_time <= #{paramMap.endTime}]]> 
+			</if>
+			<if test="paramMap.status != null and paramMap.status != ''">
+				AND a.status = #{paramMap.status}
+			</if>
+		</where>
+				ORDER BY a.id DESC
+	</select>
+	
+	<select id="getUfangUserLoanList" parameterType="java.util.Map" resultMap="nfsLoanRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordColumns"/>
+		FROM NFS_LOAN_RECORD a 
+		<include refid="nfsLoanRecordJoins"/>
+		<where>
+			a.del_flag = '0' 
+			AND a.loaner_id in 
+			<foreach collection="paramMap.ids" item="id" separator="," open="(" close=")">
+					#{id}
+			</foreach>
+			<if test="paramMap.beginTime != null and paramMap.beginTime != '' and paramMap.endTime !=null and paramMap.endTime != ''">
+				<![CDATA[AND ((a.complete_date >= #{paramMap.beginTime} and a.complete_date <= #{paramMap.endTime}) OR a.complete_date IS NULL)]]> 
+			</if>
+			
+		</where>
+				ORDER BY a.id DESC
+	</select>
+	
+	<!-- 查询优放逾期借条金额 -->
+	<select id="sumOverdueLoanAmount" parameterType="java.util.List" resultType="java.math.BigDecimal">
+		SELECT 
+			sum(a.due_repay_amount) AS overdueAmount
+		FROM NFS_LOAN_RECORD a 
+		<include refid="nfsLoanRecordJoins"/>
+		<where>
+			a.del_flag = '0' 
+			AND a.id in 
+			<foreach collection="list" item="id" separator="," open="(" close=")">
+					#{id}
+			</foreach>
+		</where>
+				ORDER BY a.id DESC
+	</select>
+	
+	<select id="loanerCountLoan" resultType="int">
+		SELECT 
+			count(*)
+		FROM NFS_LOAN_RECORD a
+		<where>
+            a.loaner_id = #{loaner.id}
+			<if test="beginTime != null and endTime != null">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+		</where>
+	</select>
+	
+	<select id="loanerSumLoan" resultType="java.math.BigDecimal">
+		SELECT 
+			sum(a.amount)
+		FROM NFS_LOAN_RECORD a
+		<where>
+            a.loaner_id = #{loaner.id}
+			<if test="beginTime != null and endTime != null">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+		</where>
+	</select>
+	
+    <select id="loaneeCountLoan" resultType="int">
+		SELECT 
+			count(*)
+		FROM NFS_LOAN_RECORD a
+		<where>
+            a.loanee_id = #{loanee.id}
+            <if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+		</where>
+	</select>
+	
+	<select id="loaneeSumLoan" resultType="java.math.BigDecimal">
+		SELECT 
+			sum(a.due_repay_amount)
+		FROM NFS_LOAN_RECORD a
+		<where>
+            a.loanee_id = #{loanee.id}
+            <if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+		</where>
+	</select>
+	
+</mapper>

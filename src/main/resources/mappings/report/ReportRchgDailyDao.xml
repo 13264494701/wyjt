@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.report.dao.ReportRchgDailyDao">
+    
+	<sql id="reportRchgDailyColumns">
+		a.id AS "id",
+		a.date AS "date",
+		a.online_quantity AS "onlineQuantity",
+		a.online_amount AS "onlineAmount",
+		a.offline_quantity AS "offlineQuantity",
+		a.offline_amount AS "offlineAmount",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="ReportRchgDaily" id="reportRchgDailyResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	
+	<sql id="reportRchgDailyJoins">
+	</sql>
+    
+	<select id="get" resultMap="reportRchgDailyResultMap">
+		SELECT 
+			<include refid="reportRchgDailyColumns"/>
+		FROM REPORT_RCHG_DAILY a
+		<include refid="reportRchgDailyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="reportRchgDailyResultMap">
+		SELECT 
+			a.id AS "id",
+			left(a.date,#{type}) AS "date",
+		    sum(a.online_quantity) AS "onlineQuantity",
+		    sum(a.online_amount) AS "onlineAmount",
+		    sum(a.offline_quantity) AS "offlineQuantity",
+		    sum(a.offline_amount) AS "offlineAmount",
+			a.create_by AS "createBy.empNo",
+		    a.create_time AS "createTime",
+		    a.update_by AS "updateBy.empNo",
+		    a.update_time AS "updateTime",
+		    a.del_flag AS "delFlag"
+		FROM REPORT_RCHG_DAILY a
+		<include refid="reportRchgDailyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="date != null and date != ''">
+				AND a.date = #{date}
+			</if>
+		</where>
+		GROUP BY left(a.date,#{type})
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="ReportRchgDaily">
+		INSERT INTO REPORT_RCHG_DAILY(
+			id,
+			date,
+			online_quantity,
+			online_amount,
+			offline_quantity,
+			offline_amount,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{date},
+			#{onlineQuantity},
+			#{onlineAmount},
+			#{offlineQuantity},
+			#{offlineAmount},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="ReportRchgDaily">
+		UPDATE REPORT_RCHG_DAILY SET 	
+			date = #{date},
+			online_quantity = #{onlineQuantity},
+			online_amount = #{onlineAmount},
+			offline_quantity = #{offlineQuantity},
+			offline_amount = #{offlineAmount},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE REPORT_RCHG_DAILY SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="deleteByDate">
+		UPDATE REPORT_RCHG_DAILY SET
+			del_flag = 1
+		WHERE date = #{date}
+	</update>
+	
+	<select id="rchgCount" resultType="ReportRchgDaily">
+		SELECT
+			date_sub( curdate( ), INTERVAL #{daysAgo} DAY ) AS date,
+			( SELECT count( id ) FROM MEM_MEMBER_ACT_TRX WHERE trx_code = 'MB010' AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS onlineQuantity,
+			( SELECT ifnull(sum( trx_amt ),0) FROM MEM_MEMBER_ACT_TRX WHERE trx_code = 'MB010' AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS onlineAmount,
+            ( SELECT count( id ) FROM MEM_MEMBER_ACT_TRX WHERE trx_code = 'MB040' AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS offlineQuantity,
+            ( SELECT ifnull(sum( trx_amt ),0) FROM MEM_MEMBER_ACT_TRX WHERE trx_code = 'MB040' AND to_days( now( ) ) - to_days( create_time ) = #{daysAgo} ) AS offlineAmount
+		FROM
+			MEM_MEMBER_ACT_TRX
+		LIMIT 1
+	</select>
+	
+</mapper>

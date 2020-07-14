@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.ufang.dao.UfangLoanMarketApplyerDao">
+    
+	<sql id="ufangLoanMarketApplyerColumns">
+		a.id AS "id",
+		a.market_id AS "ufangLoanMarket.id",
+		a.phone_no AS "phoneNo",
+		a.name AS "name",
+		a.id_no AS "idNo",
+		a.card_no AS "cardNo",
+		a.qq_no AS "qqNo",
+		a.weixin_no AS "weixinNo",
+		a.real_name_status AS "realNameStatus",
+		a.sesame_status AS "sesameStatus",
+		a.sesame_score AS "sesameScore",
+		a.operator_status AS "operatorStatus",
+		a.channel AS "channel",
+		a.report_task_id AS "reportTaskId",
+		a.app_register AS "appRegister",
+		a.member_id AS "member.id",
+		a.apply_ip AS "applyIp",
+		a.apply_area AS "applyArea",
+		a.phone_area AS "phoneArea",
+		a.apply_times AS "applyTimes",
+		a.push_status AS "pushStatus",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		c.name AS "ufangLoanMarket.name"
+	</sql>
+	
+	<resultMap type="ufangLoanMarketApplyer" id="ufangLoanMarketApplyerResultMap">		
+        <id column="id" property="id"/>
+         <result column="realNameStatus" property="realNameStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+         <result column="sesameStatus" property="sesameStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+         <result column="operatorStatus" property="operatorStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+         <result column="channel" property="channel" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+         <result column="pushStatus" property="pushStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="ufangLoanMarketApplyerJoins">
+	   LEFT JOIN UFANG_LOAN_MARKET c ON c.id = a.market_id
+	</sql>
+    
+	<select id="get" resultMap="ufangLoanMarketApplyerResultMap">
+		SELECT 
+			<include refid="ufangLoanMarketApplyerColumns"/>
+		FROM UFANG_LOAN_MARKET_APPLYER a
+		<include refid="ufangLoanMarketApplyerJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByPhoneNoAndMarketId" resultMap="ufangLoanMarketApplyerResultMap">
+		SELECT 
+			<include refid="ufangLoanMarketApplyerColumns"/>
+		FROM UFANG_LOAN_MARKET_APPLYER a
+		<include refid="ufangLoanMarketApplyerJoins"/>
+		WHERE a.market_id = #{ufangLoanMarket.id}
+		AND a.phone_no = #{phoneNo}
+		AND	a.del_flag = '0'	 
+	    LIMIT 1
+	</select>
+	
+	
+	<select id="findList" resultMap="ufangLoanMarketApplyerResultMap">
+		SELECT 
+			<include refid="ufangLoanMarketApplyerColumns"/>
+		FROM UFANG_LOAN_MARKET_APPLYER a
+		<include refid="ufangLoanMarketApplyerJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="phoneNo != null and phoneNo != ''">
+				AND a.phone_no = #{phoneNo}
+			</if>
+			<if test="ufangLoanMarket != null and ufangLoanMarket.id != null">
+				AND a.market_id = #{ufangLoanMarket.id}
+			</if>
+			<if test="realNameStatus != null">
+				AND a.realNameStatus = #{realNameStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="sesameStatus != null">
+				AND a.sesameStatus = #{sesameStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="operatorStatus != null">
+				AND a.operatorStatus = #{operatorStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="pushStatus != null">
+				AND a.push_status = #{pushStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.update_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	<select id="getCountByCondition" resultType ="int">
+		SELECT 
+			COUNT(*)
+		FROM UFANG_LOAN_MARKET_APPLYER a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="phoneNo != null and phoneNo != ''">
+				AND a.phone_no = #{phoneNo}
+			</if>
+			<if test="ufangLoanMarket != null and ufangLoanMarket.id != null">
+				AND a.market_id = #{ufangLoanMarket.id}
+			</if>
+			<if test="realNameStatus != null">
+				AND a.realNameStatus = #{realNameStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="sesameStatus != null">
+				AND a.sesameStatus = #{sesameStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="operatorStatus != null">
+				AND a.operatorStatus = #{operatorStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginTime != null and endTime != null">
+				AND a.update_time BETWEEN #{beginTime} AND #{endTime}					
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insert" parameterType="ufangLoanMarketApplyer">
+		INSERT INTO UFANG_LOAN_MARKET_APPLYER(
+			id,
+			market_id,
+			phone_no,
+			name,
+			id_no,
+			card_no,
+			qq_no,
+			weixin_no,
+			real_name_status,
+			sesame_status,
+			sesame_score,
+			operator_status,
+			channel,
+			report_task_id,
+			app_register,
+			member_id,
+			apply_ip,
+			apply_area,
+			phone_area,
+			apply_times,
+			push_status,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{ufangLoanMarket.id},
+			#{phoneNo},
+			#{name},
+			#{idNo},
+			#{cardNo},
+			#{qqNo},
+			#{weixinNo},
+			#{realNameStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{sesameStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{sesameScore},
+			#{operatorStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{reportTaskId},
+			#{appRegister},
+			#{member.id},
+			#{applyIp},
+			#{applyArea},
+			#{phoneArea},
+			#{applyTimes},
+			#{pushStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="ufangLoanMarketApplyer">
+		UPDATE UFANG_LOAN_MARKET_APPLYER SET
+			market_id = #{ufangLoanMarket.id}, 	
+			phone_no = #{phoneNo},
+			name = #{name},
+			id_no = #{idNo},
+			card_no = #{cardNo},
+			qq_no = #{qqNo},
+			weixin_no = #{weixinNo},
+			real_name_status = #{realNameStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			sesame_status = #{sesameStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			sesame_score = #{sesameScore},
+			operator_status = #{operatorStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			report_task_id = #{reportTaskId},
+			app_register = #{appRegister},
+			member_id = #{member.id},
+			apply_ip = #{applyIp},
+			apply_area = #{applyArea},
+			phone_area = #{phoneArea},
+			apply_times = #{applyTimes},
+			push_status = #{pushStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			rmk = #{rmk},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE UFANG_LOAN_MARKET_APPLYER SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="selectWeekUpdateCount" resultType="int">
+		SELECT
+		count(*)
+		FROM
+		UFANG_LOAN_MARKET_APPLYER
+		WHERE market_id = #{marketId}
+		AND phone_no = #{phoneNo}
+		AND to_days( now( ) ) - to_days( update_time ) &lt;7
+	</select>
+</mapper>

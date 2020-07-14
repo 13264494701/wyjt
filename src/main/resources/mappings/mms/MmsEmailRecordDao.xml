@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mms.record.dao.MmsEmailRecordDao">
+    
+	<sql id="mmsEmailRecordColumns">
+		a.id AS "id",
+		a.tmpl_code AS "tmplCode",
+		a.msg_priority AS "msgPriority",
+		a.sender_name AS "senderName",
+		a.sender_addr AS "senderAddr",
+		a.receiver_addr AS "receiverAddr",
+		a.subject AS "subject",
+		a.content AS "content",
+		a.send_time AS "sendTime",
+		a.verify_code AS "verifyCode"
+	</sql>
+	
+	<resultMap type="MmsEmailRecord" id="emailRecordResultMap">
+		<id column="id" property="id"/>
+	</resultMap>
+	
+	<sql id="mmsEmailRecordJoins">
+	</sql>
+    
+	<select id="get" resultMap="emailRecordResultMap">
+		SELECT 
+			<include refid="mmsEmailRecordColumns"/>
+		FROM MMS_EMAIL_RECORD a
+		    <include refid="mmsEmailRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="emailRecordResultMap">
+		SELECT 
+			<include refid="mmsEmailRecordColumns"/>
+		FROM MMS_EMAIL_RECORD a
+		<include refid="mmsEmailRecordJoins"/>
+		<where>
+			<if test="tmplCode != null and tmplCode != ''">
+				AND a.tmpl_code = #{tmplCode}
+			</if>
+			<if test="msgPriority != null and msgPriority != ''">
+				AND a.msg_priority = #{msgPriority}
+			</if>
+			<if test="senderName != null and senderName != ''">
+				AND a.sender_name = #{senderName}
+			</if>
+			<if test="senderAddr != null and senderAddr != ''">
+				AND a.sender_addr = #{senderAddr}
+			</if>
+			<if test="receiver Addr != null and receiver Addr != ''">
+				AND a.receiver_addr = #{receiverAddr}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="MmsEmailRecord">
+		INSERT INTO MMS_EMAIL_RECORD(
+			id,
+			tmpl_code,
+			msg_priority,
+			sender_name,
+			sender_addr,
+			receiver_addr,
+			subject,
+			content,
+			send_time,
+			verify_code
+		) VALUES (
+			#{id},
+			#{tmplCode},
+			#{msgPriority},
+			#{senderName},
+			#{senderAddr},
+			#{receiverAddr},
+			#{subject},
+			#{content},
+			#{sendTime},
+			#{verifyCode}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MmsEmailRecord">
+		UPDATE MMS_EMAIL_RECORD SET 	
+			tmpl_code = #{tmplCode},
+			msg_priority = #{msgPriority},
+			sender_name = #{senderName},
+			sender_addr = #{senderAddr},
+			receiver_addr = #{receiverAddr},
+			subject = #{subject},
+			content = #{content},
+			send_time = #{sendTime},
+			verify_code = #{verifyCode}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM MMS_EMAIL_RECORD
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

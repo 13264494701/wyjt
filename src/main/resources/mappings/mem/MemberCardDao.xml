@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberCardDao">
+    
+	<sql id="memberCardColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.card_no AS "cardNo",
+		a.card_type AS "cardType",
+		a.bank_id AS "bank.id",
+		a.bank_name AS "bank.name",
+		a.bank_logo AS "bank.logo",
+		a.status AS "status",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="MemberCard" id="memberCardResultMap">		
+        <id column="id" property="id"/>
+        <result column="cardType" property="cardType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="memberCardJoins">
+	</sql>
+    
+	<select id="get" resultMap="memberCardResultMap">
+		SELECT 
+			<include refid="memberCardColumns"/>
+		FROM MEM_MEMBER_CARD a
+		<include refid="memberCardJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getCardByMemberId" resultMap="memberCardResultMap">
+		SELECT 
+			<include refid="memberCardColumns"/>
+		FROM MEM_MEMBER_CARD a
+		<include refid="memberCardJoins"/>
+		WHERE a.member_id = #{memberId} 
+		AND a.status = 0
+		ORDER BY a.id DESC
+		LIMIT 1
+	</select>
+	
+	<select id="getChangeCardCount" resultType="int">
+		SELECT 
+			count(*)
+		FROM MEM_MEMBER_CARD a
+		<include refid="memberCardJoins"/>
+		WHERE a.member_id = #{member.id}
+		and a.create_time between #{beginDate} and #{endDate}
+	</select>
+	
+	<select id="findList" resultMap="memberCardResultMap">
+		SELECT 
+			<include refid="memberCardColumns"/>
+		FROM MEM_MEMBER_CARD a
+		<include refid="memberCardJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="member != null and member.id != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+			<if test="cardNo != null and cardNo != ''">
+				AND a.card_no = #{cardNo}
+			</if>
+			<if test="bank!=null and bank.id != null and bank.id != ''">
+				AND a.bank_id = #{bank.id}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="MemberCard">
+		INSERT INTO MEM_MEMBER_CARD(
+			id,
+			member_id,
+			card_no,
+			card_type,
+			bank_id,
+			bank_name,
+			bank_logo,
+			status,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{cardNo},
+			#{cardType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{bank.id},
+			#{bank.name},
+			#{bank.logo},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MemberCard">
+		UPDATE MEM_MEMBER_CARD SET 	
+			member_id = #{member.id},
+			card_no = #{cardNo},
+			card_type = #{cardType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			bank_id = #{bank.id},
+			bank_name = #{bank.name},
+			bank_logo = #{bank.logo},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete" parameterType="MemberCard">
+		UPDATE MEM_MEMBER_CARD SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

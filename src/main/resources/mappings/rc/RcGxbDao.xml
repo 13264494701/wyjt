@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.rc.dao.RcGxbDao">
+    
+	<sql id="rcGxbColumns">
+		a.id AS "id",
+		a.ufang_emp_no AS "userEmpNo",
+		a.auth_type AS "authType",
+		a.prod_type AS "prodType",
+		a.org_id AS "orgId",
+		a.token AS "token",
+		a.name AS "name",
+		a.id_no AS "idNo",
+		a.phone_no AS "phoneNo",
+		a.auth_phone_no AS "authPhoneNo",
+		a.data_path AS "dataPath",
+		a.report_path AS "reportPath",
+		a.data_status AS "dataStatus",
+		a.report_status AS "reportStatus",
+		a.auth_result AS "authResult",
+		a.channel_code AS "channelCode",
+		a.channel_src AS "channelSrc",
+		a.channel_attr AS "channelAttr",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="RcGxb" id="rcGxbResultMap">		
+        <id column="id" property="id"/>
+		<result column="authType" property="authType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+		<result column="prodType" property="prodType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+		<result column="dataStatus" property="dataStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+		<result column="reportStatus" property="reportStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	<sql id="rcGxbJoins">
+	</sql>
+    
+	<select id="get" resultMap="rcGxbResultMap">
+		SELECT 
+			<include refid="rcGxbColumns"/>
+		FROM RC_GXB a
+		<include refid="rcGxbJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<select id="findByOrgId" resultMap="rcGxbResultMap">
+		SELECT
+		<include refid="rcGxbColumns"/>
+		FROM RC_GXB a
+		<include refid="rcGxbJoins"/>
+		WHERE a.org_id = #{orgId} 
+		ORDER BY a.id DESC
+		LIMIT 1
+	</select>
+	<select id="findByToken" resultMap="rcGxbResultMap">
+		SELECT
+		<include refid="rcGxbColumns"/>
+		FROM RC_GXB a
+		<include refid="rcGxbJoins"/>
+		WHERE a.token = #{token} order by a.id limit 1
+	</select>
+	
+	<select id="findList" resultMap="rcGxbResultMap">
+		SELECT 
+			<include refid="rcGxbColumns"/>
+		FROM RC_GXB a
+		<include refid="rcGxbJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="authType != null">
+				AND a.auth_type = #{authType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="prodType != null">
+				AND a.prod_type = #{prodType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="dataStatus != null">
+				AND a.data_status = #{dataStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="reportStatus != null">
+				AND a.report_status = #{reportStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="idNo != null and idNo != ''">
+				AND a.id_no = #{idNo}
+			</if>
+			<if test="phoneNo != null and phoneNo != ''">
+				AND a.phone_no = #{phoneNo}
+			</if>
+			AND a.ufang_emp_no = #{userEmpNo}
+			AND a.id_no != ""
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.create_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="rcGxbResultMap">
+		SELECT 
+			<include refid="rcGxbColumns"/>
+		FROM RC_GXB a
+		<include refid="rcGxbJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="authType != null">
+				AND a.auth_type = #{authType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			</if>
+			<if test="prodType != null">
+				AND a.prod_type = #{prodType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="dataStatus != null">
+				AND a.data_status = #{dataStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="reportStatus != null">
+				AND a.report_status = #{reportStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="idNo != null and idNo != ''">
+				AND a.id_no = #{idNo}
+			</if>
+			<if test="phoneNo != null and phoneNo != ''">
+				AND a.phone_no = #{phoneNo}
+			</if>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findListByEmpNo" resultMap="rcGxbResultMap">
+		SELECT 
+			<include refid="rcGxbColumns"/>
+		FROM RC_SJMH a
+		<include refid="rcGxbJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="phoneNo != null and phoneNo != ''">
+				AND a.phone_no = #{phoneNo}
+			</if>
+			<if test="idNo != null and idNo != ''">
+				AND a.id_no = #{idNo}
+			</if>
+			<if test="prodType != null">
+				AND a.prod_type = #{prodType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="channelType != null">
+				AND a.channel_type = #{channelType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="dataStatus != null">
+				AND a.data_status = #{dataStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler} 
+			</if>
+			<if test="reportStatus != null">
+				AND a.report_status = #{reportStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			AND a.ufang_emp_no = #{user.empNo}
+			AND a.task_id != ""
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	<insert id="insert" parameterType="RcGxb">
+		INSERT INTO RC_GXB(
+			id,
+			ufang_emp_no,
+			auth_type,
+			prod_type,
+			org_id,
+			token,
+			name,
+			id_no,
+			phone_no,
+			auth_phone_no,
+			auth_result,
+			data_path,
+			report_path,
+			data_status,
+			report_status,
+			channel_code,
+			channel_src,
+			channel_attr,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{userEmpNo},
+			#{authType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{prodType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{orgId},
+			#{token},
+			#{name},
+			#{idNo},
+			#{phoneNo},
+			#{authPhoneNo},
+			#{authResult},
+			#{dataPath},
+			#{reportPath},
+			#{dataStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{reportStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{channelCode},
+			#{channelSrc},
+			#{channelAttr},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="RcGxb">
+		UPDATE RC_GXB SET
+			ufang_emp_no = #{userEmpNo},
+			auth_type = #{authType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			prod_type = #{prodType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			org_id = #{orgId},
+			token = #{token},
+			name = #{name},
+			id_no = #{idNo},
+			phone_no = #{phoneNo},
+			auth_phone_no = #{authPhoneNo},
+			auth_result = #{authResult},
+			data_path = #{dataPath},
+			report_path = #{reportPath},
+			data_status = #{dataStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			report_status = #{reportStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			channel_code = #{channelCode},
+			channel_src = #{channelSrc},
+			channel_attr = #{channelAttr},
+			rmk = #{rmk},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE RC_GXB SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

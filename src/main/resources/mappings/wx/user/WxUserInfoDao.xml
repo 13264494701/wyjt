@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.wx.user.dao.WxUserInfoDao">
+    
+	<sql id="wxUserInfoColumns">
+		a.id AS "id",
+		a.account_id AS "account.id",
+		a.openid AS "openid",
+		a.unionid AS "unionid",
+		a.nickname AS "nickname",
+		a.head_image AS "headImage",
+		a.is_member AS "isMember",
+		a.referrer_id AS "referrer.id",
+		a.member_id AS "member.id",
+		a.sex AS "sex",
+		a.city AS "city",
+		a.country AS "country",
+		a.province AS "province",
+		a.language AS "language",
+		a.is_subscribe AS "isSubscribe",
+		a.subscribe_time AS "subscribeTime",
+		a.unsubscribe_time AS "unsubscribeTime",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="WxUserInfo" id="wxUserInfoResultMap">		
+        <id column="id" property="id"/>
+        <result column="isMember"  property="isMember" javaType="Boolean" jdbcType="CHAR" />
+	</resultMap>
+	
+	<sql id="wxUserInfoJoins">
+	    JOIN WX_ACCOUNT c on c.id = a.account_id
+	</sql>
+    
+	<select id="get" resultMap="wxUserInfoResultMap">
+		SELECT 
+			<include refid="wxUserInfoColumns"/>
+		FROM WX_USER_INFO a
+		<include refid="wxUserInfoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findByOpenId" resultMap="wxUserInfoResultMap">
+		SELECT 
+			<include refid="wxUserInfoColumns"/>
+		FROM WX_USER_INFO a
+		<include refid="wxUserInfoJoins"/>
+		WHERE a.openid = #{openid}
+		LIMIT 1
+	</select>
+	
+	<select id="findByMemberAndCode" resultMap="wxUserInfoResultMap">
+		SELECT 
+			<include refid="wxUserInfoColumns"/>
+		FROM WX_USER_INFO a
+		<include refid="wxUserInfoJoins"/>
+		WHERE a.member_id = #{memberId}
+		AND c.code =  #{code}
+		ORDER BY a.update_time DESC
+		LIMIT 1
+	</select>
+	
+	<select id="findList" resultMap="wxUserInfoResultMap">
+		SELECT 
+			<include refid="wxUserInfoColumns"/>
+		FROM WX_USER_INFO a
+		<include refid="wxUserInfoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="account != null and account.id != null and account.id != ''">
+				AND a.account_id = #{account.id}
+			</if>
+			<if test="openid != null and openid != ''">
+				AND a.openid = #{openid}
+			</if>
+			<if test="unionid != null and unionid != ''">
+				AND a.unionid = #{unionid}
+			</if>
+			<if test="member != null and member.id != ''">
+				AND a.member_id = #{member.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+
+	
+	<insert id="insert" parameterType="WxUserInfo">
+		INSERT INTO WX_USER_INFO(
+			id,
+			account_id,
+			openid,
+			unionid,
+			nickname,
+			head_image,
+			is_member,
+			referrer_id,
+			member_id,
+			sex,
+			city,
+			country,
+			province,
+			language,
+			is_subscribe,
+			subscribe_time,
+			unsubscribe_time,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{account.id},
+			#{openid},
+			#{unionid},
+			#{nickname},
+			#{headImage},
+			#{isMember, javaType=Boolean, jdbcType=CHAR},
+			#{referrer.id},
+			#{member.id},
+			#{sex},
+			#{city},
+			#{country},
+			#{province},
+			#{language},
+			#{isSubscribe},
+			#{subscribeTime},
+			#{unsubscribeTime},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="WxUserInfo">
+		UPDATE WX_USER_INFO SET 	
+			account_id = #{account.id},
+			openid = #{openid},
+			unionid = #{unionid},
+			nickname = #{nickname},
+			head_image = #{headImage},
+			is_member = #{isMember, javaType=Boolean, jdbcType=CHAR},
+			referrer_id = #{referrer.id},
+			member_id = #{member.id},
+			sex = #{sex},
+			city = #{city},
+			country = #{country},
+			province = #{province},
+			language = #{language},
+			is_subscribe = #{isSubscribe},
+			subscribe_time = #{subscribeTime},
+			unsubscribe_time = #{unsubscribeTime},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE WX_USER_INFO SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

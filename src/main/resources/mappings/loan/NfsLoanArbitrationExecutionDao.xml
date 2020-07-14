@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.loan.dao.NfsLoanArbitrationExecutionDao">
+    
+	<sql id="nfsLoanArbitrationExecutionColumns">
+		a.id AS "id",
+		a.loan_no AS "loanNo",
+		a.loaner_id AS "loanerId",
+		a.loaner_name AS "loanerName",
+		a.loanee_id AS "loaneeId",
+		a.loanee_name AS "loaneeName",
+		a.amount AS "amount",
+		a.interest AS "interest",
+		a.int_rate AS "intRate",
+		a.term AS "term",
+		a.repayed_term AS "repayedTerm",
+		a.due_repay_term AS "dueRepayTerm",
+		a.due_repay_date AS "dueRepayDate",
+		a.paytime AS "paytime",
+		a.rulingtime AS "rulingtime",
+		a.due_repay_amount AS "dueRepayAmount",
+		a.complete_date AS "completeDate",
+		a.status AS "status",
+		a.channel AS "channel",
+		a.arbitration_id AS "arbitrationId",
+		a.fee AS "fee",
+		a.loan_id AS "loanId",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		r.status AS "loan.status",
+		r.id AS "loan.id",
+		r.trx_type AS "loan.trxType"
+	</sql>
+	
+	<resultMap type="NfsLoanArbitrationExecution" id="nfsLoanArbitrationExecutionResultMap">		
+        <id column="id" property="id"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+		<result column="channel" property="channel" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+		<result column="loan.status" property="loan.status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+		<result column="loan.trxType" property="loan.trxType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	<sql id="nfsLoanArbitrationExecutionJoins">
+		LEFT JOIN NFS_LOAN_RECORD r ON r.id = a.loan_id
+	</sql>
+    
+	<select id="get" resultMap="nfsLoanArbitrationExecutionResultMap">
+		SELECT 
+			<include refid="nfsLoanArbitrationExecutionColumns"/>
+		FROM NFS_LOAN_ARBITRATION_EXECUTION a
+		<include refid="nfsLoanArbitrationExecutionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findByArbitrationId" resultMap="nfsLoanArbitrationExecutionResultMap">
+		SELECT 
+			<include refid="nfsLoanArbitrationExecutionColumns"/>
+		FROM NFS_LOAN_ARBITRATION_EXECUTION a
+		<include refid="nfsLoanArbitrationExecutionJoins"/>
+		WHERE a.arbitration_id = #{arbitrationId}
+	</select>
+	
+	<select id="findList" resultMap="nfsLoanArbitrationExecutionResultMap">
+		SELECT 
+			<include refid="nfsLoanArbitrationExecutionColumns"/>
+		FROM NFS_LOAN_ARBITRATION_EXECUTION a
+		<include refid="nfsLoanArbitrationExecutionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="id != null and id != ''">
+				AND a.id = #{id}
+			</if>
+			<if test="loanNo != null and loanNo != ''">
+				AND a.loan_no = #{loanNo}
+			</if>
+			<if test="loanerId != null and loanerId != ''">
+				AND a.loaner_id = #{loanerId}
+			</if>
+			<if test="loanerName != null and loanerName != ''">
+				AND a.loaner_name = #{loanerName}
+			</if>
+			<if test="loaneeId != null and loaneeId != ''">
+				AND a.loanee_id = #{loaneeId}
+			</if>
+			<if test="loaneeName != null and loaneeName != ''">
+				AND a.loanee_name = #{loaneeName}
+			</if>
+			<if test="amount != null and amount != ''">
+				AND a.amount = #{amount}
+			</if>
+			<if test="interest != null and interest != ''">
+				AND a.interest = #{interest}
+			</if>
+			<if test="intRate != null and intRate != ''">
+				AND a.int_rate = #{intRate}
+			</if>
+			<if test="loan != null and loan.status != null">
+				AND r.status = #{loan.status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loan != null and loan.trxType != null">
+				AND r.trx_type = #{loan.trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="arbitrationId != null and arbitrationId != ''">
+				AND a.arbitration_id = #{arbitrationId}
+			</if>
+			<if test="beginTime != null">
+				 <![CDATA[AND a.create_time >= #{beginTime}]]> 
+			</if>
+			<if test="endTime != null">
+				 <![CDATA[AND a.create_time <= #{endTime}]]> 
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findExecution" resultMap="nfsLoanArbitrationExecutionResultMap">
+		SELECT 
+			<include refid="nfsLoanArbitrationExecutionColumns"/>
+		FROM NFS_LOAN_ARBITRATION_EXECUTION a
+		<include refid="nfsLoanArbitrationExecutionJoins"/>
+		<where>
+			a.del_flag = '0'
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loan != null and loan.trxType != null">
+				AND r.trx_type = #{loan.trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="loanerId != null and loanerId != ''">
+				AND a.loaner_id = #{loanerId}
+			</if>
+		</where>
+		<choose>
+			<when test="page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findExecuted" resultMap="nfsLoanArbitrationExecutionResultMap">
+		SELECT 
+			<include refid="nfsLoanArbitrationExecutionColumns"/>
+		FROM NFS_LOAN_ARBITRATION_EXECUTION a
+		<include refid="nfsLoanArbitrationExecutionJoins"/>
+		<where>
+			a.del_flag = '0' AND (a.status = 4 OR a.status = 5 OR a.status = 7)
+			<if test="id != null and id != ''">
+				AND a.loaner_id = #{id}
+			</if>
+			<if test="nfsLoanArbitrationExecution != null and nfsLoanArbitrationExecution.loan != null and nfsLoanArbitrationExecution.loan.trxType != null">
+				AND r.trx_type = #{nfsLoanArbitrationExecution.loan.trxType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="nfsLoanArbitrationExecution.page !=null and nfsLoanArbitrationExecution.page.orderBy != null and nfsLoanArbitrationExecution.page.orderBy != ''">
+				ORDER BY ${nfsLoanArbitrationExecution.page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="NfsLoanArbitrationExecution">
+		INSERT INTO NFS_LOAN_ARBITRATION_EXECUTION(
+			id,
+			loan_no,
+			loaner_id,
+			loaner_name,
+			loanee_id,
+			loanee_name,
+			amount,
+			interest,
+			int_rate,
+			term,
+			repayed_term,
+			due_repay_term,
+			due_repay_date,
+			paytime,
+			rulingtime,
+			due_repay_amount,
+			complete_date,
+			status,
+			channel,
+			fee,
+			arbitration_id,
+			loan_id,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{loanNo},
+			#{loanerId},
+			#{loanerName},
+			#{loaneeId},
+			#{loaneeName},
+			#{amount},
+			#{interest},
+			#{intRate},
+			#{term},
+			#{repayedTerm},
+			#{dueRepayTerm},
+			#{dueRepayDate},
+			#{paytime},
+			#{rulingtime},
+			#{dueRepayAmount},
+			#{completeDate},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{fee},
+			#{arbitrationId},
+			#{loan.id},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsLoanArbitrationExecution">
+		UPDATE NFS_LOAN_ARBITRATION_EXECUTION SET 	
+			loan_no = #{loanNo},
+			loaner_id = #{loanerId},
+			loaner_name = #{loanerName},
+			loanee_id = #{loaneeId},
+			loanee_name = #{loaneeName},
+			amount = #{amount},
+			interest = #{interest},
+			int_rate = #{intRate},
+			term = #{term},
+			repayed_term = #{repayedTerm},
+			due_repay_term = #{dueRepayTerm},
+			due_repay_date = #{dueRepayDate},
+			paytime = #{paytime},
+			rulingtime = #{rulingtime},
+			due_repay_amount = #{dueRepayAmount},
+			complete_date = #{completeDate},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			fee = #{fee},
+			arbitration_id = #{arbitrationId},
+			loan_id = #{loan.id},
+			rmk = #{rmk},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_LOAN_ARBITRATION_EXECUTION SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

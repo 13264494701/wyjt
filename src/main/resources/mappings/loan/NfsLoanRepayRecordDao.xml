@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.loan.dao.NfsLoanRepayRecordDao">
+    
+	<sql id="nfsLoanRepayRecordColumns">
+		a.id AS "id",
+		a.loan_id AS "loan.id",
+		a.periods_seq AS "periodsSeq",
+		a.expect_repay_amt AS "expectRepayAmt",
+		a.expect_repay_prn AS "expectRepayPrn",
+		a.expect_repay_int AS "expectRepayInt",
+		a.expect_repay_date AS "expectRepayDate",
+		a.actual_repay_amt AS "actualRepayAmt",
+		a.actual_repay_date AS "actualRepayDate",
+		a.status AS "status",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="NfsLoanRepayRecord" id="nfsLoanRepayRecordResultMap">		
+        <id column="id" property="id"/>
+        <result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="nfsLoanRepayRecordJoins">
+	</sql>
+    
+	<select id="get" resultMap="nfsLoanRepayRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRepayRecordColumns"/>
+		FROM NFS_LOAN_REPAY_RECORD a
+		<include refid="nfsLoanRepayRecordJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<select id="countOverdueTimes" resultType="Integer">
+		select count(1) from NFS_LOAN_REPAY_RECORD a where a.loan_id = #{loanId} and a.status = 3
+	</select>
+	
+	<select id="findList" resultMap="nfsLoanRepayRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRepayRecordColumns"/>
+		FROM NFS_LOAN_REPAY_RECORD a
+		<include refid="nfsLoanRepayRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="loan != null and loan.id != null and loan.id != ''">
+				AND a.loan_id = #{loan.id}
+			</if>
+			<if test="periodsSeq != null and periodsSeq != ''">
+				AND a.periods_seq = #{periodsSeq}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginRepayDate != null and endRepayDate != null">
+				AND a.actual_repay_date BETWEEN #{beginRepayDate} AND #{endRepayDate}					
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			 	ORDER BY a.expect_repay_date
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findListByLoanId" resultMap="nfsLoanRepayRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRepayRecordColumns"/>
+		FROM NFS_LOAN_REPAY_RECORD a
+		<include refid="nfsLoanRepayRecordJoins"/>
+		where a.status !="0" and a.loan_id = #{id}
+	</select>
+	
+	<insert id="insert" parameterType="NfsLoanRepayRecord">
+		INSERT INTO NFS_LOAN_REPAY_RECORD(
+			id,
+			loan_id,
+			periods_seq,
+			expect_repay_amt,
+			expect_repay_prn,
+			expect_repay_int,
+			expect_repay_date,
+			actual_repay_amt,
+			actual_repay_date,
+			status,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{loan.id},
+			#{periodsSeq},
+			#{expectRepayAmt},
+			#{expectRepayPrn},
+			#{expectRepayInt},
+			#{expectRepayDate},
+			#{actualRepayAmt},
+			#{actualRepayDate},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsLoanRepayRecord">
+		UPDATE NFS_LOAN_REPAY_RECORD SET 	
+			loan_id = #{loan.id},
+			periods_seq = #{periodsSeq},
+			expect_repay_amt = #{expectRepayAmt},
+			expect_repay_prn = #{expectRepayPrn},
+			expect_repay_int = #{expectRepayInt},
+			expect_repay_date = #{expectRepayDate},
+			actual_repay_amt = #{actualRepayAmt},
+			actual_repay_date = #{actualRepayDate},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_LOAN_REPAY_RECORD SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="getRepayRecordsByLoanId"  parameterType="java.lang.Long"   resultMap="nfsLoanRepayRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRepayRecordColumns"/>
+		FROM NFS_LOAN_REPAY_RECORD a
+		<include refid="nfsLoanRepayRecordJoins"/>
+		<where>
+			a.del_flag = '0'
+			AND a.loan_id = #{loanId}
+			AND a.status = '1'
+		</where>
+		ORDER BY a.periods_seq
+	</select>
+	
+	<select id="findPendingRepayList"   resultMap="nfsLoanRepayRecordResultMap">
+		SELECT 
+			<include refid="nfsLoanRepayRecordColumns"/>
+		FROM NFS_LOAN_REPAY_RECORD a
+		<include refid="nfsLoanRepayRecordJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.loan_id = #{loan.id}
+			AND a.status != #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+		</where>
+		ORDER BY a.periods_seq
+	</select>
+	
+	
+	<select id="sumLoanAmount"   parameterType="java.lang.String" resultType="java.math.BigDecimal">
+		SELECT 
+			sum(expect_repay_amt) As amount
+		FROM NFS_LOAN_REPAY_RECORD a
+		<include refid="nfsLoanRepayRecordJoins"/>
+		<where>
+			AND FIND_IN_SET(a.loan_id,#{loanIds})
+		</where>
+	</select>
+</mapper>

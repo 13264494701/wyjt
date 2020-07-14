@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.svc.sys.version.dao.SysVersionDao">
+    
+	<sql id="sysVersionColumns">
+		a.id AS "id",
+		a.type AS "type",
+		a.last_version AS "lastVersion",
+		a.needs_update AS "needsUpdate",
+		a.is_force AS "isForce",
+		a.content AS "content",
+		a.url AS "url",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="SysVersion" id="sysVersionResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="needsUpdate"  property="needsUpdate" javaType="Boolean" jdbcType="CHAR" />		
+		<result column="isForce"  property="isForce" javaType="Boolean" jdbcType="CHAR" />
+	</resultMap>
+	
+	<sql id="sysVersionJoins">
+	</sql>
+    
+	<select id="get" resultMap="sysVersionResultMap">
+		SELECT 
+			<include refid="sysVersionColumns"/>
+		FROM SYS_VERSION a
+		<include refid="sysVersionJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByType" resultMap="sysVersionResultMap">
+		SELECT 
+			<include refid="sysVersionColumns"/>
+		FROM SYS_VERSION a
+		<include refid="sysVersionJoins"/>
+		<where>
+		  a.del_flag = '0' 
+		  AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+		</where>
+		LIMIT 1;
+	</select>
+	
+	<select id="findList" resultMap="sysVersionResultMap">
+		SELECT 
+			<include refid="sysVersionColumns"/>
+		FROM SYS_VERSION a
+		<include refid="sysVersionJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="SysVersion">
+		INSERT INTO SYS_VERSION(
+			id,
+			type,
+			last_version,
+			needs_update,
+			is_force,
+			content,
+			url,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{lastVersion},
+			#{needsUpdate,javaType=Boolean,jdbcType=CHAR},
+			#{isForce,javaType=Boolean,jdbcType=CHAR},
+			#{content},
+			#{url},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="SysVersion">
+		UPDATE SYS_VERSION SET 	
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			last_version = #{lastVersion},
+			needs_update = #{needsUpdate, javaType=Boolean, jdbcType=CHAR},
+			is_force = #{isForce, javaType=Boolean, jdbcType=CHAR},
+			content = #{content},
+			url = #{url},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE SYS_VERSION SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

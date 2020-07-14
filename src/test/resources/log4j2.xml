@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration status="ERROR">
+    <Properties>
+        <!--定义变量-->
+        <Property name="baseDir">E://logs/wyjt/</Property>
+        <Property name="filename">E://logs/wyjt/wyjt.log</Property>
+        <Property name="filenameError">E://logs/wyjt/wyjt_error.log</Property>
+    </Properties>
+
+    <Appenders>
+        <!--控制台输出-->
+        <Console name="STDOUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %l - %msg%n"/>
+        </Console>
+        <!--入文件-->
+        <RollingFile name="RollingFile" fileName="${filename}"
+                     filePattern="/root/logs/wyjt/${date:yyyy-MM}/wyjt-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="%d %-5level [%t]%l - %msg%n"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+            <!--自动删除超过120天的日志压缩文件-->
+            <DefaultRolloverStrategy>
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/wyjt-*.log.gz"/>
+                    <IfLastModified age="120d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+        <!--错误日志入文件-->
+        <RollingFile name="RollingFileError" fileName="${filenameError}"
+                     filePattern="/root/logs/wyjt/${date:yyyy-MM}/wyjt_error-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="%d %-5level [%t]%l - %msg%n"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="200 MB"/>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+            <!--自动删除超过120天的日志压缩文件-->
+            <DefaultRolloverStrategy>
+                <Delete basePath="${baseDir}" maxDepth="2">
+                    <IfFileName glob="*/wyjt-*.log.gz"/>
+                    <IfLastModified age="120d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+    </Appenders>
+    <Loggers>
+        <logger name="org.springframework" level="info"></logger>
+        <logger name="org.apache.ibatis" level="info"></logger>
+        <logger name="org.mybatis.spring" level="info"></logger>
+        <logger name="org.apache.shiro" level="info"></logger>
+        <logger name="net.sf.ehcache" level="info"></logger>
+        <logger name="org.quartz" level="info"></logger>
+        <logger name="com.alibaba.druid" level="info"></logger>
+        <!--采用异步输出日志-->
+        <AsyncLogger name="com.jxf" level="info">
+            <!--写入info级别-->
+            <AppenderRef ref="RollingFile"/>
+            <!--写入error级别-->
+            <AppenderRef ref="RollingFileError" level="error"/>
+        </AsyncLogger>
+        <Root level="debug">
+            <AppenderRef ref="STDOUT"/>
+        </Root>
+    </Loggers>
+</Configuration>

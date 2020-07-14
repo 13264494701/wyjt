@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.cms.dao.CmsAdDao">
+    
+	<sql id="adColumns">
+		a.id AS "id",
+		a.position_no AS "positionNo",
+		a.title AS "title",
+		a.type AS "type",
+		a.image_path AS "imagePath",
+		a.text_content AS "textContent",
+		a.redirect_type AS "redirectType",
+		a.redirect_url AS "redirectUrl",
+		a.sort AS "sort",
+	    a.is_enabled AS "isEnabled",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="CmsAd" id="adResultMap">
+		<id column="id" property="id"/>
+		<result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+		<result column="isEnabled"  property="isEnabled" javaType="Boolean" jdbcType="CHAR" />		
+		<result column="redirectType" property="redirectType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="adJoins">
+	</sql>
+    
+	<select id="get" resultMap="adResultMap">
+		SELECT 
+			<include refid="adColumns"/>
+		FROM CMS_AD a
+		<include refid="adJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findAdsByPositionNo" resultMap="adResultMap">
+		SELECT 
+			<include refid="adColumns"/>
+		FROM CMS_AD a
+		    <include refid="adJoins"/>
+		WHERE a.position_no = #{positionNo}
+		AND   a.is_enabled = '1'
+		AND a.del_flag = '0'
+		ORDER BY a.sort ASC
+	</select>
+	
+	<select id="findList" resultMap="adResultMap">
+		SELECT 
+			<include refid="adColumns"/>
+		FROM CMS_AD a
+		<include refid="adJoins"/>
+		<where>	
+		    a.del_flag = #{DEL_FLAG_NORMAL}		
+			<if test="positionNo != null and positionNo != ''">
+				AND a.position_no = #{positionNo}
+			</if>
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.sort ASC
+			</otherwise>
+		</choose>
+	</select>
+
+	
+	<insert id="insert" parameterType="CmsAd">
+		INSERT INTO CMS_AD(
+			id,
+			position_no,			
+			title,
+			type,
+			image_path,
+			text_content,
+			redirect_type,
+			redirect_url,
+            sort,
+			is_enabled,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{positionNo},			
+			#{title},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{imagePath},
+			#{textContent},
+			#{redirectType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{redirectUrl},
+            #{sort},
+			#{isEnabled, javaType=Boolean, jdbcType=CHAR},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="CmsAd">
+		UPDATE CMS_AD SET 	
+			position_no = #{positionNo},			
+			title = #{title},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			image_path = #{imagePath},
+			text_content = #{textContent},
+			redirect_type = #{redirectType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			redirect_url = #{redirectUrl},
+			sort = #{sort},
+			is_enabled = #{isEnabled, javaType=Boolean, jdbcType=CHAR},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE CMS_AD SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.ufang.dao.UfangLoanMarketDao">
+    
+	<sql id="ufangLoanMarketColumns">
+		a.id AS "id",
+		a.name AS "name",
+		a.logo AS "logo",
+		a.brn_id AS "brn.id",
+		a.min_loan_amt AS "minLoanAmt",
+		a.max_loan_amt AS "maxLoanAmt",
+		a.min_loan_term AS "minLoanTerm",
+		a.max_loan_term AS "maxLoanTerm",
+		a.min_int_rate AS "minIntRate",
+		a.max_int_rate AS "maxIntRate",
+		a.check_term AS "checkTerm",
+		a.display_loan_quantity AS "displayLoanQuantity",
+		a.needs_identify AS "needsIdentify",
+		a.loan_requirement AS "loanRequirement",
+		a.apply_materials AS "applyMaterials",
+		a.redirect_type AS "redirectType",
+		a.redirect_url AS "redirectUrl",
+		a.is_marketable AS "isMarketable",
+	    a.sort AS "sort",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		p.brn_name AS "brn.brnName"
+	</sql>
+	
+	<resultMap type="UfangLoanMarket" id="ufangLoanMarketResultMap">		
+        <id column="id" property="id"/>
+        <result column="needsIdentify"  property="needsIdentify" javaType="Boolean" jdbcType="CHAR" />
+	    <result column="isMarketable"  property="isMarketable" javaType="Boolean" jdbcType="CHAR" />
+	    <result column="redirectType" property="redirectType" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="ufangLoanMarketJoins">
+			LEFT JOIN UFANG_BRN p ON p.id = a.brn_id
+	</sql>
+    
+	<select id="get" resultMap="ufangLoanMarketResultMap">
+		SELECT 
+			<include refid="ufangLoanMarketColumns"/>
+		FROM UFANG_LOAN_MARKET a
+		<include refid="ufangLoanMarketJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="ufangLoanMarketResultMap">
+		SELECT 
+			<include refid="ufangLoanMarketColumns"/>
+		FROM UFANG_LOAN_MARKET a
+		<include refid="ufangLoanMarketJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="brn != null and brn.id != null">
+				AND a.brn_id = #{brn.id}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="needsIdentify != null">
+				AND a.needs_identify = #{needsIdentify, javaType=Boolean, jdbcType=CHAR}
+			</if>
+			<if test="isMarketable != null">
+				AND a.is_marketable = #{isMarketable, javaType=Boolean, jdbcType=CHAR}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="UfangLoanMarket">
+		INSERT INTO UFANG_LOAN_MARKET(
+			id,
+			name,
+			logo,
+			brn_id,
+			min_loan_amt,
+			max_loan_amt,
+			min_loan_term,
+			max_loan_term,
+			min_int_rate,
+			max_int_rate,
+			check_term,
+			display_loan_quantity,
+			needs_identify,
+			loan_requirement,
+			apply_materials,
+			redirect_type,
+			redirect_url,
+			is_marketable,
+			sort,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{name},
+			#{logo},
+			#{brn.id},
+			#{minLoanAmt},
+			#{maxLoanAmt},
+			#{minLoanTerm},
+			#{maxLoanTerm},
+			#{minIntRate},
+			#{maxIntRate},
+			#{checkTerm},
+			#{displayLoanQuantity},
+			#{needsIdentify, javaType=Boolean, jdbcType=CHAR},
+			#{loanRequirement},
+			#{applyMaterials},
+			#{redirectType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{redirectUrl},
+			#{isMarketable, javaType=Boolean, jdbcType=CHAR},
+			#{sort},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="UfangLoanMarket">
+		UPDATE UFANG_LOAN_MARKET SET 	
+			name = #{name},
+			logo = #{logo},
+			brn_id = #{brn.id},
+			min_loan_amt = #{minLoanAmt},
+			max_loan_amt = #{maxLoanAmt},
+			min_loan_term = #{minLoanTerm},
+			max_loan_term = #{maxLoanTerm},
+			min_int_rate = #{minIntRate},
+			max_int_rate = #{maxIntRate},
+			check_term = #{checkTerm},
+			display_loan_quantity = #{displayLoanQuantity},
+			needs_identify = #{needsIdentify, javaType=Boolean, jdbcType=CHAR},
+			loan_requirement = #{loanRequirement},
+			apply_materials = #{applyMaterials},
+			redirect_type = #{redirectType,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			redirect_url = #{redirectUrl},
+			is_marketable = #{isMarketable, javaType=Boolean, jdbcType=CHAR},
+			sort = #{sort},
+			rmk = #{rmk},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE UFANG_LOAN_MARKET SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

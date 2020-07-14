@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.payment.dao.PaymentDao">
+    
+	<sql id="paymentColumns">
+		a.id AS "id",
+		a.principal_id AS "principalId",
+		a.channel AS "channel",
+		a.org_id AS "orgId",
+		a.payment_no AS "paymentNo",
+		a.type AS "type",
+		a.payment_amount AS "paymentAmount",
+		a.payment_fee AS "paymentFee",
+		a.status AS "status",		
+		a.payment_plugin_id AS "paymentPluginId",
+		a.payment_plugin_name AS "paymentPluginName",
+		a.third_payment_no AS "thirdPaymentNo",
+	    a.mch_id AS "mchId",
+	    a.pay_id AS "payId",
+	    a.protocol_no AS "protocolNo",
+		a.resp_time AS "respTime",
+		a.resp_code AS "respCode",	
+		a.resp_msg AS "respMsg",
+		a.remote_addr AS "remoteAddr",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.version AS "version",
+		a.del_flag AS "delFlag"
+		
+	</sql>
+	<resultMap type="Payment" id="paymentResultMap">
+		<id column="id" property="id"/>
+		<result column="channel" property="channel" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+		<result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+		<result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="paymentJoins">
+	</sql>
+    
+	<select id="get" resultMap="paymentResultMap">
+		SELECT 
+			<include refid="paymentColumns"/>
+		FROM NFS_PAYMENT a
+		<include refid="paymentJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findByPaymentNo" resultMap="paymentResultMap">
+		SELECT 
+			<include refid="paymentColumns"/>
+		FROM NFS_PAYMENT a
+		<include refid="paymentJoins"/>
+		WHERE a.payment_no = #{paymentNo}
+	</select>
+	
+	<select id="findList" resultMap="paymentResultMap">
+		SELECT 
+			<include refid="paymentColumns"/>
+		FROM NFS_PAYMENT a
+		<include refid="paymentJoins"/>
+		<where>
+		    a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="principalId != null and principalId != ''">
+				AND a.principal_id = #{principalId}
+			</if>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="orgId != null and orgId != ''">
+				AND a.org_id = #{orgId}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="Payment">
+		INSERT INTO NFS_PAYMENT(
+			id,
+			principal_id,
+			channel,
+			org_id,
+			payment_no,
+			type,
+			payment_amount,
+			payment_fee,			
+			status,						
+			payment_plugin_id,
+			payment_plugin_name,
+			third_payment_no,
+			mch_id,
+			pay_id,
+			protocol_no,
+			resp_time,
+			resp_code,
+			resp_msg,		
+			remote_addr,
+			create_by,
+			create_time,
+			update_by,
+			update_time,			
+			version,
+			del_flag
+		) VALUES (
+			#{id},
+			#{principalId},
+			#{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{orgId},
+			#{paymentNo},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{paymentAmount},
+			#{paymentFee},			
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},			
+			#{paymentPluginId},
+			#{paymentPluginName},
+			#{thirdPaymentNo},
+			#{mchId},
+			#{payId},
+			#{protocolNo},
+			#{respTime},
+			#{respCode},
+			#{respMsg},
+			#{remoteAddr},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{version},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="Payment">
+		UPDATE NFS_PAYMENT SET 	
+		    principal_id = #{principalId},
+		    org_id = #{orgId},
+			payment_no = #{paymentNo},
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			payment_amount = #{paymentAmount},
+			payment_fee = #{paymentFee},			
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},						
+			payment_plugin_id = #{paymentPluginId},
+			payment_plugin_name = #{paymentPluginName},
+			third_payment_no = #{thirdPaymentNo},
+			mch_id = #{mchId},
+			pay_id = #{payId},
+			protocol_no = #{protocolNo},
+			resp_time = #{respTime},
+			resp_code = #{respCode},
+			resp_msg = #{respMsg},
+			remote_addr = #{remoteAddr},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			version = version+1
+		WHERE id = #{id}
+			and version = #{version}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_PAYMENT SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mms.record.dao.MmsInternalMsgDao">
+    
+	<sql id="mmsInternalMsgColumns">
+		a.id AS "id",
+		a.tmpl_code AS "tmplCode",
+		a.sender AS "sender",
+		a.receiver AS "receiver",
+		a.subject AS "subject",
+		a.content AS "content",
+		a.isread AS "isread",
+		a.isflag AS "isflag",
+		a.send_time AS "sendTime"
+	</sql>
+	
+	<resultMap type="MmsInternalMsg" id="internalMsgResultMap">
+		<id column="id" property="id"/>
+	</resultMap>
+	
+	<sql id="mmsInternalMsgJoins">
+	</sql>
+    
+	<select id="get" resultMap="internalMsgResultMap">
+		SELECT 
+			<include refid="mmsInternalMsgColumns"/>
+		FROM MMS_INTERNAL_MSG a
+		<include refid="mmsInternalMsgJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="internalMsgResultMap">
+		SELECT 
+			<include refid="mmsInternalMsgColumns"/>
+		FROM MMS_INTERNAL_MSG a
+		<include refid="mmsInternalMsgJoins"/>
+		<where>
+			<if test="tmplCode != null and tmplCode != ''">
+				AND a.tmpl_code = #{tmplCode}
+			</if>
+			<if test="sender != null and sender != ''">
+				AND a.sender = #{sender}
+			</if>
+			<if test="receiver != null and receiver != ''">
+				AND a.receiver = #{receiver}
+			</if>
+			<if test="isread != null and isread != ''">
+				AND a.isread = #{isread}
+			</if>
+			<if test="isflag != null and isflag != ''">
+				AND a.isflag = #{isflag}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="MmsInternalMsg">
+		INSERT INTO MMS_INTERNAL_MSG(
+			id,
+			tmpl_code,
+			sender,
+			receiver,
+			subject,
+			content,
+			isread,
+			isflag,
+			send_time
+		) VALUES (
+			#{id},
+			#{tmplCode},
+			#{sender},
+			#{receiver},
+			#{subject},
+			#{content},
+			#{isread},
+			#{isflag},
+			#{sendTime}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MmsInternalMsg">
+		UPDATE MMS_INTERNAL_MSG SET 	
+			tmpl_code = #{tmplCode},
+			sender = #{sender},
+			receiver = #{receiver},
+			subject = #{subject},
+			content = #{content},
+			isread = #{isread},
+			isflag = #{isflag},
+			send_time = #{sendTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM MMS_INTERNAL_MSG
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

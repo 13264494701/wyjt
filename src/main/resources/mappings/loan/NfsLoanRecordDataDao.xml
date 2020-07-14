@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.loan.dao.NfsLoanRecordDataDao">
+    
+	<sql id="nfsLoanRecordDataColumns">
+		a.id AS "id",
+		a.loanee_id AS "loanee.id",
+		a.loanee_name AS "loanee.name",
+		a.loanee_id_no AS "loanee.idNo",
+		a.loanee_phone_no AS "loanee.username",
+		a.amount AS "amount",
+		a.int_rate AS "intRate",
+		a.interest AS "interest",
+		a.term AS "term",
+		a.due_repay_date AS "dueRepayDate",
+		a.complete_date AS "completeDate",
+		a.repay_status AS "repayStatus",
+		a.overdue_days AS "overdueDays",
+		a.is_ok AS "isOk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="NfsLoanRecordData" id="nfsLoanRecordDataResultMap">		
+        <id column="id" property="id"/>
+        <result column="isOk"  property="isOk" javaType="Boolean" jdbcType="CHAR" />
+         <result column="repayStatus" property="repayStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="nfsLoanRecordDataJoins">
+	</sql>
+    
+	<select id="get" resultMap="nfsLoanRecordDataResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordDataColumns"/>
+		FROM NFS_LOAN_RECORD_DATA a
+		<include refid="nfsLoanRecordDataJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="nfsLoanRecordDataResultMap">
+		SELECT 
+			<include refid="nfsLoanRecordDataColumns"/>
+		FROM NFS_LOAN_RECORD_DATA a
+		<include refid="nfsLoanRecordDataJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="loanee.id != null and loanee.id != ''">
+				AND a.loanee_id = #{loanee.id}
+			</if>
+			<if test="loanee.username != null and loanee.username != ''">
+				AND a.loanee_phone_no = #{loanee.username}
+			</if>
+			<if test="repayStatus != null">
+				AND a.repay_status = #{repayStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginOverdueDays != null and endOverdueDays != null and beginOverdueDays != '' and endOverdueDays != ''">
+				AND a.overdue_days BETWEEN #{beginOverdueDays} AND #{endOverdueDays}
+					
+			</if>
+			<if test="isOk != null">
+				AND a.is_ok = #{isOk,javaType=Boolean, jdbcType=CHAR}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="NfsLoanRecordData">
+		INSERT INTO NFS_LOAN_RECORD_DATA(
+			id,
+			loanee_id,
+			loanee_name,
+			loanee_id_no,
+			loanee_phone_no,
+			amount,
+			int_rate,
+			interest,
+			term,
+			due_repay_date,
+			complete_date,
+			repay_status,
+			overdue_days,
+			is_ok,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{loanee.id},
+			#{loanee.name},
+			#{loanee.idNo},
+			#{loanee.username},
+			#{amount},
+			#{intRate},
+			#{interest},
+			#{term},
+			#{dueRepayDate},
+			#{completeDate},
+			#{repayStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{overdueDays},
+			#{isOk,javaType=Boolean, jdbcType=CHAR},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsLoanRecordData">
+		UPDATE NFS_LOAN_RECORD_DATA SET 	
+			loanee_id = #{loanee.id},
+			loanee_name = #{loanee.name},
+			loanee_id_no = #{loanee.idNo},
+			loanee_phone_no = #{loanee.username},
+			amount = #{amount},
+			int_rate = #{intRate},
+			interest = #{interest},
+			term = #{term},
+			due_repay_date = #{dueRepayDate},
+			complete_date = #{completeDate},
+			repay_status = #{repayStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			overdue_days = #{overdueDays},
+			is_ok = #{isOk,javaType=Boolean, jdbcType=CHAR},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_LOAN_RECORD_DATA SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

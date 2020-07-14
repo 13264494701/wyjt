@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.mem.dao.MemberExtendDao">
+    
+	<sql id="memberExtendColumns">
+		a.id AS "id",
+		a.member_id AS "member.id",
+		a.email AS "email",
+		a.qrcode AS "qrcode",
+		a.sex AS "sex",
+		a.blood_type AS "bloodType",
+		a.nation AS "nation",
+		a.birthdate AS "birthdate",
+		a.house_area AS "houseArea",
+		a.resi_address AS "resiAddress",
+		a.acc_address AS "accAddress",
+		a.gradu_school AS "graduSchool",
+		a.highest_degree AS "highestDegree",
+		a.employ_situation AS "employSituation",
+		a.company_name AS "companyName",
+		a.company_phone AS "companyPhone",
+		a.company_location AS "companyLocation",
+		a.marital_status AS "maritalStatus",
+		a.live_conditions AS "liveConditions",
+		a.card_buy AS "cardBuy",
+		a.religious_belief AS "religiousBelief",
+		a.wb_uid AS "wbUid",
+		a.wb_access_token AS "wbAccessToken",
+		a.wx_uid AS "wxUid",
+		a.qq_uid AS "qqUid",
+		a.qq_access_token AS "qqAccessToken",
+		a.ecp1 AS "ecp1",
+		a.ecp_r1 AS "ecpR1",
+		a.ecp_phone_no1 AS "ecpPhoneNo1",
+		a.ecp2 AS "ecp2",
+		a.ecp_r2 AS "ecpR2",
+		a.ecp_phone_no2 AS "ecpPhoneNo2",
+		a.ecp3 AS "ecp3",
+		a.ecp_r3 AS "ecpR3",
+		a.ecp_phone_no3 AS "ecpPhoneNo3",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime",
+		a.create_by AS "createBy.empNo",
+		a.update_by AS "updateBy.empNo",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="MemberExtend" id="memberExtendResultMap">		
+        <id column="id" property="id"/>
+	</resultMap>
+	
+	<sql id="memberExtendJoins">
+	</sql>
+    
+	<select id="get" resultMap="memberExtendResultMap">
+		SELECT 
+			<include refid="memberExtendColumns"/>
+		FROM MEM_MEMBER_EXTEND a
+		<include refid="memberExtendJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<select id="getByMemberId" resultMap="memberExtendResultMap">
+		SELECT 
+			<include refid="memberExtendColumns"/>
+		FROM MEM_MEMBER_EXTEND a
+		<include refid="memberExtendJoins"/>
+		WHERE a.member_id = #{memberId}
+		ORDER BY a.id 
+		LIMIT 1
+	</select>
+	
+	<select id="findList" resultMap="memberExtendResultMap">
+		SELECT 
+			<include refid="memberExtendColumns"/>
+		FROM MEM_MEMBER_EXTEND a
+		<include refid="memberExtendJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="email != null and email != ''">
+				AND a.email LIKE 
+					<if test="dbName == 'oracle'">'%'||#{email}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{email}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{email},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="memberExtendResultMap">
+		SELECT 
+			<include refid="memberExtendColumns"/>
+		FROM MEM_MEMBER_EXTEND a
+		<include refid="memberExtendJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="email != null and email != ''">
+				AND a.email LIKE 
+					<if test="dbName == 'oracle'">'%'||#{email}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{email}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{email},'%')</if>
+			</if>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="MemberExtend">
+		INSERT INTO MEM_MEMBER_EXTEND(
+			id,
+			member_id,
+			email,
+			qrcode,
+			sex,
+			blood_type,
+			nation,
+			birthdate,
+			house_area,
+			resi_address,
+			acc_address,
+			gradu_school,
+			highest_degree,
+			employ_situation,
+			company_name,
+			company_phone,
+			company_location,
+			marital_status,
+			live_conditions,
+			card_buy,
+			religious_belief,
+			wb_uid,
+			wb_access_token,
+			wx_uid,
+			qq_uid,
+			qq_access_token,
+			ecp1,
+			ecp_r1,
+			ecp_phone_no1,
+			ecp2,
+			ecp_r2,
+			ecp_phone_no2,
+			ecp3,
+			ecp_r3,
+			ecp_phone_no3,
+			create_time,
+			update_time,
+			create_by,
+			update_by,
+			del_flag
+		) VALUES (
+			#{id},
+			#{member.id},
+			#{email},
+			#{qrcode},
+			#{sex},
+			#{bloodType},
+			#{nation},
+			#{birthdate},
+			#{houseArea},
+			#{resiAddress},
+			#{accAddress},
+			#{graduSchool},
+			#{highestDegree},
+			#{employSituation},
+			#{companyName},
+			#{companyPhone},
+			#{companyLocation},
+			#{maritalStatus},
+			#{liveConditions},
+			#{cardBuy},
+			#{religiousBelief},
+			#{wbUid},
+			#{wbAccessToken},
+			#{wxUid},
+			#{qqUid},
+			#{qqAccessToken},
+			#{ecp1},
+			#{ecpR1},
+			#{ecpPhoneNo1},
+			#{ecp2},
+			#{ecpR2},
+			#{ecpPhoneNo2},
+			#{ecp3},
+			#{ecpR3},
+			#{ecpPhoneNo3},
+			#{createTime},
+			#{updateTime},
+			#{createBy.empNo},
+			#{updateBy.empNo},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MemberExtend">
+		UPDATE MEM_MEMBER_EXTEND SET 	
+			member_id = #{member.id},
+			email = #{email},
+			qrcode = #{qrcode},
+			sex = #{sex},
+			blood_type = #{bloodType},
+			nation = #{nation},
+			birthdate = #{birthdate},
+			house_area = #{houseArea},
+			resi_address = #{resiAddress},
+			acc_address = #{accAddress},
+			gradu_school = #{graduSchool},
+			highest_degree = #{highestDegree},
+			employ_situation = #{employSituation},
+			company_name = #{companyName},
+			company_phone = #{companyPhone},
+			company_location = #{companyLocation},
+			marital_status = #{maritalStatus},
+			live_conditions = #{liveConditions},
+			card_buy = #{cardBuy},
+			religious_belief = #{religiousBelief},
+			wb_uid = #{wbUid},
+			wb_access_token = #{wbAccessToken},
+			wx_uid = #{wxUid},
+			qq_uid = #{qqUid},
+			qq_access_token = #{qqAccessToken},
+			ecp1 = #{ecp1},
+			ecp_r1 = #{ecpR1},
+			ecp_phone_no1 = #{ecpPhoneNo1},
+			ecp2 = #{ecp2},
+			ecp_r2 = #{ecpR2},
+			ecp_phone_no2 = #{ecpPhoneNo2},
+			ecp3 = #{ecp3},
+			ecp_r3 = #{ecpR3},
+			ecp_phone_no3 = #{ecpPhoneNo3},
+			create_time = #{createTime},
+			update_time = #{updateTime},
+			update_by = #{updateBy.empNo}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE MEM_MEMBER_EXTEND SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

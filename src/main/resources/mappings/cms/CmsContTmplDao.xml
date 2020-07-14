@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.cms.dao.CmsContTmplDao">
+    
+	<sql id="cmsContTmplColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.type AS "type",
+		a.status AS "status",
+		a.content AS "content",
+		a.valid_time AS "validTime",
+		a.invalid_time AS "invalidTime",
+		a.is_static AS "isStatic",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="CmsContTmpl" id="contTmplResultMap">
+		<id column="id" property="id"/>
+		<result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+		<result column="status" property="status" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+		<result column="isStatic"  property="isStatic" javaType="Boolean" jdbcType="CHAR" />	
+	</resultMap>
+	
+	<sql id="cmsContTmplJoins">
+	</sql>
+    
+	<select id="get" resultMap="contTmplResultMap">
+		SELECT 
+			<include refid="cmsContTmplColumns"/>
+		FROM CMS_CONT_TMPL a
+		    <include refid="cmsContTmplJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getContTmpl" resultMap="contTmplResultMap">
+		SELECT 
+			<include refid="cmsContTmplColumns"/>
+		FROM CMS_CONT_TMPL a
+		    <include refid="cmsContTmplJoins"/>
+		<where>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+	</select>
+	
+	<select id="findList" resultMap="contTmplResultMap">
+		SELECT 
+			<include refid="cmsContTmplColumns"/>
+		FROM CMS_CONT_TMPL a
+		    <include refid="cmsContTmplJoins"/>
+		<where>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="createTime != null and createTime != ''">
+				AND a.create_time = #{createTime}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultMap="contTmplResultMap">
+		SELECT 
+			<include refid="cmsContTmplColumns"/>
+		FROM CMS_CONT_TMPL a
+		    <include refid="cmsContTmplJoins"/>
+		<where>
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="status != null">
+				AND a.status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="createTime != null and createTime != ''">
+				AND a.create_time = #{createTime}
+			</if>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="CmsContTmpl">
+		INSERT INTO CMS_CONT_TMPL(
+			id,
+			title,
+			type,
+			status,
+			content,
+			valid_time,
+			invalid_time,
+			is_static,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{title},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{content},
+			#{validTime},
+			#{invalidTime},
+			#{isStatic,javaType=Boolean, jdbcType=CHAR},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="CmsContTmpl">
+		UPDATE CMS_CONT_TMPL SET 
+		    title = #{title},	
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			status = #{status,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			content = #{content},
+			valid_time = #{validTime},
+			invalid_time = #{invalidTime},
+			is_static = #{isStatic,javaType=Boolean, jdbcType=CHAR},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE CMS_CONT_TMPL SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+</mapper>

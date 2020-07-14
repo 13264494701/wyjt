@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.cms.dao.CategoryDao">
+    
+	<sql id="cmsCategoryDaoColumns">
+		a.id AS "id",
+		a.parent_id AS "parent.id",
+		a.parent_ids AS "parentIds",
+		a.name AS "name",
+		a.alias AS "alias",
+		a.sort AS "sort",
+		a.create_by AS "createBy.id",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.id",
+		a.update_time AS "updateTime",
+		a.rmk AS "rmk",
+		a.del_flag AS "delFlag",
+		c.name AS "parent.name"
+	</sql>
+	
+	<sql id="cmsCategoryDaoJoins">
+	    LEFT JOIN CMS_CATEGORY c ON c.id = a.parent_id
+		JOIN SYS_USER u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="Category">
+		SELECT 
+			<include refid="cmsCategoryDaoColumns"/>
+		FROM CMS_CATEGORY a
+            <include refid="cmsCategoryDaoJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByAlias" resultType="Category">
+		SELECT 
+			<include refid="cmsCategoryDaoColumns"/>
+		FROM CMS_CATEGORY a
+            <include refid="cmsCategoryDaoJoins"/>
+		WHERE a.alias = #{alias}
+	</select>
+	
+	<select id="findList" resultType="Category">
+		SELECT 
+			<include refid="cmsCategoryDaoColumns"/>
+		FROM CMS_CATEGORY a
+		    <include refid="cmsCategoryDaoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="parent!= null and parent.id != null and parent.id != ''">
+				AND a.parent_id  = #{parent.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.sort ASC
+			</otherwise>
+		</choose>	
+	</select>
+	
+	<select id="findAllList" resultType="Category">
+		SELECT 
+			<include refid="cmsCategoryDaoColumns"/>
+		FROM CMS_CATEGORY a
+		<include refid="cmsCategoryDaoJoins"/>
+		<where>
+			a.del_flag = #{delFlag}
+			<if test="parent!= null and parent.id != null and parent.id != ''">
+				AND a.parent_id  = #{parent.id}
+			</if>
+		</where>	
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			    ORDER BY a.sort ASC
+			</otherwise>
+		</choose>	
+			
+	</select>
+	
+	<select id="findByParentId" resultType="Category">
+		SELECT 
+			<include refid="cmsCategoryDaoColumns"/>
+		FROM CMS_CATEGORY a
+		<include refid="cmsCategoryDaoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} 
+			<if test="parent!= null and parent.id != null and parent.id != ''">
+				AND a.parent_id  = #{parent.id}
+			</if>
+		</where>		
+		order by a.sort
+	</select>
+	
+	<select id="findByParentIdsLike" resultType="Category">
+		SELECT 
+			<include refid="cmsCategoryDaoColumns"/>
+		FROM CMS_CATEGORY a
+		    <include refid="cmsCategoryDaoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} 
+			AND a.parent_id LIKE 
+					<if test="dbName == 'oracle'">'%'||#{id}||'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{id}, '%')</if>
+		</where>		
+		order by  a.sort
+	</select>
+	<insert id="insert">
+		INSERT INTO CMS_CATEGORY(
+			id,
+			parent_id,
+			parent_ids,
+			name,
+			alias,
+			sort,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			rmk,
+			del_flag
+		) VALUES (
+			#{id},
+			#{parent.id},
+			#{parentIds},
+			#{name},
+			#{alias},
+			#{sort},
+			#{createBy.id},
+			#{createTime},
+			#{updateBy.id},
+			#{updateTime},
+			#{rmk},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE CMS_CATEGORY SET 				
+			parent_id = #{parent.id},
+			parent_ids = #{parentIds},
+			name = #{name},
+			alias = #{alias},
+			sort = #{sort},
+			update_by = #{updateBy.id},
+			update_time = #{updateTime},
+			rmk = #{rmk},
+			del_flag = #{delFlag}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE CMS_CATEGORY SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE CMS_CATEGORY SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>	
+</mapper>

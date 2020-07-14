@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.rc.dao.RcTxxyDao">
+    
+	<sql id="rcTxxyColumns">
+		a.id AS "id",
+		a.report_no AS "reportNo",
+		a.phone_no AS "phoneNo",
+		a.id_no AS "idNo",
+		a.real_name AS "realName",
+		a.channel_code AS "channelCode",
+		a.report_path AS "reportPath",
+		a.report_status AS "reportStatus",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+
+	
+	<resultMap type="RcTxxy" id="rcTxxyResultMap">		
+        <id column="id" property="id"/>
+		<result column="reportStatus" property="reportStatus" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	<sql id="rcTxxyJoins">
+	</sql>
+    
+	<select id="get" resultMap="rcTxxyResultMap">
+		SELECT 
+			<include refid="rcTxxyColumns"/>
+		FROM RC_TXXY a
+		<include refid="rcTxxyJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findByReportNo" resultMap="rcTxxyResultMap">
+		SELECT
+		<include refid="rcTxxyColumns"/>
+		FROM RC_TXXY a
+		<include refid="rcTxxyJoins"/>
+		WHERE a.report_no = #{reportNo} 
+		ORDER BY a.id DESC
+		LIMIT 1
+	</select>
+
+	
+	<select id="findList" resultMap="rcTxxyResultMap">
+		SELECT 
+			<include refid="rcTxxyColumns"/>
+		FROM RC_TXXY a
+		<include refid="rcTxxyJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="phoneNo != null and phoneNo != ''">
+				AND a.phone_no = #{phoneNo}
+			</if>
+			<if test="idNo != null and idNo != ''">
+				AND a.id_no = #{idNo}
+			</if>
+			<if test="reportStatus != null">
+				AND a.report_status = #{reportStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	
+	<insert id="insert" parameterType="RcTxxy">
+		INSERT INTO RC_TXXY(
+			id,
+			report_no,
+			phone_no,
+			id_no,
+			real_name,
+			channel_code,
+			report_path,
+			report_status,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{reportNo},
+			#{phoneNo},
+			#{idNo},
+			#{realName},
+			#{channelCode},
+			#{reportPath},
+			#{reportStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="RcTxxy">
+		UPDATE RC_TXXY SET
+			report_no = #{reportNo},
+			phone_no = #{phoneNo},
+			id_no = #{idNo},
+			real_name = #{realName},
+			channel_code = #{channelCode},
+			report_path = #{reportPath},
+			report_status = #{reportStatus,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE RC_TXXY SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

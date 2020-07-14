@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.cms.dao.TagDao">
+    
+	<sql id="tagColumns">
+		a.id AS "id",
+		a.tag_name AS "tagName",
+		a.tag_code AS "tagCode",
+		a.tag_type AS "tagType",
+		a.display_order AS "displayOrder",
+		a.icon AS "icon",
+		a.rmk AS "rmk",
+		a.create_time AS "createTime",
+		a.update_time AS "updateTime"
+	</sql>
+	
+	<sql id="tagJoins">
+	</sql>
+    
+	<select id="get" resultType="Tag">
+		SELECT 
+			<include refid="tagColumns"/>
+		FROM CMS_TAG a
+		<include refid="tagJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<select id="getByTagCode"  resultType="Tag">
+		SELECT 
+			<include refid="tagColumns"/>
+		FROM CMS_TAG a
+		<include refid="tagJoins"/>
+		WHERE a.tag_code = #{tagCode}	
+	</select>
+	<select id="findList" resultType="Tag">
+		SELECT 
+			<include refid="tagColumns"/>
+		FROM CMS_TAG a
+		<include refid="tagJoins"/>
+		<where>
+			
+			<if test="tagName != null and tagName != ''">
+				AND a.tag_name = #{tagName}
+			</if>
+			<if test="tagType != null and tagType != ''">
+				AND a.tag_type = #{tagType}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="Tag">
+		SELECT 
+			<include refid="tagColumns"/>
+		FROM CMS_TAG a
+		<include refid="tagJoins"/>
+		<where>
+			
+			<if test="tagName != null and tagName != ''">
+				AND a.tag_name = #{tagName}
+			</if>
+			<if test="tagType != null and tagType != ''">
+				AND a.tag_type = #{tagType}
+			</if>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO CMS_TAG(
+			id,
+			tag_name,
+			tag_code,
+			tag_type,
+			display_order,
+			icon,
+			rmk,
+			create_time,
+			update_time
+		) VALUES (
+			#{id},
+			#{tagName},
+			#{tagCode},
+			#{tagType},
+			#{displayOrder},
+			#{icon},
+			#{rmk},
+			#{createTime},
+			#{updateTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE CMS_TAG SET 	
+			tag_name = #{tagName},
+			tag_code = #{tagCode},
+			tag_type = #{tagType},
+			display_order = #{displayOrder},
+			icon = #{icon},
+			rmk = #{rmk},
+			create_time = #{createTime},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM CMS_TAG
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

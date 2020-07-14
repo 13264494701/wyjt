@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.ufang.dao.ZZCUploadDao">
+    
+	<sql id="zZCUploadColumns">
+		a.id AS "id",
+		a.type AS "type",
+		a.start_time AS "startTime",
+		a.end_time AS "endTime",
+		a.count AS "count",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="ZZCUpload" id="zZCUploadResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="zZCUploadJoins">
+	</sql>
+    
+	<select id="get" resultMap="zZCUploadResultMap">
+		SELECT 
+			<include refid="zZCUploadColumns"/>
+		FROM ZZC_UPLOAD a
+		<include refid="zZCUploadJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="zZCUploadResultMap">
+		SELECT 
+			<include refid="zZCUploadColumns"/>
+		FROM ZZC_UPLOAD a
+		<include refid="zZCUploadJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="type != null ">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="ZZCUpload">
+		INSERT INTO ZZC_UPLOAD(
+			id,
+			type,
+			start_time,
+			end_time,
+			count,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{startTime},
+			#{endTime},
+			#{count},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="ZZCUpload">
+		UPDATE ZZC_UPLOAD SET 	
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			start_time, = #{startTime},
+			end_time = #{endTime},
+			count = #{count},
+			create_time = #{createTime},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE ZZC_UPLOAD SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

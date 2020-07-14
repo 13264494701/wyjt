@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.nfs.dao.NfsTrxRuleItemDao">
+    
+	<sql id="nfsTrxRuleItemColumns">
+		a.id AS "id",
+		a.trx_code AS "trxCode",	
+		a.trx_role AS "trxRole",	
+		a.sub_no AS "subNo",
+		a.drc AS "drc",
+		a.expression AS "expression",
+		a.trx_group AS "trxGroup",
+		a.title AS "title",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag",
+		c.name AS "name",
+		d.name AS "subName"
+	</sql>
+	
+	<resultMap type="NfsTrxRuleItem" id="nfsTrxRuleItemResultMap">		
+        <id column="id" property="id"/>
+        <result column="trxRole" property="trxRole" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />        
+        <result column="trxGroup" property="trxGroup" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler" />
+	</resultMap>
+	
+	<sql id="nfsTrxRuleItemJoins">
+	   LEFT JOIN NFS_TRX_RULE c on c.trx_code = a.trx_code AND c.del_flag = '0'
+	   LEFT JOIN NFS_ACT_SUB d on d.sub_no = a.sub_no AND d.trx_role = a.trx_role AND d.del_flag = '0'
+	</sql>
+    
+	<select id="get" resultMap="nfsTrxRuleItemResultMap">
+		SELECT 
+			<include refid="nfsTrxRuleItemColumns"/>
+		FROM NFS_TRX_RULE_ITEM a
+		<include refid="nfsTrxRuleItemJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultMap="nfsTrxRuleItemResultMap">
+		SELECT 
+			<include refid="nfsTrxRuleItemColumns"/>
+		FROM NFS_TRX_RULE_ITEM a
+		<include refid="nfsTrxRuleItemJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="trxRole != null">
+				AND a.trx_role = #{trxRole,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="trxCode != null and trxCode != ''">
+				AND a.trx_code = #{trxCode}
+			</if>
+			<if test="subNo != null and subNo != ''">
+				AND a.sub_no = #{subNo}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.trx_code ASC,a.trx_role ASC, a.sub_no ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert" parameterType="NfsTrxRuleItem">
+		INSERT INTO NFS_TRX_RULE_ITEM(
+			id,
+			trx_code,
+			sub_no,
+			drc,
+			expression,
+			trx_role,
+			trx_group,
+			title,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{trxCode},
+			#{subNo},
+			#{drc},
+			#{expression},
+			#{trxRole,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{trxGroup,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{title},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="NfsTrxRuleItem">
+		UPDATE NFS_TRX_RULE_ITEM SET 	
+			trx_code = #{trxCode},
+			sub_no = #{subNo},
+			drc = #{drc},
+			expression = #{expression},
+			trx_role = #{trxRole,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},		
+			trx_group = #{trxGroup,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			title = #{title},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE NFS_TRX_RULE_ITEM SET 
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime},
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

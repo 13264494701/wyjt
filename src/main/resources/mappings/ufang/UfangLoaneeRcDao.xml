@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jxf.ufang.dao.UfangLoaneeRcDao">
+    
+	<sql id="loaneeRcColumns">
+		a.id AS "id",
+		a.type AS "type",
+		a.name AS "name",
+		a.phone_no AS "phoneNo",
+		a.id_no AS "idNo",
+		a.current_overdue_amt AS "currentOverdueAmt",
+		a.max_overdue_amt AS "maxOverdueAmt",
+		a.overdue_7days_amt AS "overdue7daysAmt",
+		a.overdue_7days_cnt AS "overdue7daysCnt",
+		a.overdue_30days_amt AS "overdue30daysAmt",
+		a.overdue_30days_cnt AS "overdue30daysCnt",
+		a.total_torepay_cnt AS "totalTorepayCnt",
+		a.total_torepay_amt AS "totalTorepayAmt",
+		a.last_repay_time AS "lastRepayTime",
+		a.total_repayed_cnt AS "totalRepayedCnt",
+		a.total_loan_cnt AS "totalLoanCnt",
+		a.total_loan_amt AS "totalLoanAmt",
+		a.channel AS "channel",
+		a.sales AS "sales",
+		a.rmk AS "rmk",
+		a.create_by AS "createBy.empNo",
+		a.create_time AS "createTime",
+		a.update_by AS "updateBy.empNo",
+		a.update_time AS "updateTime",
+		a.del_flag AS "delFlag"
+	</sql>
+	
+	<resultMap type="UfangLoaneeRc" id="loaneeRcResultMap">		
+        <id column="id" property="id"/>
+        <result column="type" property="type" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+        <result column="channel" property="channel" typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+	</resultMap>
+	
+	<sql id="loaneeRcJoins">
+	</sql>
+    
+	<select id="get" resultMap="loaneeRcResultMap">
+		SELECT 
+			<include refid="loaneeRcColumns"/>
+		FROM UFANG_LOANEE_RC a
+		<include refid="loaneeRcJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByPhoneNo" resultMap="loaneeRcResultMap">
+		SELECT 
+			<include refid="loaneeRcColumns"/>
+		FROM UFANG_LOANEE_RC a
+		<include refid="loaneeRcJoins"/>
+		WHERE a.phone_no = #{phoneNo}
+	</select>
+	
+	<select id="findList" resultMap="loaneeRcResultMap">
+		SELECT 
+			<include refid="loaneeRcColumns"/>
+		FROM UFANG_LOANEE_RC a
+		<include refid="loaneeRcJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="type != null">
+				AND a.type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="phoneNo != null and phoneNo != ''">
+				AND a.phone_no = #{phoneNo}
+			</if>
+			<if test="idNo != null and idNo != ''">
+				AND a.id_no = #{idNo}
+			</if>
+			<if test="channel != null">
+				AND a.channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler}
+			</if>
+			<if test="beginTime != null and endTime != null and beginTime != '' and endTime != ''">
+				AND a.create_time BETWEEN #{beginTime} AND #{endTime}
+					
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert" parameterType="UfangLoaneeRc">
+		INSERT INTO UFANG_LOANEE_RC(
+			id,
+			type,
+			name,
+			phone_no,
+			id_no,
+			current_overdue_amt,
+			max_overdue_amt,
+			overdue_7days_amt,
+			overdue_7days_cnt,
+			overdue_30days_amt,
+			overdue_30days_cnt,
+			total_torepay_cnt,
+			total_torepay_amt,
+			last_repay_time,
+			total_repayed_cnt,
+			total_loan_cnt,
+			total_loan_amt,
+			channel,
+			sales,
+			rmk,
+			create_by,
+			create_time,
+			update_by,
+			update_time,
+			del_flag
+		) VALUES (
+			#{id},
+			#{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{name},
+			#{phoneNo},
+			#{idNo},
+			#{currentOverdueAmt},
+			#{maxOverdueAmt},
+			#{overdue7daysAmt},
+			#{overdue7daysCnt},
+			#{overdue30daysAmt},
+			#{overdue30daysCnt},
+			#{totalTorepayCnt},
+			#{totalTorepayAmt},
+			#{lastRepayTime},
+			#{totalRepayedCnt},
+			#{totalLoanCnt},
+			#{totalLoanAmt},
+			#{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			#{sales},
+			#{rmk},
+			#{createBy.empNo},
+			#{createTime},
+			#{updateBy.empNo},
+			#{updateTime},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update" parameterType="UfangLoaneeRc">
+		UPDATE UFANG_LOANEE_RC SET 	
+			type = #{type,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			name = #{name},
+			phone_no = #{phoneNo},
+			id_no = #{idNo},
+			current_overdue_amt = #{currentOverdueAmt},
+			max_overdue_amt = #{maxOverdueAmt},
+			overdue_7days_amt = #{overdue7daysAmt},
+			overdue_7days_cnt = #{overdue7daysCnt},
+			overdue_30days_amt = #{overdue30daysAmt},
+			overdue_30days_cnt = #{overdue30daysCnt},
+			total_torepay_cnt = #{totalTorepayCnt},
+			total_torepay_amt = #{totalTorepayAmt},
+			last_repay_time = #{lastRepayTime},
+			total_repayed_cnt = #{totalRepayedCnt},
+			total_loan_cnt = #{totalLoanCnt},
+			total_loan_amt = #{totalLoanAmt},
+			channel = #{channel,typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+			sales = #{sales},
+			rmk = #{rmk},
+			update_by = #{updateBy.empNo},
+			update_time = #{updateTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE UFANG_LOANEE_RC SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>
