@@ -13,7 +13,7 @@ import com.jxf.svc.annotation.MyBatisDao;
  */
 @MyBatisDao
 public interface ApiLoaneeDataDao extends CrudDao<ApiLoaneeData> {
-
+	test1111111111
 	/***
 	 * 查商户最近一次查询记录
 	 * @param merchantNumber
