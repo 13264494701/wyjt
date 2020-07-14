@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns=http://www.w3.org/1999/xhtml>
+<head>
+    <title>收费标准</title>
+    <meta charset="UTF-8"/>
+    <meta name="keywords" content=""/>
+    <meta name="description" content=""/>
+    <link rel="stylesheet" href="/mb/assets/css/public.css" type="text/css">
+    <link rel="stylesheet" href="/mb/assets/css/user.css" type="text/css">
+    <script src="/mb/assets/scripts/base/sea.js"></script>
+    <script src="/mb/assets/scripts/base/flexible.js"></script>
+    <style>
+        .box4 p span {
+            height: 3.5rem;
+            line-height: 3.5rem;
+            text-align: center;
+            display: inline-block;
+            width: 10rem;
+            border-bottom: 1px solid RGB(223, 223, 223);
+            color: RGB(109, 109, 109);
+            font-size: 1.1rem;
+            float: left;
+        }
+
+        .box4 p span:nth-child(1) {
+            width: 6.45rem;
+        }
+
+        .box4 p span:nth-child(2) {
+            width: 10rem;
+            border-left: 1px solid RGB(223, 223, 223);
+            border-right: 1px solid RGB(223, 223, 223);
+        }
+
+        .box4 p span:nth-child(3) {
+            width: 10rem;
+        }
+
+        .box4 .title span {
+            color: RGB(23, 23, 23);
+            height: 4.6rem;
+            line-height: 1.5rem;
+        }
+
+        .box4 .title .center {
+            line-height: 5rem !important;
+        }
+
+        .circle {
+            color: red;
+            padding: 0rem 0rem .5rem 3rem;
+            font-size: 1.1rem;
+            background: url(/mb/assets/images/debt/prompt@2x.png) 1rem 0rem no-repeat;
+            background-size: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .circleTip {
+            height: 2rem;
+            line-height: 2rem;
+            padding-left: 2.86rem;
+            font-size: 1rem;
+            color: RGB(143, 143, 143);
+        }
+
+    </style>
+</head>
+<body>
+<article class="views">
+    <section class="view">
+        <div class="pages navbar-fixed toolbar-fixed">
+            <div class="page">
+                <div class="page-content user-main withdraw-main" style="background: white;padding-top:0;">
+                    <div class="box4" style="height:87%;">
+                        <p><span>交易额</span><span>服务费费率</span><span>交易服务费(元)</span></p>
+                        <p class="title"><span class="center">100-1万</span><span class="center">1%</span><span
+                                class="center">1-100</span></p>
+                        <p class="title"><span class="center">1万-2万</span><span class="center">0.9%</span><span
+                                class="center">91-180</span></p>
+                        <p class="title"><span class="center">2万-3万</span><span class="center">0.8%</span><span
+                                class="center">161-240</span></p>
+                        <p class="title"><span class="center">3万-4万</span><span class="center">0.7%</span><span
+                                class="center">211-280</span></p>
+                        <p class="title"><span class="center">4万-5万</span><span class="center">0.6%</span><span
+                                class="center">241-300</span></p>
+                        <p class="title"><span class="center">5万-10万</span><span class="center">0.5%</span><span
+                                class="center">251-500</span></p>
+                        <p class="title"><span class="center">10万以上</span><span class="center">-</span><span
+                                class="center">500</span></p>
+                    </div>
+                    <p class="circle">友情提示</p>
+                    <p class="circleTip">借款服务费会在借款人借款金额中扣除。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</article>
+</body>
+<script>
+    seajs.use(['zepto', 'jumpApp']);
+</script>
+</html>

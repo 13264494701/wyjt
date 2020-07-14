@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>专业仲裁</title>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="msapplication-navbutton-color" content="#FFFFFF">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <link rel="stylesheet" href="/mb/assets/css/v1/m3-min.css" type="text/css">
+    <script src="/mb/assets/scripts/base/sea.js"></script>
+    <script>
+        (function (f, i) {
+            typeof define === "function" && define.cmd ? (define("flex", function (j, k) {
+                return f(i, k)
+            }), seajs.use("flex")) : f(i, i)
+        })(function (f, i) {
+            function j() {
+                var a = d.clientWidth, l = d.clientHeight, b = e.activeElement;
+                b && (b = /input|textarea|select/i.test(b.tagName));
+                if (!(n && b)) {
+                    if (a > l) {
+                        g = 1.2;
+                        b = a;
+                        a = Math.min(l, n ? 450 : 640);
+                        l = b
+                    } else g = 1;
+                    a > 640 && (a = 640);
+                    b = a / 7.5 / g;
+                    d.style.width = g > 1 ? a + "px" : "100%";
+                    d.style.height = g > 1 ? l + "px" : "100%";
+                    d.style.fontSize = b + "px";
+                    m.rem = h.rem = b;
+                    d.setAttribute("data-landscape", Number(g > 1).toString())
+                }
+            }
+
+            function k() {
+                if (c >= 2) {
+                    var a = e.createElement("div");
+                    a.style.border = ".5px solid transparent";
+                    e.body.appendChild(a);
+                    a.offsetHeight == 1 && d.classList.add("hairlines");
+                    e.body.removeChild(a)
+                }
+            }
+
+            var h = f, e = document, d = e.documentElement;
+            f = "onorientationchange" in h ? "orientationchange" : "resize";
+            var c = 0, p, q, n, m = {}, g = 1;
+            if (!c) {
+                var o = h.navigator.userAgent, r = h.devicePixelRatio;
+                (q = (n = !!o.match(/android/gi), !!o.match(/iphone/gi))) && o.match(/OS 9_3/);
+                c = q ? r >= 3 && (!c || c >= 3) ? 3 : r >= 2 && (!c || c >= 2) ? 2 : 1 : 1
+            }
+            d.setAttribute("data-dpr", "" + c);
+            h.addEventListener(f, function () {
+                clearTimeout(p);
+                p = setTimeout(j, 300)
+            }, false);
+            j();
+            e.readyState == "complete" ? k() : e.addEventListener("DOMContentLoaded", k, false);
+            m.dpr = h.dpr = c;
+            m.refreshRem = j;
+            i.flex = m
+        }, window);</script>
+    <meta name="keywords" content="专业仲裁"/>
+    <meta name="description" content="专业仲裁"/>
+    <style type="text/css">
+        .list {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-lines: multiple;
+            -moz-box-lines: multiple;
+            -webkit-flex-wrap: wrap;
+            -ms-flex-wrap: wrap;
+            flex-wrap: wrap;
+            width: 6.9rem;
+            margin: 0 auto 0
+        }
+
+        .list .user {
+            width: 3.45rem;
+            margin-bottom: .2rem
+        }
+
+        .list .user .userinfo {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: -webkit-flex;
+            display: flex
+        }
+
+        .list .user .userinfo .u-pic {
+            width: .8rem;
+            height: .9rem
+        }
+
+        .list .user .userinfo .u-name {
+            -moz-box-flex: 1;
+            -webkit-box-flex: 1;
+            box-flex: 1;
+            -moz-flex: 1;
+            -ms-flex: 1;
+            -webkit-flex: 1;
+            flex: 1;
+            height: 1.1rem;
+            overflow: hidden;
+            margin-left: .1rem
+        }
+
+        .list .user .userinfo .u-name p {
+            font-size: .2rem;
+            color: #898989;
+            margin-top: .1rem;
+        }
+
+        .list .user .userinfo .u-name p em {
+            color: #313131;
+            font-style: normal
+        }
+    </style>
+</head>
+
+<body>
+<article class="pages docBody">
+    <section class="page">
+        <div class="page-content">
+            <!--content -->
+            <div class="zhongcai">
+                <img src="/mb/assets/images/debt/zc_01.jpg"/>
+                <img src="/mb/assets/images/debt/zc_02.jpg"/>
+                <img src="/mb/assets/images/debt/zc_03.jpg"/>
+                <img src="/mb/assets/images/debt/zc_04.jpg"/>
+                <div class="list">
+                    <div class="user">
+                        <div class="userinfo">
+                            <img src="/mb/assets1/images/default_icon_new.png" class="u-pic"/>
+                            <div class="u-name">
+                                <p>姓 &nbsp; &nbsp; &nbsp;名:<em>王 * *</em></p>
+                                <p>身&nbsp; 份&nbsp;证:<em>23102***018</em></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="user">
+                        <div class="userinfo">
+                            <img src="/mb/assets1/images/default_icon_new.png" class="u-pic"/>
+                            <div class="u-name">
+                                <p>姓 &nbsp; &nbsp; &nbsp;名:<em>李 * *</em></p>
+                                <p>身&nbsp;份&nbsp;证:<em>15232***416</em></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="user">
+                        <div class="userinfo">
+                            <img src="/mb/assets1/images/default_icon_new.png" class="u-pic"/>
+                            <div class="u-name">
+                                <p>姓 &nbsp; &nbsp; &nbsp;名:<em>吴 * *</em></p>
+                                <p>身&nbsp; 份&nbsp;证:<em>34030***010</em></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="user">
+                        <div class="userinfo">
+                            <img src="/mb/assets1/images/default_icon_new.png" class="u-pic"/>
+                            <div class="u-name">
+                                <p>姓 &nbsp; &nbsp; &nbsp;名:<em>杨 * *</em></p>
+                                <p>身&nbsp;份&nbsp;证:<em>91130***312</em></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="user">
+                        <div class="userinfo">
+                            <img src="/mb/assets1/images/default_icon_new.png" class="u-pic"/>
+                            <div class="u-name">
+                                <p>姓 &nbsp; &nbsp; &nbsp;名:<em>赵 * *</em></p>
+                                <p>身&nbsp; 份&nbsp;证:<em>42330***145</em></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="user">
+                        <div class="userinfo">
+                            <img src="/mb/assets1/images/default_icon_new.png" class="u-pic"/>
+                            <div class="u-name">
+                                <p>姓 &nbsp; &nbsp; &nbsp;名:<em>张 * *</em></p>
+                                <p>身&nbsp;份&nbsp;证:<em>1426***1232</em></p>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="font-size:.24rem">法院失信名单，可通过http://shixin.court.gov.cn/index.html查询。</p>
+                </div>
+                <img src="/mb/assets/images/debt/zc_05.jpg"/>
+                <img src="/mb/assets/images/debt/zc_06.jpg"/>
+                <img src="/mb/assets/images/debt/zc_07.jpg"/>
+                <img src="/mb/assets/images/debt/zc_08.jpg"/>
+            </div>
+        </div>
+    </section>
+</article>
+</body>
+
+<script>
+    seajs.use(['jumpApp']);
+</script>
+</html>

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>超值壕礼大派送</title>
+    <meta charset="UTF-8"/>
+    <meta name="keywords" content=""/>
+    <meta name="description" content=""/>
+    <link rel="stylesheet" href="/mb/assets/css/public.css" type="text/css">
+    <link rel="stylesheet" href="/mb/assets/css/user.css" type="text/css">
+    <script src="/mb/assets/scripts/base/sea.js"></script>
+    <script src="/mb/assets/scripts/base/flexible.js"></script>
+    <style>
+        .czhl{
+            height: 110rem;
+            background: url("/mb/assets/images/debt/czhl/czhlBgTop.png") no-repeat;
+            background-size: 100%;
+        }
+         /* 壕礼周周拿Box*/
+        .czhlHead{
+            color: white;
+            position: absolute;
+            top: 10.1rem;
+            width: 100%;
+            text-align: center;
+        }
+        .czhlTop{
+            height: 100%;
+        }
+        .czhlContent{
+            position: absolute;
+            top: 14rem;
+            width: 100%;
+        }
+        .whiteBox{
+            background: #ffffff;
+            margin: 1rem 1rem 3rem;
+            border: 0px solid red;
+            border-radius: .5rem;
+            position: relative;
+            padding-top: 2rem;
+            padding-bottom: 0.5rem;
+        }
+        .whiteBoxTip{
+            width: 15rem;
+            color: white;
+            text-align: center;
+            line-height: 2.5rem;
+            font-size: 1.2rem;
+            display: inline-block;
+            position: absolute;
+            top: -1.25rem;
+            margin-left: 5rem;
+            background: url(/mb/assets/images/debt/czhl/redTop.png) no-repeat;
+            background-size: 100%;
+        }
+        .whiteBoxTitle{
+            text-align: center;
+            font-size: 1rem;
+            color: #313131;
+        }
+        .whiteBoxJP{
+            height: 8rem;
+            background: url(/mb/assets/images/debt/czhl/jiangping.png) 3rem 1rem no-repeat;
+            background-size: 78%;
+        }
+        .whiteBoxJPTip{
+            height: 1.5rem;
+            line-height: 1.5rem;
+            width: 24rem;
+            background: url(/mb/assets/images/debt/czhl/zjmdTip.png) 4.3rem no-repeat;
+            background-size: 66%;
+            display: inline-block;
+            text-align: center;
+            color: #898989;
+        }
+        .whiteBoxList{
+            height: 2rem;
+            line-height: 2rem;
+            border: 0px solid red;
+            text-align: center;
+            padding-left:.5rem;
+            font-size: .9rem;
+            margin:  .5rem 0;
+            background: url(/mb/assets/images/debt/czhl/huibaidian.png) 1rem no-repeat;
+            background-size: 1rem;
+        }
+        .onRed{
+            background: url(/mb/assets/images/debt/czhl/hongbai.png) 1rem no-repeat;
+            background-size: 1rem;
+        }
+        .whiteBoxList span{
+            margin-left: 1.5rem;
+            width: 12rem;
+            display: inline-block;
+            text-align: left;
+            padding-left: .5rem;
+        }
+
+        .whiteBoxList ul{
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .whiteBoxList ul li{
+            height: 2rem;
+            line-height: 2.3rem;
+        }
+        .list{
+            width: 8.5rem;
+            float: right;
+            overflow: hidden;
+            height: 100%;
+            margin-right: 1rem;
+            background: #f9f2e5;
+            border-radius: .3rem;
+            /*border: 1px solid;*/
+        }
+
+         /* 万元现金免费送Box*/
+        .whiteBoxJlTip{
+            margin: 1rem 0;
+        }
+        .hlzznList{
+            border: 1px solid rgb(225,225,225);
+            margin: 0 1rem;
+        }
+        .hlzznHead,.hlzznP{
+            height: 2rem;
+            line-height: 2rem;
+            font-size: .9rem;
+            font-weight: bold;
+            border-bottom: 1px solid rgb(225,225,225);
+        }
+        .hlzznHead span,.hlzznP span{
+            width: 48%;
+            text-align: center;
+            display: inline-block;
+        }
+        .hlzznP{
+            font-weight: normal;
+        }
+        .hlzznList p span:first-child{
+            border-right: 1px solid rgb(225,225,225);
+        }
+        .hlzznList>p:last-child{
+            border-bottom:0px solid red;
+        }
+        .hlzznTip{
+            margin: 1rem 1rem;
+            font-size: .9rem;
+            color: #898989;
+            overflow: hidden;
+        }
+        .hlzznTip i{
+            width: 2rem;
+            display: inline-block;
+        }
+        .hlzznTip span{
+            width: 20.5rem;
+            float: right;
+        }
+        /* 中奖名单Box*/
+        .zjmdBox{
+            background: #f5ead5;
+            margin: 4rem 2rem 2rem;
+            border: 0px solid red;
+            border-radius: .5rem;
+            /*height: 10rem;*/
+            position: relative;
+            padding-top:1.5rem;
+        }
+        .zjmdBoxTip{
+            width: 10rem;
+            color: #313131;
+            text-align: center;
+            line-height: 2rem;
+            font-size: 1rem;
+            display: inline-block;
+            position: absolute;
+            top: -1.02rem;
+            margin-left: 6.5rem;
+            background: url(/mb/assets/images/debt/czhl/zjmd.png) no-repeat;
+            background-size: 100%;
+        }
+        .zjmdBoxList{
+            height:8rem;
+            background: url(/mb/assets/images/debt/czhl/qidai.png)  no-repeat;
+            background-size: 100%;
+        }
+        .bgNone{
+            background: none;
+            /*padding-top: 1.5rem;*/
+            text-align: center;
+            letter-spacing: .1rem;
+            font-size: 1rem;
+            overflow: hidden;
+            height: 8rem;
+        }
+        .zjmdBoxList ul li{
+            height: 2rem;
+            line-height: 2rem;
+        }
+         /* 活动规则Box*/
+        .hdgzBox{
+            margin: 1rem 1rem 3rem;
+            border: 0px solid red;
+            border-radius: .5rem;
+            position: relative;
+        }
+        .hdgzBoxTtile{
+            text-align: center;
+            font-size: 1.2rem;
+            height: 3rem;
+            line-height: 3rem;
+            font-weight: bold;
+            letter-spacing: .1rem;
+            position: relative;
+        }
+        .hdgzBoxTtile i{
+            font-size: .1rem;
+            width: 1.5rem;
+            height: 1rem;
+            line-height: 2rem;
+            display: inline-block;
+            top: .5rem;
+            position: absolute;
+        }
+        .hdgzBox p{
+            background: url("/mb/assets/images/debt/circleRed.png") .13rem .347rem no-repeat;
+            background-size: 1.2rem;
+            position: relative;
+        }
+        .hdgzBox p i{
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            margin-left: .5rem;
+            margin-right: .5rem;
+            color: white;
+            position: absolute;
+            top: .35rem;
+        }
+        .hdgzBox p span{
+            display: inline-block;
+            height: auto;
+            line-height: 2rem;
+            width: 90%;
+            margin-left: 2rem;
+        }
+         /* 底部*/
+        .czhlBottom{
+            height: 7rem;
+            background: url("/mb/assets/images/debt/czhl/czhlBgBottom.png") no-repeat;
+            background-size: 100%;
+        }
+    </style>
+</head>
+<body>
+<article class="views">
+    <section class="view">
+        <div class="pages navbar-fixed toolbar-fixed">
+            <div class="page" style="overflow: scroll;background: #f9f2e5">
+                <div class="czhl">
+                    <div class="czhlHead">2018年12月1日——2018年12月28日</div>
+                    <div class="czhlTop"></div>
+                    <div class="czhlContent">
+                        <div class="whiteBox hlzzn">
+                            <i class="whiteBoxTip">壕礼周周拿</i>
+                            <p class="whiteBoxTitle">活动期间，出借人每7天累计出借额前5名 <br />皆可获得实物奖励</p>
+                            <p class="whiteBoxJP"></p>
+                            <p class="whiteBoxJPTip">注：以上实物奖品（二选一）</p>
+                            <div class="whiteBoxList ">
+                                <span>第一周&nbsp;&nbsp;&nbsp;12月01日 - 12月07日</span>
+                                <div class="list Rolling">
+                                    <ul>
+                                        <li>187****0680获奖</li>
+                                        <li>187****5261获奖</li>
+                                        <li>137****2991获奖</li>
+                                        <li>153****5850获奖</li>
+                                        <li>138****1457获奖</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="whiteBoxList">
+                                <span>第二周&nbsp;&nbsp;&nbsp;12月08日 - 12月14日</span>
+                                <div class="list Rolling">
+                                    <ul>
+                                        <li>138****1457获奖</li>
+                                        <li>153****5850获奖</li>
+                                        <li>159****8391获奖</li>
+                                        <li>187****5261获奖</li>
+                                        <li>187****0680获奖</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="whiteBoxList onRed">
+                                <span>第三周&nbsp;&nbsp;&nbsp;12月15日 - 12月21日</span>
+                                <div class="list ">
+                                    <ul>
+                                        <li>正在进行中</li>
+                                        <li>133**8888获奖</li>
+                                        <li>133**8888获奖</li>
+                                        <li>133**8888获奖</li>
+                                        <li>133**8888获奖</li>
+                                        <li>133**8888获奖</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="whiteBoxList ">
+                                <span>第四周&nbsp;&nbsp;&nbsp;12月22日 - 12月28日</span>
+                                <div class="list ">
+                                    <ul>
+                                        <li>敬请期待</li>
+                                        <li>133**8888获奖</li>
+                                        <li>133**8888获奖</li>
+                                        <li>133**8888获奖</li>
+                                        <li>133**8888获奖</li>
+                                        <li>133**8888获奖</li>
+                                    </ul>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="whiteBox hlzzn">
+                            <i class="whiteBoxTip">万元现金免费送</i>
+                            <p class="whiteBoxTitle">活动结束后，出借人总累计出借额前10名<br />可获得现金奖励</p>
+                            <p class="whiteBoxJPTip whiteBoxJlTip">奖励如下</p>
+                            <div class="hlzznList">
+                                <p class="hlzznHead"><span>排名</span><span>奖励金额（元）</span></p>
+                                <p class="hlzznP"><span>第一名</span><span>21168</span></p>
+                                <p class="hlzznP"><span>第二名</span><span>11188</span></p>
+                                <p class="hlzznP"><span>第三名</span><span>9888</span></p>
+                                <p class="hlzznP"><span>第四名-第十名</span><span>1088</span></p>
+                            </div>
+                            <p class="hlzznTip"><i>注：</i><span>如有用户总累计出借金额相同，则按照出借先后时间进行排名。</span></p>
+                        </div>
+                        <div class="zjmdBox">
+                            <i class="zjmdBoxTip">中奖名单</i>
+                            <div class="zjmdBoxList  Rolling">
+                                <ul>
+
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="hdgzBox">
+                            <div class="hdgzBoxTtile"><i style="right: 14.7rem">●</i>活动规则<i>●</i></div>
+                            <p><i>1</i><span>本次活动仅限用户在无忧借条APP打借条累计出借金额；</span></p>
+                            <p><i>2</i><span>如有用户累计出借金额相同，则先按照出借时间进行排名，再按照出借金额排名；</span></p>
+                            <p><i>3</i><span>用户获得实物奖品后，无忧借条客服将会主动与之取得联系并核实邮寄信息，如在3个工作日内无法与中奖用户取得联系，则视为主动放弃奖品；</span></p>
+                            <p><i>4</i><span>用户获得现金奖励后，无忧借条客服将会主动与之取得联系并核实信息，如在3个工作日内无法与中奖用户取得联系，则视为主动放弃奖励；</span></p>
+                            <p><i>5</i><span>如有任何疑问，可联系无忧借条在线客服或电话客服进行咨询。</span></p>
+                        </div>
+                    </div>
+                    <div class="czhlBottom"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+</article>
+<script type="text/javascript">
+    seajs.use(['zepto','jumpApp'],function ($,jumpApp) {
+        // return ;
+        var d=1000,speed=20,h;
+
+        //获取需要滚动的元素
+        var zList=document.querySelectorAll('.Rolling');
+
+        //把元素自身的内容变为原来的2倍
+        var zUl=zList[0].querySelector('ul');
+        h=zUl.querySelector('li').offsetHeight;
+
+        for(var i=0;i<zList.length;i++){
+            var c=zList[i].querySelector('ul');
+            c.innerHTML+=c.innerHTML;
+        }
+
+        //具体方法
+        function sTop(o,c){
+            if(o.scrollTop%h==0){//如果卷去的距离能够除尽一行的高度
+                clearInterval(o.timer);//把定时器清除
+                o.timer=setTimeout(function(){startMove(o)},d);//延迟1s后继续触发定时器
+            }
+            if(o.scrollTop>=c.scrollHeight/2){  //如果卷去的高度>=整个ul高度的一半时
+                o.scrollTop=0;
+                o.scrollTop=o.scrollTop-c.scrollHeight/2; //让ul回到原点  即c.scrollTop=0
+            }else{
+                o.scrollTop++;  //如若不然，继续往上滚动
+            }
+        }
+        function startMove(obj){
+            var o=obj,c=o.querySelector('ul');
+            o.scrollTop++;
+            o.timer=setInterval(function(){sTop(o,c,h )},speed);
+        }
+
+        //执行动作
+        for (var j=0;j<zList.length;j++){
+            startMove(zList[j]);
+        }
+    });
+</script>
+</body>
+</html>
