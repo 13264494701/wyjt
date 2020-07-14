@@ -25,7 +25,7 @@
 		<guava.version>17.0</guava.version>
 		<xstream.version>1.4.7</xstream.version>
 		<freemarker.version>2.3.22</freemarker.version>
-		<quartz.version>2.3.0</quartz.version>
+		<quartz.version>2.3.2</quartz.version>
 		<sitemesh.version>2.4.2</sitemesh.version>
 	</properties>
 	<profiles>
