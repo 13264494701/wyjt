@@ -9,7 +9,7 @@
 	<name>wyjt Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 	<properties>
-		<spring.version>5.1.1.RELEASE</spring.version>
+		<spring.version>5.3.18</spring.version>
 		<mybatis.version>3.4.6</mybatis.version>
 		<mybatis-spring.version>1.3.2</mybatis-spring.version>
 		<druid.version>1.1.10</druid.version>
